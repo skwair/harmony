@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/skwair/discord/internal/endpoint"
+	"github.com/skwair/discord/role"
 )
 
 // Role represents a set of permissions attached to a group of users.
@@ -112,19 +113,10 @@ func (c *Client) ModifyRolePositions(guildID string, positions []RolePosition) (
 	return roles, nil
 }
 
-// ModifyRole describes how to modify a guild role. All fields are optional.
-type ModifyRole struct {
-	Name        string `json:"name,omitempty"`
-	Permissions int    `json:"permissions,omitempty"`
-	Color       int    `json:"color,omitempty"`
-	Hoist       bool   `json:"hoist,omitempty"`
-	Mentionable bool   `json:"mentionable,omitempty"`
-}
-
 // ModifyRole modifies a guild role. Requires the 'MANAGE_ROLES' permission.
 // Fires a Guild Role Update Gateway event.
-func (c *Client) ModifyRole(guildID, roleID string, r *ModifyRole) (*Role, error) {
-	b, err := json.Marshal(r)
+func (c *Client) ModifyRole(guildID, roleID string, s *role.Settings) (*Role, error) {
+	b, err := json.Marshal(s)
 	if err != nil {
 		return nil, err
 	}
@@ -140,11 +132,11 @@ func (c *Client) ModifyRole(guildID, roleID string, r *ModifyRole) (*Role, error
 		return nil, apiError(resp)
 	}
 
-	var role Role
-	if err = json.NewDecoder(resp.Body).Decode(&role); err != nil {
+	var r Role
+	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
 		return nil, err
 	}
-	return &role, nil
+	return &r, nil
 }
 
 // DeleteRole deletes a guild role. Requires the 'MANAGE_ROLES' permission.

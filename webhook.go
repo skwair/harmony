@@ -10,6 +10,7 @@ import (
 
 	"github.com/skwair/discord/embed"
 	"github.com/skwair/discord/internal/endpoint"
+	"github.com/skwair/discord/webhook"
 )
 
 // Webhook is a low-effort way to post messages to channels in Discord.
@@ -52,11 +53,11 @@ func (c *Client) CreateWebhook(channelID, name, avatar string) (*Webhook, error)
 		return nil, apiError(resp)
 	}
 
-	var webhook Webhook
-	if err = json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
+	var w Webhook
+	if err = json.NewDecoder(resp.Body).Decode(&w); err != nil {
 		return nil, err
 	}
-	return &webhook, nil
+	return &w, nil
 }
 
 // GetChannelWebhooks returns the list of webhooks in the given channel.
@@ -104,11 +105,11 @@ func (c *Client) GetWebhook(id string) (*Webhook, error) {
 		return nil, apiError(resp)
 	}
 
-	var webhook Webhook
-	if err = json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
+	var w Webhook
+	if err = json.NewDecoder(resp.Body).Decode(&w); err != nil {
 		return nil, err
 	}
-	return &webhook, nil
+	return &w, nil
 }
 
 // GetWebhookWithToken is like GetWebhook except this call does not require
@@ -125,25 +126,15 @@ func GetWebhookWithToken(id, token string) (*Webhook, error) {
 		return nil, apiError(resp)
 	}
 
-	var webhook Webhook
-	if err = json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
+	var w Webhook
+	if err = json.NewDecoder(resp.Body).Decode(&w); err != nil {
 		return nil, err
 	}
-	return &webhook, nil
-}
-
-// WebhookSettings describes a webhook's settings.
-type WebhookSettings struct {
-	Name string `json:"name,omitempty"`
-	// Avatar is a data URI scheme taht support JPG, GIF, and PNG formats, see
-	// https://discordapp.com/developers/docs/resources/user#avatar-data
-	// for more information.
-	Avatar    string `json:"avatar,omitempty"`
-	ChannelID string `json:"channel_id,omitempty"`
+	return &w, nil
 }
 
 // ModifyWebhook modifies a webhook. Requires the 'MANAGE_WEBHOOKS' permission.
-func (c *Client) ModifyWebhook(id string, s *WebhookSettings) (*Webhook, error) {
+func (c *Client) ModifyWebhook(id string, s *webhook.Settings) (*Webhook, error) {
 	b, err := json.Marshal(s)
 	if err != nil {
 		return nil, err
@@ -160,17 +151,17 @@ func (c *Client) ModifyWebhook(id string, s *WebhookSettings) (*Webhook, error) 
 		return nil, apiError(resp)
 	}
 
-	var webhook Webhook
-	if err = json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
+	var w Webhook
+	if err = json.NewDecoder(resp.Body).Decode(&w); err != nil {
 		return nil, err
 	}
-	return &webhook, nil
+	return &w, nil
 }
 
 // ModifyWebhookWithToken is like ModifyWebhook except this call does not require
-// authentication, does not allow to change the channel_id parameter in the WebhookSettings,
+// authentication, does not allow to change the channel_id parameter in the webhook settings,
 // and does not return a user in the webhook.
-func ModifyWebhookWithToken(id, token string, s *WebhookSettings) (*Webhook, error) {
+func ModifyWebhookWithToken(id, token string, s *webhook.Settings) (*Webhook, error) {
 	b, err := json.Marshal(s)
 	if err != nil {
 		return nil, err
@@ -187,11 +178,11 @@ func ModifyWebhookWithToken(id, token string, s *WebhookSettings) (*Webhook, err
 		return nil, apiError(resp)
 	}
 
-	var webhook Webhook
-	if err = json.NewDecoder(resp.Body).Decode(&webhook); err != nil {
+	var w Webhook
+	if err = json.NewDecoder(resp.Body).Decode(&w); err != nil {
 		return nil, err
 	}
-	return &webhook, nil
+	return &w, nil
 }
 
 // DeleteWebhook deletes a webhook given its ID.

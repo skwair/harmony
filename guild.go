@@ -7,8 +7,10 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/skwair/discord/channel"
+	"github.com/skwair/discord/guild"
+	"github.com/skwair/discord/integration"
 	"github.com/skwair/discord/internal/endpoint"
-	"github.com/skwair/discord/optional"
 )
 
 // Guild in Discord represents an isolated collection of users and channels,
@@ -86,6 +88,12 @@ type GuildMember struct {
 	Mute     bool      `json:"mute,omitempty"`
 }
 
+// PermissionsIn returns the permissions of the Guild member in the given Guild and channel.
+func (m *GuildMember) PermissionsIn(g *Guild, ch *Channel) (permissions int) {
+	base := computeBasePermissions(g, m)
+	return computeOverwrites(ch, m, base)
+}
+
 // CreateGuild creates a new guild with the given name.
 // Returns a guild object on success. Fires a Guild Create Gateway event.
 func (c *Client) CreateGuild(name string) (*Guild, error) {
@@ -110,11 +118,11 @@ func (c *Client) CreateGuild(name string) (*Guild, error) {
 		return nil, apiError(resp)
 	}
 
-	var guild Guild
-	if err = json.NewDecoder(resp.Body).Decode(&guild); err != nil {
+	var g Guild
+	if err = json.NewDecoder(resp.Body).Decode(&g); err != nil {
 		return nil, err
 	}
-	return &guild, nil
+	return &g, nil
 }
 
 // NOTE: maybe expose a CreateGuildWithParams method that allows to create a guild
@@ -133,32 +141,16 @@ func (c *Client) GetGuild(id string) (*Guild, error) {
 		return nil, apiError(resp)
 	}
 
-	var guild Guild
-	if err = json.NewDecoder(resp.Body).Decode(&guild); err != nil {
+	var g Guild
+	if err = json.NewDecoder(resp.Body).Decode(&g); err != nil {
 		return nil, err
 	}
-	return &guild, nil
-}
-
-// GuildSettings are the settings of a guild, all fields are optional and only those
-// explicitly set will be modified.
-type GuildSettings struct {
-	Name                        *optional.String `json:"name,omitempty"`
-	Region                      *optional.String `json:"region,omitempty"`
-	VerificationLevel           *optional.Int    `json:"verification_level,omitempty"`
-	DefaultMessageNotifications *optional.Int    `json:"default_message_notifications,omitempty"`
-	ExplicitContentFilter       *optional.Int    `json:"explicit_content_filter,omitempty"`
-	AfkChannelID                *optional.String `json:"afk_channel_id,omitempty"`
-	AfkTimeout                  *optional.Int    `json:"afk_timeout,omitempty"`
-	Icon                        *optional.String `json:"icon,omitempty"`
-	OwnerID                     *optional.String `json:"owner_id,omitempty"`
-	Splash                      *optional.String `json:"splash,omitempty"`
-	SystemChannelID             *optional.String `json:"system_channel_id,omitempty"`
+	return &g, nil
 }
 
 // ModifyGuild modifies a guild's settings. Requires the 'MANAGE_GUILD' permission.
 // Returns the updated guild object on success. Fires a Guild Update Gateway event.
-func (c *Client) ModifyGuild(guildID string, s *GuildSettings) (*Guild, error) {
+func (c *Client) ModifyGuild(guildID string, s *guild.Settings) (*Guild, error) {
 	b, err := json.Marshal(s)
 	if err != nil {
 		return nil, err
@@ -175,11 +167,11 @@ func (c *Client) ModifyGuild(guildID string, s *GuildSettings) (*Guild, error) {
 		return nil, apiError(resp)
 	}
 
-	var guild Guild
-	if err = json.NewDecoder(resp.Body).Decode(&guild); err != nil {
+	var g Guild
+	if err = json.NewDecoder(resp.Body).Decode(&g); err != nil {
 		return nil, err
 	}
-	return &guild, nil
+	return &g, nil
 }
 
 // DeleteGuild deletes a guild permanently. User must be owner.
@@ -218,19 +210,8 @@ func (c *Client) GetGuildChannels(guildID string) ([]Channel, error) {
 	return channels, nil
 }
 
-// createChannel describes a channel creation.
-type createChannel struct {
-	Name        string                `json:"name,omitempty"`
-	Type        ChannelType           `json:"type,omitempty"`
-	Bitrate     int                   `json:"bitrate,omitempty"`
-	UserLimit   int                   `json:"user_limit,omitempty"`
-	Permissions []PermissionOverwrite `json:"permission_overwrites,omitempty"`
-	ParentID    string                `json:"parent_id,omitempty"`
-	NSFW        bool                  `json:"nsfw,omitempty"`
-}
-
-func (c *Client) createGuildChannel(guildID string, ch *createChannel) (*Channel, error) {
-	b, err := json.Marshal(ch)
+func (c *Client) CreateGuildChannel(guildID string, settings *channel.Settings) (*Channel, error) {
+	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
@@ -246,60 +227,11 @@ func (c *Client) createGuildChannel(guildID string, ch *createChannel) (*Channel
 		return nil, apiError(resp)
 	}
 
-	var channel Channel
-	if err = json.NewDecoder(resp.Body).Decode(&channel); err != nil {
+	var ch Channel
+	if err = json.NewDecoder(resp.Body).Decode(&ch); err != nil {
 		return nil, err
 	}
-	return &channel, nil
-}
-
-// CreateTextChannel creates a text channel in the given guild.
-// Requires the 'MANAGE_CHANNELS' permission. Fires a Channel Create Gateway event.
-func (c *Client) CreateTextChannel(
-	guildID string,
-	name string,
-	permissions []PermissionOverwrite,
-	parentID string,
-	nsfw bool) (*Channel, error) {
-	return c.createGuildChannel(guildID, &createChannel{
-		Name:        name,
-		Permissions: permissions,
-		Type:        GuildText,
-		ParentID:    parentID,
-		NSFW:        nsfw,
-	})
-}
-
-// CreateVoiceChannel creates a voice channel in the given guild.
-// Requires the 'MANAGE_CHANNELS' permission. Fires a Channel Create Gateway event.
-func (c *Client) CreateVoiceChannel(
-	guildID string,
-	name string,
-	permissions []PermissionOverwrite,
-	parentID string,
-	bitrate int,
-	userLimit int) (*Channel, error) {
-	return c.createGuildChannel(guildID, &createChannel{
-		Name:        name,
-		Permissions: permissions,
-		Type:        GuildVoice,
-		ParentID:    parentID,
-		Bitrate:     bitrate,
-		UserLimit:   userLimit,
-	})
-}
-
-// CreateChannelCategory creates a new channel category in the given guild.
-// Requires the 'MANAGE_CHANNELS' permission. Fires a Channel Create Gateway event.
-func (c *Client) CreateChannelCategory(
-	guildID string,
-	name string,
-	permissions []PermissionOverwrite) (*Channel, error) {
-	return c.createGuildChannel(guildID, &createChannel{
-		Name:        name,
-		Permissions: permissions,
-		Type:        GuildCategory,
-	})
+	return &ch, nil
 }
 
 // ChannelPosition is a pair of channel ID with its position.
@@ -391,13 +323,13 @@ func (c *Client) GetGuildMembers(guildID string, limit int, after string) ([]Gui
 // AddGuildMember adds a user to the given guild, provided you have a valid oauth2 access
 // token for the user with the guilds.join scope. Fires a Guild Member Add Gateway event.
 // Requires the bot to have the CREATE_INSTANT_INVITE permission.
-func (c *Client) AddGuildMember(guildID, userID, accessToken string, s *GuildMemberSettings) (*GuildMember, error) {
+func (c *Client) AddGuildMember(guildID, userID, accessToken string, s *guild.MemberSettings) (*GuildMember, error) {
 	st := struct {
 		AccessToken string `json:"access_token,omitempty"`
-		*GuildMemberSettings
+		*guild.MemberSettings
 	}{
-		AccessToken:         accessToken,
-		GuildMemberSettings: s,
+		AccessToken:    accessToken,
+		MemberSettings: s,
 	}
 	b, err := json.Marshal(st)
 	if err != nil {
@@ -438,20 +370,9 @@ func (c *Client) RemoveGuildMember(guildID, userID string) error {
 	return nil
 }
 
-// GuildMemberSettings are the settings of a guild member, all fields are optional
-// and only those explicitly set will be modified.
-type GuildMemberSettings struct {
-	Nick  *optional.String      `json:"nick,omitempty"`
-	Roles *optional.StringSlice `json:"roles,omitempty"`
-	Mute  *optional.Bool        `json:"mute,omitempty"`
-	Deaf  *optional.Bool        `json:"deaf,omitempty"`
-	// ID of channel to move user to (if they are connected to voice).
-	ChannelID *optional.String `json:"channel_id,omitempty"`
-}
-
 // ModifyGuildMember modifies attributes of a guild member. Fires a Guild Member
 // Update Gateway event.
-func (c *Client) ModifyGuildMember(guildID, userID string, s *GuildMemberSettings) error {
+func (c *Client) ModifyGuildMember(guildID, userID string, s *guild.MemberSettings) error {
 	b, err := json.Marshal(s)
 	if err != nil {
 		return err
@@ -727,19 +648,9 @@ func (c *Client) AddGuildIntegration(guildID, integrationID, integrationType str
 	return nil
 }
 
-// IntegrationSettings describes a guild integration's settings.
-type IntegrationSettings struct {
-	// The behavior when an integration subscription lapses.
-	ExpireBehavior int
-	// Period (in seconds) where the integration will ignore lapsed subscriptions.
-	ExpireGracePeriod int
-	// Whether emoticons should be synced for this integration (twitch only currently).
-	EnableEmoticons bool
-}
-
 // ModifyGuildIntegration modifies the behavior and settings of a guild integration.
 // Requires the 'MANAGE_GUILD' permission. Fires a Guild Integrations Update Gateway event.
-func (c *Client) ModifyGuildIntegration(guildID, integrationID string, s *IntegrationSettings) error {
+func (c *Client) ModifyGuildIntegration(guildID, integrationID string, s *integration.Settings) error {
 	b, err := json.Marshal(s)
 	if err != nil {
 		return err
@@ -790,14 +701,9 @@ func (c *Client) SyncGuildIntegration(guildID, integrationID string) error {
 	return nil
 }
 
-type GuildEmbed struct {
-	Enabled   bool   `json:"enabled,omitempty"`
-	ChannelID string `json:"channel_id,omitempty"`
-}
-
 // GetGuildEmbed returns the given guild's embed. Requires the 'MANAGE_GUILD'
 // permission.
-func (c *Client) GetGuildEmbed(guildID string) (*GuildEmbed, error) {
+func (c *Client) GetGuildEmbed(guildID string) (*guild.Embed, error) {
 	e := endpoint.GetGuildEmbed(guildID)
 	resp, err := c.doReq(http.MethodGet, e, nil)
 	if err != nil {
@@ -809,7 +715,7 @@ func (c *Client) GetGuildEmbed(guildID string) (*GuildEmbed, error) {
 		return nil, apiError(resp)
 	}
 
-	var embed GuildEmbed
+	var embed guild.Embed
 	if err = json.NewDecoder(resp.Body).Decode(&embed); err != nil {
 		return nil, err
 	}
@@ -818,7 +724,7 @@ func (c *Client) GetGuildEmbed(guildID string) (*GuildEmbed, error) {
 
 // ModifyGuildEmbed modifies a guild embed for the given guild. Requires the
 // 'MANAGE_GUILD' permission.
-func (c *Client) ModifyGuildEmbed(guildID string, embed *GuildEmbed) (*GuildEmbed, error) {
+func (c *Client) ModifyGuildEmbed(guildID string, embed *guild.Embed) (*guild.Embed, error) {
 	b, err := json.Marshal(embed)
 	if err != nil {
 		return nil, err

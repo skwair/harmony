@@ -3,6 +3,8 @@ package discord
 import (
 	"sync"
 	"time"
+
+	"github.com/skwair/discord/channel"
 )
 
 // State is a cache of the state of the application that is updated in real-time
@@ -157,10 +159,10 @@ func (s *State) setInitialState(r *Ready) {
 	}
 	for i := 0; i < len(r.PrivateChannels); i++ {
 		dm := &r.PrivateChannels[i]
-		if dm.Type == DM {
+		if dm.Type == channel.TypeDM {
 			s.dms[dm.ID] = dm
 		}
-		if dm.Type == GroupDM {
+		if dm.Type == channel.TypeGroupDM {
 			s.groups[dm.ID] = dm
 		}
 	}
@@ -296,13 +298,13 @@ func (s *State) updateChannel(c *Channel) {
 	defer s.mu.Unlock()
 
 	switch c.Type {
-	case DM:
+	case channel.TypeDM:
 		s.dms[c.ID] = c
 
-	case GroupDM:
+	case channel.TypeGroupDM:
 		s.groups[c.ID] = c
 
-	case GuildText, GuildVoice, GuildCategory:
+	case channel.TypeGuildText, channel.TypeGuildVoice, channel.TypeGuildCategory:
 		chs := s.guilds[c.GuildID].Channels
 		var found bool
 		for i := 0; i < len(chs); i++ {
@@ -327,13 +329,13 @@ func (s *State) removeChannel(c *Channel) {
 	defer s.mu.Unlock()
 
 	switch c.Type {
-	case DM:
+	case channel.TypeDM:
 		delete(s.dms, c.ID)
 
-	case GroupDM:
+	case channel.TypeGroupDM:
 		delete(s.groups, c.ID)
 
-	case GuildText, GuildVoice, GuildCategory:
+	case channel.TypeGuildText, channel.TypeGuildVoice, channel.TypeGuildCategory:
 		g := s.guilds[c.GuildID]
 		if g == nil {
 			return
@@ -364,13 +366,13 @@ func (s *State) updatePins(p *ChannelPinsUpdate) {
 
 	ch.LastPinTimestamp = p.LastPinTimestamp
 	switch ch.Type {
-	case DM:
+	case channel.TypeDM:
 		s.dms[p.ChannelID].LastPinTimestamp = p.LastPinTimestamp
 
-	case GroupDM:
+	case channel.TypeGroupDM:
 		s.groups[p.ChannelID].LastPinTimestamp = p.LastPinTimestamp
 
-	case GuildText:
+	case channel.TypeGuildText:
 		chs := s.guilds[ch.GuildID].Channels
 		for i := 0; i < len(chs); i++ {
 			if chs[i].ID == p.ChannelID {

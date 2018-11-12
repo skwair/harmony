@@ -7,33 +7,22 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/skwair/discord/channel"
 	"github.com/skwair/discord/internal/endpoint"
-)
-
-// ChannelType describes the type of a channel. Different fields
-// are set or not depending on the channel's type.
-type ChannelType int
-
-// Supported channel types :
-const (
-	GuildText ChannelType = iota
-	DM
-	GuildVoice
-	GroupDM
-	GuildCategory
+	"github.com/skwair/discord/permission"
 )
 
 // Channel represents a guild or DM channel within Discord.
 type Channel struct {
-	ID                   string                `json:"id,omitempty"`
-	Type                 ChannelType           `json:"type,omitempty"`
-	GuildID              string                `json:"guild_id,omitempty"`
-	Position             int                   `json:"position,omitempty"` // Sorting position of the channel.
-	PermissionOverwrites []PermissionOverwrite `json:"permission_overwrites,omitempty"`
-	Name                 string                `json:"name,omitempty"`
-	Topic                string                `json:"topic,omitempty"`
-	NSFW                 bool                  `json:"nsfw,omitempty"`
-	LastMessageID        string                `json:"last_message_id,omitempty"`
+	ID                   string                 `json:"id,omitempty"`
+	Type                 channel.Type           `json:"type,omitempty"`
+	GuildID              string                 `json:"guild_id,omitempty"`
+	Position             int                    `json:"position,omitempty"` // Sorting position of the channel.
+	PermissionOverwrites []permission.Overwrite `json:"permission_overwrites,omitempty"`
+	Name                 string                 `json:"name,omitempty"`
+	Topic                string                 `json:"topic,omitempty"`
+	NSFW                 bool                   `json:"nsfw,omitempty"`
+	LastMessageID        string                 `json:"last_message_id,omitempty"`
 
 	// For voice channels.
 	Bitrate   int `json:"bitrate,omitempty"`
@@ -49,15 +38,6 @@ type Channel struct {
 	LastPinTimestamp time.Time `json:"last_pin_timestamp,omitempty"`
 }
 
-// PermissionOverwrite describes a specific permission that overwrites
-// server-wide permissions.
-type PermissionOverwrite struct {
-	ID    string
-	Type  string // Either "role" or "member".
-	Allow int
-	Deny  int
-}
-
 // GetChannel returns the channel object for the given id.
 func (c *Client) GetChannel(id string) (*Channel, error) {
 	e := endpoint.GetChannel(id)
@@ -71,34 +51,18 @@ func (c *Client) GetChannel(id string) (*Channel, error) {
 		return nil, apiError(resp)
 	}
 
-	var channel Channel
-	if err = json.NewDecoder(resp.Body).Decode(&channel); err != nil {
+	var ch Channel
+	if err = json.NewDecoder(resp.Body).Decode(&ch); err != nil {
 		return nil, err
 	}
-	return &channel, nil
-}
-
-// ChannelSettings describes a channel's settings.
-type ChannelSettings struct {
-	// Available for all channels :
-	Name                 string                `json:"name,omitempty"`
-	Position             int                   `json:"position,omitempty"`
-	PermissionOverwrites []PermissionOverwrite `json:"permission_overwrites,omitempty"`
-	// Available for text channels :
-	Topic string `json:"topic,omitempty"`
-	NSFW  bool   `json:"nsfw,omitempty"`
-	// Available for audio channels :
-	Bitrate   int `json:"bitrate,omitempty"`
-	UserLimit int `json:"user_limit,omitempty"`
-	// Available for text and audio channels :
-	ParentID string `json:"parent_id,omitempty"`
+	return &ch, nil
 }
 
 // ModifyChannel updates a channel's settings given its ID and some new settings.
 // Requires the 'MANAGE_CHANNELS' permission for the guild. Fires a Channel Update
 // Gateway event. If modifying a category, individual Channel Update events will
 // fire for each child channel that also changes.
-func (c *Client) ModifyChannel(id string, s *ChannelSettings) (*Channel, error) {
+func (c *Client) ModifyChannel(id string, s *channel.Settings) (*Channel, error) {
 	b, err := json.Marshal(s)
 	if err != nil {
 		return nil, err
