@@ -2,6 +2,7 @@ package discord
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -108,30 +109,38 @@ func (c *Client) DeleteChannel(id string) error {
 // endpoint requires the 'VIEW_CHANNEL' permission to be present on the current user. If the
 // current user is missing the 'READ_MESSAGE_HISTORY' permission in the channel then this will
 // return no messages (since they cannot read the message history).
-// The before, after, and around keys are mutually exclusive, only one may be passed at a time.
-func (c *Client) GetChannelMessages(id string, limit int, around, before, after string) ([]Message, error) {
-	q := url.Values{}
-	if limit > 0 {
-		q.Set("limit", strconv.Itoa(limit))
-	}
-	// NOTE: consider using a syntax like ><~messageID and have this method
-	// take only 3 parameters :
-	// - >messageID for 'after'
-	// - <messageID for 'before'
-	// - ~messageID for 'around'
-	// - messageID or any other character could default to 'before' or
-	// return an error.
-	if around != "" {
-		q.Set("around", around)
-	}
-	if before != "" {
-		q.Set("before", before)
-	}
-	if after != "" {
-		q.Set("after", after)
+// The query parameter is a message ID prefixed with one of the following character :
+// - '>' for fetching messages after
+// - '<' for fetching messages before
+// - '~' for fetching messages around
+// For example, to retrieve 50 messages around (25 before, 25 after) a message having the
+// ID 221588207995121520, set query to "~221588207995121520".
+// Limit is a positive integer between 1 and 100 that default to 50 if set to 0.
+func (c *Client) GetChannelMessages(channelID string, query string, limit int) ([]Message, error) {
+	if query == "" {
+		return nil, errors.New("empty query")
 	}
 
-	e := endpoint.GetChannelMessages(id, q.Encode())
+	q := url.Values{}
+	switch query[0] {
+	case '>':
+		q.Add("after", query[1:])
+	case '<':
+		q.Add("before", query[1:])
+	case '~':
+		q.Add("around", query[1:])
+	default:
+		return nil, errors.New("lll-formatted query: prefix the message ID with '>' (after), '<' (before) or '~' (around)")
+	}
+
+	if limit > 0 {
+		if limit > 100 {
+			limit = 100
+		}
+		q.Set("limit", strconv.Itoa(limit))
+	}
+
+	e := endpoint.GetChannelMessages(channelID, q.Encode())
 	resp, err := c.doReq(http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
