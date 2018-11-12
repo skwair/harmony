@@ -125,7 +125,7 @@ func (c *Client) CreateGuild(name string) (*Guild, error) {
 	return &g, nil
 }
 
-// NOTE: maybe expose a CreateGuildWithParams method that allows to create a guild
+// NOTE: maybe expose a CreateGuildWithSettings method that allows to create a guild
 // with custom settings without requiring a ModifyGuild call after CreateGuild.
 
 // GetGuild returns the guild object for the given id.

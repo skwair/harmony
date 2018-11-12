@@ -447,7 +447,7 @@ func ipDiscovery(conn *net.UDPConn, ssrc uint32) (ip string, port uint16, err er
 }
 
 // getStateAndServer will receive exactly two payloads from ch and extract the voice state
-// and the voice server information from them. The order of the payloads is not relevent
+// and the voice server information from them. The order of the payloads is not relevant
 // although only those two payloads must be sent through ch and only once each.
 // NOTE: check if those events are always sequentially sent in the same order, if so,
 // refactor this function.
