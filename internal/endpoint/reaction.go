@@ -7,7 +7,7 @@ func CreateReaction(chID, msgID, emoji string) *Endpoint {
 	}
 }
 
-func DeleteReaction(chID, msgID, emoji string) *Endpoint {
+func DeleteOwnReaction(chID, msgID, emoji string) *Endpoint {
 	return &Endpoint{
 		URL: "/channels/" + chID + "/messages/" + msgID + "/reactions/" + emoji + "/@me",
 		Key: "/channels/" + chID + "/messages",

@@ -30,21 +30,21 @@ func BulkDeleteMessage(chID string) *Endpoint {
 	}
 }
 
-func GetPins(chID string) *Endpoint {
+func GetPinnedMessages(chID string) *Endpoint {
 	return &Endpoint{
 		URL: "/channels/" + chID + "/pins",
 		Key: "/channels/" + chID + "/pins",
 	}
 }
 
-func PinMessage(chID, msgID string) *Endpoint {
+func AddPinnedChannelMessage(chID, msgID string) *Endpoint {
 	return &Endpoint{
 		URL: "/channels/" + chID + "/pins/" + msgID,
 		Key: "/channels/" + chID + "/pins",
 	}
 }
 
-func UnpinMessage(chID, msgID string) *Endpoint {
+func DeletePinnedChannelMessage(chID, msgID string) *Endpoint {
 	return &Endpoint{
 		URL: "/channels/" + chID + "/pins/" + msgID,
 		Key: "/channels/" + chID + "/pins",

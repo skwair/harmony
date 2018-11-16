@@ -73,7 +73,7 @@ func (b *bot) onNewMessage(m *discord.Message) {
 	// Reply with "pong", logging any error
 	// that occurs.
 	if m.Content == "ping" {
-		if _, err := b.client.SendSimpleMessage(m.ChannelID, "pong"); err != nil {
+		if _, err := b.client.Channel(m.ChannelID).SendMessage("pong"); err != nil {
 			log.Println(err)
 		}
 	}

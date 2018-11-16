@@ -56,7 +56,7 @@ func GetGuildMember(guildID, userID string) *Endpoint {
 	}
 }
 
-func GetGuildMembers(guildID, query string) *Endpoint {
+func ListGuildMembers(guildID, query string) *Endpoint {
 	return &Endpoint{
 		URL: "/guilds/" + guildID + "/members?" + query,
 		Key: "/guilds/" + guildID + "/members",
@@ -98,7 +98,7 @@ func GetGuildBans(guildID string) *Endpoint {
 	}
 }
 
-func BanWithReason(guildID, userID, query string) *Endpoint {
+func CreateGuildBan(guildID, userID, query string) *Endpoint {
 	if query != "" {
 		query = "?" + query
 	}
@@ -109,21 +109,21 @@ func BanWithReason(guildID, userID, query string) *Endpoint {
 	}
 }
 
-func Unban(guildID, userID string) *Endpoint {
+func RemoveGuildBan(guildID, userID string) *Endpoint {
 	return &Endpoint{
 		URL: "/guilds/" + guildID + "/bans/" + userID,
 		Key: "/guilds/" + guildID + "/bans",
 	}
 }
 
-func GetPruneCount(guildID, query string) *Endpoint {
+func GetGuildPruneCount(guildID, query string) *Endpoint {
 	return &Endpoint{
 		URL: "/guilds/" + guildID + "/prune?" + query,
 		Key: "/guilds/" + guildID + "/prune",
 	}
 }
 
-func BeginPrune(guildID, query string) *Endpoint {
+func BeginGuildPrune(guildID, query string) *Endpoint {
 	return &Endpoint{
 		URL: "/guilds/" + guildID + "/prune?" + query,
 		Key: "/guilds/" + guildID + "/prune",
@@ -165,7 +165,7 @@ func ModifyGuildIntegration(guildID, integrationID string) *Endpoint {
 	}
 }
 
-func RemoveGuildIntegration(guildID, integrationID string) *Endpoint {
+func DeleteGuildIntegration(guildID, integrationID string) *Endpoint {
 	return &Endpoint{
 		URL: "/guilds/" + guildID + "/integrations/" + integrationID,
 		Key: "/guilds/" + guildID + "/integrations",

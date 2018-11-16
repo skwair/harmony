@@ -39,7 +39,7 @@ func GetChannelMessage(chID, msgID string) *Endpoint {
 	}
 }
 
-func UpdateChannelPermissions(chID, targetID string) *Endpoint {
+func EditChannelPermissions(chID, targetID string) *Endpoint {
 	return &Endpoint{
 		URL: "/channels/" + chID + "/permissions/" + targetID,
 		Key: "/channels/" + chID + "/permissions",
@@ -67,21 +67,21 @@ func CreateChannelInvite(chID string) *Endpoint {
 	}
 }
 
-func AddRecipient(chID, recipientID string) *Endpoint {
+func GroupDMAddRecipient(chID, recipientID string) *Endpoint {
 	return &Endpoint{
 		URL: "/channels/" + chID + "/recipients/" + recipientID,
 		Key: "/channels/" + chID + "/recipients",
 	}
 }
 
-func RemoveRecipient(chID, recipientID string) *Endpoint {
+func GroupDMRemoveRecipient(chID, recipientID string) *Endpoint {
 	return &Endpoint{
 		URL: "/channels/" + chID + "/recipients/" + recipientID,
 		Key: "/channels/" + chID + "/recipients",
 	}
 }
 
-func TriggerTyping(chID string) *Endpoint {
+func TriggerTypingIndicator(chID string) *Endpoint {
 	return &Endpoint{
 		URL: "/channels/" + chID + "/typing",
 		Key: "/channels/" + chID + "/typing",

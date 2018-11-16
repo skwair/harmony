@@ -50,8 +50,8 @@ func main() {
         log.Fatal(err)
     }
 
-    // Get information about a user. "@me" is a shortcut for the current user's ID.
-    u, err := c.GetUser("@me")
+    // Get information about the current user.
+    u, err := c.CurrentUser().Get()
     if err != nil {
         log.Fatal(err)
     }

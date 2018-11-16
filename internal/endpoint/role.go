@@ -1,34 +1,34 @@
 package endpoint
 
-func GetRoles(guildID string) *Endpoint {
+func GetGuildRoles(guildID string) *Endpoint {
 	return &Endpoint{
 		URL: "/guilds/" + guildID + "/roles",
 		Key: "/guilds/" + guildID + "/roles",
 	}
 }
 
-func CreateRole(guildID string) *Endpoint {
+func CreateGuildRole(guildID string) *Endpoint {
 	return &Endpoint{
 		URL: "/guilds/" + guildID + "/roles",
 		Key: "/guilds/" + guildID + "/roles",
 	}
 }
 
-func ModifyRolePositions(guildID string) *Endpoint {
+func ModifyGuildRolePositions(guildID string) *Endpoint {
 	return &Endpoint{
 		URL: "/guilds/" + guildID + "/roles",
 		Key: "/guilds/" + guildID + "/roles",
 	}
 }
 
-func ModifyRole(guildID, roleID string) *Endpoint {
+func ModifyGuildRole(guildID, roleID string) *Endpoint {
 	return &Endpoint{
 		URL: "/guilds/" + guildID + "/roles/" + roleID,
 		Key: "/guilds/" + guildID + "/roles",
 	}
 }
 
-func DeleteRole(guildID, roleID string) *Endpoint {
+func DeleteGuildRole(guildID, roleID string) *Endpoint {
 	return &Endpoint{
 		URL: "/guilds/" + guildID + "/roles/" + roleID,
 		Key: "/guilds/" + guildID + "/roles",

@@ -1,6 +1,8 @@
 package guild
 
-import "github.com/skwair/discord/optional"
+import (
+	"github.com/skwair/discord/optional"
+)
 
 // Settings are the settings of a guild, all fields are optional and only those
 // explicitly set will be modified.
@@ -47,11 +49,11 @@ func WithRegion(region string) Setting {
 }
 
 // WithVerificationLevel sets the verification level of a guild.
-// - 0 for none (unrestricted)
-// - 1 for low (must have verified email on account)
-// - 2 for medium (must be registered on Discord for longer than 5 minutes)
-// - 3 for high (must be a member of the server for longer than 10 minutes)
-// - 4 for very high (must have a verified phone number)
+//	- 0 for none (unrestricted)
+//	- 1 for low (must have verified email on account)
+//	- 2 for medium (must be registered on Discord for longer than 5 minutes)
+//	- 3 for high (must be a member of the server for longer than 10 minutes)
+//	- 4 for very high (must have a verified phone number)
 func WithVerificationLevel(lvl int) Setting {
 	return func(s *Settings) {
 		if lvl < 0 {
@@ -66,8 +68,8 @@ func WithVerificationLevel(lvl int) Setting {
 }
 
 // WithDefaultMessageNotifications sets the default notification level of a guild.
-// - 0 for all messages
-// - 1 for mentions only
+//	- 0 for all messages
+//	- 1 for mentions only
 func WithDefaultMessageNotifications(lvl int) Setting {
 	return func(s *Settings) {
 		if lvl < 0 {
@@ -82,9 +84,9 @@ func WithDefaultMessageNotifications(lvl int) Setting {
 }
 
 // WithExplicitContentFilter sets the explicit content filter of a guild.
-// - 0 for disabled
-// - 1 for member without roles
-// - 2 for all members
+//	- 0 for disabled
+//	- 1 for member without roles
+//	- 2 for all members
 func WithExplicitContentFilter(lvl int) Setting {
 	return func(s *Settings) {
 		if lvl < 0 {

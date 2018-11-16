@@ -54,34 +54,33 @@ func (b *bot) onNewMessage(m *discord.Message) {
 	// This message corresponds to what you can see here :
 	// https://leovoel.github.io/embed-visualizer
 	if m.Content == "!embed" {
-		_, err := b.client.SendSimpleEmbed(
-			m.ChannelID,
-			"this `supports` __a__ **subset** *of* ~~markdown~~ 😃 ```js\nfunction foo(bar) {\n  console.log(bar);\n}\n\nfoo(1);```",
-			embed.New().
-				Title("title ~~(did you know you can have markdown here too?)~~").
-				Description("this supports [named links](https://discordapp.com) on top of the previously shown subset of markdown. ```\nyes, even code blocks```").
+		e := embed.New().
+			Title("title ~~(did you know you can have markdown here too?)~~").
+			Description("this supports [named links](https://discordapp.com) on top of the previously shown subset of markdown. ```\nyes, even code blocks```").
+			URL("https://discordapp.com").
+			Color(0x2491ec). // Hexadecimal color code.
+			Timestamp(time.Now()).
+			Footer(embed.NewFooter().
+				Text("footer text").
+				Icon("https://cdn.discordapp.com/embed/avatars/0.png").
+				Build()).
+			Image(embed.NewImage("https://cdn.discordapp.com/embed/avatars/0.png")).
+			Author(embed.NewAuthor().
+				Name("author name").
 				URL("https://discordapp.com").
-				Color(0x2491ec). // Hexadecimal color code.
-				Timestamp(time.Now()).
-				Footer(embed.NewFooter().
-					Text("footer text").
-					Icon("https://cdn.discordapp.com/embed/avatars/0.png").
-					Build()).
-				Image(embed.NewImage("https://cdn.discordapp.com/embed/avatars/0.png")).
-				Author(embed.NewAuthor().
-					Name("author name").
-					URL("https://discordapp.com").
-					IconURL("https://cdn.discordapp.com/embed/avatars/0.png").
-					Build()).
-				Fields(
-					embed.NewField().Name("🤔").Value("some of these properties have certain limits...").Inline(false).Build(),
-					embed.NewField().Name("😱").Value("try exceeding some of them!").Inline(false).Build(),
-					embed.NewField().Name("🙄").Value("an informative error should show up, and this view will remain as-is until all issues are fixed").Inline(false).Build(),
-					embed.NewField().Name("field 1").Value("these last two").Inline(true).Build(),
-					embed.NewField().Name("field 2").Value("are inline fields").Inline(true).Build(),
-				).
-				Build(),
-		)
+				IconURL("https://cdn.discordapp.com/embed/avatars/0.png").
+				Build()).
+			Fields(
+				embed.NewField().Name("🤔").Value("some of these properties have certain limits...").Inline(false).Build(),
+				embed.NewField().Name("😱").Value("try exceeding some of them!").Inline(false).Build(),
+				embed.NewField().Name("🙄").Value("an informative error should show up, and this view will remain as-is until all issues are fixed").Inline(false).Build(),
+				embed.NewField().Name("field 1").Value("these last two").Inline(true).Build(),
+				embed.NewField().Name("field 2").Value("are inline fields").Inline(true).Build(),
+			).
+			Build()
+
+		_, err := b.client.Channel(m.ChannelID).SendEmbed(
+			"this `supports` __a__ **subset** *of* ~~markdown~~ 😃 ```js\nfunction foo(bar) {\n  console.log(bar);\n}\n\nfoo(1);```", e)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "could not send message: %v", err)
 		}

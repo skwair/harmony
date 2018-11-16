@@ -1,14 +1,5 @@
 package permission
 
-// Overwrite describes a specific permission that overwrites
-// server-wide permissions.
-type Overwrite struct {
-	ID    string
-	Type  string // Either "role" or "member".
-	Allow int
-	Deny  int
-}
-
 // Set of permissions that can be assigned to Users and Roles.
 const (
 	None               = 0x00000000 // Allows nothing.
@@ -42,6 +33,15 @@ const (
 	ManageEmojis       = 0x40000000 // Allows management and editing of emojis.
 	All                = 0x7FF7FCFF // Equivalent to all permissions, OR'd.
 )
+
+// Overwrite describes a specific permission that overwrites
+// server-wide permissions.
+type Overwrite struct {
+	ID    string
+	Type  string // Either "role" or "member".
+	Allow int
+	Deny  int
+}
 
 // Contains returns whether the given permission is set in permissions.
 func Contains(permissions, permission int) bool {
