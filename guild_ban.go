@@ -15,7 +15,7 @@ type Ban struct {
 	User   *User
 }
 
-// Bans returns a list of ban objects for the users banned from this guild.
+// Bans returns a list of bans for the users banned from this guild.
 // Requires the 'BAN_MEMBERS' permission.
 func (r *GuildResource) Bans() ([]Ban, error) {
 	e := endpoint.GetGuildBans(r.guildID)

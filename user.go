@@ -36,7 +36,7 @@ func (u *User) AvatarURL() string {
 	return fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.png", u.ID, u.Avatar)
 }
 
-// GetUser returns a user object given its ID. Use "@me" as the ID to fetch information
+// GetUser returns a user  given its ID. Use "@me" as the ID to fetch information
 // about the connected user. For every other IDs, this endpoint can only be used by bots.
 func (c *Client) GetUser(id string) (*User, error) {
 	e := endpoint.GetUser(id)
@@ -125,7 +125,7 @@ func (r *CurrentUserResource) Modify(username, avatar string) (*User, error) {
 	return &u, nil
 }
 
-// Guilds returns a list of partial guild objects the current
+// Guilds returns a list of partial guilds the current
 // user is a member of. This endpoint returns at most 100 guilds by
 // default, which is the maximum number of guilds a non-bot user can
 // join. Therefore, pagination is not needed for integrations that need

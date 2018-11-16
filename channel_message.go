@@ -243,7 +243,7 @@ func (r *ChannelResource) SendMessage(text string) (*Message, error) {
 // SendMessageWithOptions posts a message to the channel. If operating on a guild channel,
 // this endpoint requires the 'SEND_MESSAGES' permission to be present on the
 // current user. If the tts field is set to true, the 'SEND_TTS_MESSAGES' permission is
-// required for the message to be spoken. Returns a message object.
+// required for the message to be spoken. Returns the message sent.
 // Fires a Message Create Gateway event.
 // Before using this endpoint, you must connect to the gateway at least once.
 // The nonce will be returned in the result and also transmitted to other clients.

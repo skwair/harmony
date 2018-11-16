@@ -78,7 +78,7 @@ type UnavailableGuild struct {
 }
 
 // CreateGuild creates a new guild with the given name.
-// Returns a guild object on success. Fires a Guild Create Gateway event.
+// Returns the created guild on success. Fires a Guild Create Gateway event.
 func (c *Client) CreateGuild(name string) (*Guild, error) {
 	s := struct {
 		Name string `json:"name"`
@@ -141,7 +141,7 @@ func (r *GuildResource) Get() (*Guild, error) {
 }
 
 // Modify modifies the guild's settings. Requires the 'MANAGE_GUILD' permission.
-// Returns the updated guild object on success. Fires a Guild Update Gateway event.
+// Returns the updated guild on success. Fires a Guild Update Gateway event.
 func (r *GuildResource) Modify(settings *guild.Settings) (*Guild, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {

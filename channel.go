@@ -99,19 +99,24 @@ func (r *ChannelResource) Modify(settings *channel.Settings) (*Channel, error) {
 // Delete deletes the channel, or closes the private message. Requires the 'MANAGE_CHANNELS'
 // permission for the guild. Deleting a category does not delete its child channels; they will
 // have their parent_id removed and a Channel Update Gateway event will fire for each of them.
-// Returns a channel object on success. Fires a Channel Delete Gateway event.
-func (r *ChannelResource) Delete() error {
+// Returns the deleted channel on success. Fires a Channel Delete Gateway event.
+func (r *ChannelResource) Delete() (*Channel, error) {
 	e := endpoint.DeleteChannel(r.channelID)
 	resp, err := r.client.doReq(http.MethodDelete, e, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return apiError(resp)
+		return nil, apiError(resp)
 	}
-	return nil
+
+	var ch Channel
+	if err = json.NewDecoder(resp.Body).Decode(&ch); err != nil {
+		return nil, err
+	}
+	return &ch, nil
 }
 
 // UpdatePermissions updates the channel permission overwrites for a user or role in the channel.
@@ -165,7 +170,7 @@ func (r *ChannelResource) DeletePermission(channelID, targetID string) error {
 	return nil
 }
 
-// Invites returns a list of invite objects (with invite metadata) for the channel.
+// Invites returns a list of invites (with invite metadata) for the channel.
 // Only usable for guild channels. Requires the 'MANAGE_CHANNELS' permission.
 func (r *ChannelResource) Invites() ([]Invite, error) {
 	e := endpoint.GetChannelInvites(r.channelID)
@@ -197,7 +202,7 @@ type createChannelInvite struct {
 	Unique bool `json:"unique,omitempty"`
 }
 
-// NewInvite creates a new invite object for the channel. Only usable for guild channels.
+// NewInvite creates a new invite for the channel. Only usable for guild channels.
 // Requires the CREATE_INSTANT_INVITE permission.
 func (r *ChannelResource) NewInvite(maxAge, maxUses int, temporary, unique bool) (*Invite, error) {
 	i := createChannelInvite{
