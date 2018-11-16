@@ -9,8 +9,6 @@
 
 An unofficial client for the [Discord](http://discordapp.com) API written in [Go](https://golang.org).
 
-The API exposed by this package should be pretty straightforward and should not require to read a lot of documentation, the auto completion tool of a text editor should be enough for the vast majority of use cases.
-
 Although this package is usable, it still is under active development so please don't use it for anything other than experiments, yet.
 
 **Contents :**

@@ -12,6 +12,8 @@ import (
 // The state must be locked by calling its RLock method before being used, else data
 // races can occur. It must then be unlocked with the RUnlock method so it can continue
 // to be updated as events flows in.
+// This state is meant to be read-only, modifying it will likely result
+// in unexpected behavior.
 type State struct {
 	mu sync.RWMutex
 
