@@ -14,7 +14,7 @@ func ModifyCurrentUser() *Endpoint {
 	}
 }
 
-func UserGuilds() *Endpoint {
+func GetCurrentUserGuilds() *Endpoint {
 	return &Endpoint{
 		URL: "/users/@me/guilds",
 		Key: "/users/@me/guilds",
@@ -28,7 +28,7 @@ func LeaveGuild(guildID string) *Endpoint {
 	}
 }
 
-func GetDMs() *Endpoint {
+func GetUserDMs() *Endpoint {
 	return &Endpoint{
 		URL: "/users/@me/channels",
 		Key: "/users/@me/channels",

@@ -15,7 +15,7 @@ var (
 	ErrNoFileProvided = errors.New("no file provided")
 )
 
-// APIError is an error returned by the Discord REST API.
+// APIError is an error returned by the Discord HTTP API.
 type APIError struct {
 	HTTPCode int    `json:"http_code"`
 	Code     int    `json:"code"`

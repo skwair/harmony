@@ -25,123 +25,11 @@ type Webhook struct {
 	Token     string `json:"token,omitempty"`
 }
 
-// CreateWebhook creates a new webhook. Requires the 'MANAGE_WEBHOOKS' permission.
-// name must contain between 2 and 32 characters. avatar is an avatar data string,
-// see https://discordapp.com/developers/docs/resources/user#avatar-data for more info.
-// It can be left empty to have the default avatar.
-func (c *Client) CreateWebhook(channelID, name, avatar string) (*Webhook, error) {
-	s := struct {
-		Name   string `json:"name,omitempty"`
-		Avatar string `json:"avatar,omitempty"`
-	}{
-		Name:   name,
-		Avatar: avatar,
-	}
-	b, err := json.Marshal(s)
-	if err != nil {
-		return nil, err
-	}
-
-	e := endpoint.CreateWebhook(channelID)
-	resp, err := c.doReq(http.MethodPost, e, b)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, apiError(resp)
-	}
-
-	var w Webhook
-	if err = json.NewDecoder(resp.Body).Decode(&w); err != nil {
-		return nil, err
-	}
-	return &w, nil
-}
-
-// GetChannelWebhooks returns the list of webhooks in the given channel.
-// Requires the 'MANAGE_WEBHOOKS' permission.
-func (c *Client) GetChannelWebhooks(channelID string) ([]Webhook, error) {
-	e := endpoint.GetChannelWebhooks(channelID)
-	return c.getWebhooks(e)
-}
-
-// GetGuildWebhooks returns the list of webhooks in the given guild.
-// Requires the 'MANAGE_WEBHOOKS' permission.
-func (c *Client) GetGuildWebhooks(guildID string) ([]Webhook, error) {
-	e := endpoint.GetGuildWebhooks(guildID)
-	return c.getWebhooks(e)
-}
-
-func (c *Client) getWebhooks(e *endpoint.Endpoint) ([]Webhook, error) {
-	resp, err := c.doReq(http.MethodGet, e, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, apiError(resp)
-	}
-
-	var webhooks []Webhook
-	if err = json.NewDecoder(resp.Body).Decode(&webhooks); err != nil {
-		return nil, err
-	}
-	return webhooks, nil
-}
-
-// GetWebhook returns a webhook given its ID.
-func (c *Client) GetWebhook(id string) (*Webhook, error) {
-	e := endpoint.GetWebhook(id)
-	resp, err := c.doReq(http.MethodGet, e, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, apiError(resp)
-	}
-
-	var w Webhook
-	if err = json.NewDecoder(resp.Body).Decode(&w); err != nil {
-		return nil, err
-	}
-	return &w, nil
-}
-
 // GetWebhookWithToken is like GetWebhook except this call does not require
 // authentication and returns no user in the webhook.
 func GetWebhookWithToken(id, token string) (*Webhook, error) {
 	url := fmt.Sprintf("/webhooks/%s/%s", id, token)
 	resp, err := doReqNoAuth(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, apiError(resp)
-	}
-
-	var w Webhook
-	if err = json.NewDecoder(resp.Body).Decode(&w); err != nil {
-		return nil, err
-	}
-	return &w, nil
-}
-
-// ModifyWebhook modifies a webhook. Requires the 'MANAGE_WEBHOOKS' permission.
-func (c *Client) ModifyWebhook(id string, s *webhook.Settings) (*Webhook, error) {
-	b, err := json.Marshal(s)
-	if err != nil {
-		return nil, err
-	}
-
-	e := endpoint.ModifyWebhook(id)
-	resp, err := c.doReq(http.MethodPatch, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -183,21 +71,6 @@ func ModifyWebhookWithToken(id, token string, s *webhook.Settings) (*Webhook, er
 		return nil, err
 	}
 	return &w, nil
-}
-
-// DeleteWebhook deletes a webhook given its ID.
-func (c *Client) DeleteWebhook(id string) error {
-	e := endpoint.DeleteWebhook(id)
-	resp, err := c.doReq(http.MethodDelete, e, nil)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusNoContent {
-		return apiError(resp)
-	}
-	return nil
 }
 
 // DeleteWebhookWithToken is like DeleteWebhook except it does not require authentication.
@@ -285,4 +158,94 @@ func ExecuteWebhook(id, token string, p *WebhookParameters, wait bool) (*Message
 		return nil, err
 	}
 	return &m, nil
+}
+
+func (c *Client) getWebhooks(e *endpoint.Endpoint) ([]Webhook, error) {
+	resp, err := c.doReq(http.MethodGet, e, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, apiError(resp)
+	}
+
+	var webhooks []Webhook
+	if err = json.NewDecoder(resp.Body).Decode(&webhooks); err != nil {
+		return nil, err
+	}
+	return webhooks, nil
+}
+
+// WebhookResource is a resource that allows to perform various actions on a Discord webhook.
+// Create one with Client.Webhook.
+type WebhookResource struct {
+	webhookID string
+	client    *Client
+}
+
+// Webhook returns a new webhook resource to manage the webhook with the given ID.
+func (c *Client) Webhook(id string) *WebhookResource {
+	return &WebhookResource{webhookID: id, client: c}
+}
+
+// GetWebhook returns the webhook.
+func (r *WebhookResource) Get() (*Webhook, error) {
+	e := endpoint.GetWebhook(r.webhookID)
+	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, apiError(resp)
+	}
+
+	var w Webhook
+	if err = json.NewDecoder(resp.Body).Decode(&w); err != nil {
+		return nil, err
+	}
+	return &w, nil
+}
+
+// Modify modifies the webhook. Requires the 'MANAGE_WEBHOOKS' permission.
+func (r *WebhookResource) Modify(settings *webhook.Settings) (*Webhook, error) {
+	b, err := json.Marshal(settings)
+	if err != nil {
+		return nil, err
+	}
+
+	e := endpoint.ModifyWebhook(r.webhookID)
+	resp, err := r.client.doReq(http.MethodPatch, e, b)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, apiError(resp)
+	}
+
+	var w Webhook
+	if err = json.NewDecoder(resp.Body).Decode(&w); err != nil {
+		return nil, err
+	}
+	return &w, nil
+}
+
+// Delete deletes the webhook.
+func (r *WebhookResource) Delete() error {
+	e := endpoint.DeleteWebhook(r.webhookID)
+	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		return apiError(resp)
+	}
+	return nil
 }

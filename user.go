@@ -36,7 +36,7 @@ func (u *User) AvatarURL() string {
 	return fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.png", u.ID, u.Avatar)
 }
 
-// GetUser returns a user object given its ID. Use "@me" as the ID to fetch information
+// GetUser returns a user  given its ID. Use "@me" as the ID to fetch information
 // about the connected user. For every other IDs, this endpoint can only be used by bots.
 func (c *Client) GetUser(id string) (*User, error) {
 	e := endpoint.GetUser(id)
@@ -57,7 +57,40 @@ func (c *Client) GetUser(id string) (*User, error) {
 	return &u, nil
 }
 
-// ModifyCurrentUser modifies the requester's user account settings.
+// CurrentUserResource is a resource that allows to perform various actions on the
+// current user. Create one with Client.Channel.
+type CurrentUserResource struct {
+	client *Client
+}
+
+// CurrentUser returns a new resource to manage the current user.
+func (c *Client) CurrentUser() *CurrentUserResource {
+	return &CurrentUserResource{
+		client: c,
+	}
+}
+
+// Get returns the current user.
+func (r *CurrentUserResource) Get() (*User, error) {
+	e := endpoint.GetUser("@me")
+	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, apiError(resp)
+	}
+
+	var u User
+	if err = json.NewDecoder(resp.Body).Decode(&u); err != nil {
+		return nil, err
+	}
+	return &u, nil
+}
+
+// Modify modifies the current user account settings.
 // Avatar is a Data URI scheme that supports JPG, GIF, and PNG formats.
 // An example Data URI format is:
 //
@@ -65,21 +98,21 @@ func (c *Client) GetUser(id string) (*User, error) {
 //
 // Ensure you use the proper header type (image/jpeg, image/png, image/gif)
 // that matches the image data being provided.
-func (c *Client) ModifyCurrentUser(username, avatar string) (*User, error) {
-	s := struct {
+func (r *CurrentUserResource) Modify(username, avatar string) (*User, error) {
+	st := struct {
 		Username string `json:"username"`
 		Avatar   string `json:"avatar"`
 	}{
 		Username: username,
 		Avatar:   avatar,
 	}
-	b, err := json.Marshal(s)
+	b, err := json.Marshal(st)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.ModifyCurrentUser()
-	resp, err := c.doReq(http.MethodPatch, e, b)
+	resp, err := r.client.doReq(http.MethodPatch, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -92,14 +125,14 @@ func (c *Client) ModifyCurrentUser(username, avatar string) (*User, error) {
 	return &u, nil
 }
 
-// UserGuilds returns a list of partial guild objects the current
+// Guilds returns a list of partial guilds the current
 // user is a member of. This endpoint returns at most 100 guilds by
 // default, which is the maximum number of guilds a non-bot user can
 // join. Therefore, pagination is not needed for integrations that need
 // to get a list of users' guilds.
-func (c *Client) UserGuilds() ([]PartialGuild, error) {
-	e := endpoint.UserGuilds()
-	resp, err := c.doReq(http.MethodGet, e, nil)
+func (r *CurrentUserResource) Guilds() ([]PartialGuild, error) {
+	e := endpoint.GetCurrentUserGuilds()
+	resp, err := r.client.doReq(http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -116,10 +149,10 @@ func (c *Client) UserGuilds() ([]PartialGuild, error) {
 	return guilds, nil
 }
 
-// LeaveGuild make the connected user leave a guild given its ID.
-func (c *Client) LeaveGuild(id string) error {
+// LeaveGuild make the current user leave a guild given its ID.
+func (r *CurrentUserResource) LeaveGuild(id string) error {
 	e := endpoint.LeaveGuild(id)
-	resp, err := c.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}
@@ -131,12 +164,12 @@ func (c *Client) LeaveGuild(id string) error {
 	return nil
 }
 
-// GetDMs returns the list of direct message channels the current user is in.
+// DMs returns the list of direct message channels the current user is in.
 // This endpoint does not seem to be available for Bot users, always returning
 // an empty list of channels.
-func (c *Client) GetDMs() ([]Channel, error) {
-	e := endpoint.GetDMs()
-	resp, err := c.doReq(http.MethodGet, e, nil)
+func (r *CurrentUserResource) DMs(id string) ([]Channel, error) {
+	e := endpoint.GetUserDMs()
+	resp, err := r.client.doReq(http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -153,22 +186,22 @@ func (c *Client) GetDMs() ([]Channel, error) {
 	return channels, nil
 }
 
-// CreateDM creates a new DM channel with a user. Returns the created channel.
+// NewDM creates a new DM channel with a user. Returns the created channel.
 // If a DM channel already exist with this recipient, it does not create a new
 // one and returns the existing one instead.
-func (c *Client) CreateDM(recipientID string) (*Channel, error) {
-	s := struct {
+func (r *CurrentUserResource) NewDM(recipientID string) (*Channel, error) {
+	st := struct {
 		RecipientID string `json:"recipient_id"`
 	}{
 		RecipientID: recipientID,
 	}
-	b, err := json.Marshal(s)
+	b, err := json.Marshal(st)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.CreateDM()
-	resp, err := c.doReq(http.MethodPost, e, b)
+	resp, err := r.client.doReq(http.MethodPost, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -185,10 +218,10 @@ func (c *Client) CreateDM(recipientID string) (*Channel, error) {
 	return &ch, nil
 }
 
-// GetUserConnections returns a list of connections for the connected user.
-func (c *Client) GetUserConnections() ([]Connection, error) {
+// Connections returns a list of connections for the connected user.
+func (r *CurrentUserResource) Connections() ([]Connection, error) {
 	e := endpoint.GetUserConnections()
-	resp, err := c.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -207,10 +240,10 @@ func (c *Client) GetUserConnections() ([]Connection, error) {
 
 // SetUserStatus sets the current user's status. You need to be connected to the
 // Gateway to call this method, else it will return ErrGatewayNotConnected.
-func (c *Client) SetUserStatus(s *Status) error {
-	if !c.isConnected() {
+func (r *CurrentUserResource) SetStatus(status *Status) error {
+	if !r.client.isConnected() {
 		return ErrGatewayNotConnected
 	}
 
-	return c.sendPayload(3, s)
+	return r.client.sendPayload(3, status)
 }

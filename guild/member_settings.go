@@ -13,10 +13,10 @@ type MemberSettings struct {
 	ChannelID *optional.String `json:"channel_id,omitempty"`
 }
 
-// Setting is a function that configures a guild member.
+// MemberSetting is a function that configures a guild member.
 type MemberSetting func(*MemberSettings)
 
-// NewSettings returns new Settings to modify a a guild member.
+// NewMemberSettings returns new Settings to modify a a guild member.
 func NewMemberSettings(opts ...MemberSetting) *MemberSettings {
 	s := &MemberSettings{}
 
@@ -27,14 +27,14 @@ func NewMemberSettings(opts ...MemberSetting) *MemberSettings {
 	return s
 }
 
-// WithName sets the name of a guild member.
+// WithNick sets the name of a guild member.
 func WithNick(name string) MemberSetting {
 	return func(s *MemberSettings) {
 		s.Nick = optional.NewString(name)
 	}
 }
 
-// WithName sets the roles of a guild member.
+// WithRoles sets the roles of a guild member.
 func WithRoles(roleIDs []string) MemberSetting {
 	return func(s *MemberSettings) {
 		s.Roles = optional.NewStringSlice(roleIDs)
@@ -48,7 +48,7 @@ func WithMute(yes bool) MemberSetting {
 	}
 }
 
-// WithMute sets whether a guild member is deafen.
+// WithDeaf sets whether a guild member is deafen.
 func WithDeaf(yes bool) MemberSetting {
 	return func(s *MemberSettings) {
 		s.Deaf = optional.NewBool(yes)

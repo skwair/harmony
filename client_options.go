@@ -29,7 +29,7 @@ func WithBotToken(token string) ClientOption {
 }
 
 // WithHTTPClient can be used to specify the http.Client to use when making
-// HTTP requests to the Discord REST API.
+// HTTP requests to the Discord HTTP API.
 func WithHTTPClient(client *http.Client) ClientOption {
 	return func(c *Client) {
 		c.client = client

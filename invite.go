@@ -32,15 +32,26 @@ type InviteMetadata struct {
 	Revoked   bool      `json:"revoked,omitempty"`
 }
 
-// GetInvite returns the invite corresponding to the given code.
-// If withCounts is set to true, the returned invite will contain
-// the approximate member counts.
-func (c *Client) GetInvite(code string, withCounts bool) (*Invite, error) {
+// InviteResource is a resource that allows to perform various actions on a Discord invite.
+// Create one with Client.Invite.
+type InviteResource struct {
+	code   string
+	client *Client
+}
+
+// Invite returns a new invite resource to manage the invite with the given code.
+func (c *Client) Invite(code string) *InviteResource {
+	return &InviteResource{code: code, client: c}
+}
+
+// Get returns the invite. If withCounts is set to true,
+// the returned invite will contain the approximate member counts.
+func (r *InviteResource) Get(withCounts bool) (*Invite, error) {
 	q := url.Values{}
 	q.Set("with_counts", strconv.FormatBool(withCounts))
 
-	e := endpoint.GetInvite(code, q.Encode())
-	resp, err := c.doReq(http.MethodGet, e, nil)
+	e := endpoint.GetInvite(r.code, q.Encode())
+	resp, err := r.client.doReq(http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -57,11 +68,11 @@ func (c *Client) GetInvite(code string, withCounts bool) (*Invite, error) {
 	return &invite, nil
 }
 
-// DeleteInvite deletes an invite given its code. Requires the MANAGE_CHANNELS permission.
+// Delete deletes the invite. Requires the MANAGE_CHANNELS permission.
 // Returns the deleted invite on success.
-func (c *Client) DeleteInvite(code string) (*Invite, error) {
-	e := endpoint.DeleteInvite(code)
-	resp, err := c.doReq(http.MethodDelete, e, nil)
+func (r *InviteResource) Delete() (*Invite, error) {
+	e := endpoint.DeleteInvite(r.code)
+	resp, err := r.client.doReq(http.MethodDelete, e, nil)
 	if err != nil {
 		return nil, err
 	}

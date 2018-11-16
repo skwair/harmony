@@ -74,6 +74,7 @@ func (b *bucket) update(header http.Header) {
 		set = true
 	}
 
+	// If one of the header was set, enable this bucket.
 	b.enabled = set
 }
 

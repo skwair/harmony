@@ -1,6 +1,6 @@
 package endpoint
 
-func GetGuildEmojis(guildID string) *Endpoint {
+func ListGuildEmojis(guildID string) *Endpoint {
 	return &Endpoint{
 		URL: "/channels/" + guildID + "/emojis",
 		Key: "/channels/" + guildID + "/emojis",

@@ -2,10 +2,7 @@ package discord
 
 import (
 	"encoding/json"
-	"errors"
 	"net/http"
-	"net/url"
-	"strconv"
 	"time"
 
 	"github.com/skwair/discord/channel"
@@ -39,10 +36,22 @@ type Channel struct {
 	LastPinTimestamp time.Time `json:"last_pin_timestamp,omitempty"`
 }
 
-// GetChannel returns the channel object for the given id.
-func (c *Client) GetChannel(id string) (*Channel, error) {
-	e := endpoint.GetChannel(id)
-	resp, err := c.doReq(http.MethodGet, e, nil)
+// ChannelResource is a resource that allows to perform various actions on a Discord channel.
+// Create one with Client.Channel.
+type ChannelResource struct {
+	channelID string
+	client    *Client
+}
+
+// Channel returns a new channel resource to manage the channel with the given ID.
+func (c *Client) Channel(id string) *ChannelResource {
+	return &ChannelResource{channelID: id, client: c}
+}
+
+// Get returns the channel.
+func (r *ChannelResource) Get() (*Channel, error) {
+	e := endpoint.GetChannel(r.channelID)
+	resp, err := r.client.doReq(http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -59,18 +68,18 @@ func (c *Client) GetChannel(id string) (*Channel, error) {
 	return &ch, nil
 }
 
-// ModifyChannel updates a channel's settings given its ID and some new settings.
-// Requires the 'MANAGE_CHANNELS' permission for the guild. Fires a Channel Update
-// Gateway event. If modifying a category, individual Channel Update events will
-// fire for each child channel that also changes.
-func (c *Client) ModifyChannel(id string, s *channel.Settings) (*Channel, error) {
-	b, err := json.Marshal(s)
+// Modify updates the channel's settings. Requires the 'MANAGE_CHANNELS'
+// permission for the guild. Fires a Channel Update Gateway event. If modifying
+// category, individual Channel Update events will fire for each child channel
+// that also changes.
+func (r *ChannelResource) Modify(settings *channel.Settings) (*Channel, error) {
+	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
-	e := endpoint.ModifyChannel(id)
-	resp, err := c.doReq(http.MethodPatch, e, b)
+	e := endpoint.ModifyChannel(r.channelID)
+	resp, err := r.client.doReq(http.MethodPatch, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -87,61 +96,13 @@ func (c *Client) ModifyChannel(id string, s *channel.Settings) (*Channel, error)
 	return &ch, nil
 }
 
-// DeleteChannel deletes a channel, or close a private message. Requires the 'MANAGE_CHANNELS'
+// Delete deletes the channel, or closes the private message. Requires the 'MANAGE_CHANNELS'
 // permission for the guild. Deleting a category does not delete its child channels; they will
 // have their parent_id removed and a Channel Update Gateway event will fire for each of them.
-// Returns a channel object on success. Fires a Channel Delete Gateway event.
-func (c *Client) DeleteChannel(id string) error {
-	e := endpoint.DeleteChannel(id)
-	resp, err := c.doReq(http.MethodDelete, e, nil)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return apiError(resp)
-	}
-	return nil
-}
-
-// GetChannelMessages returns the messages for a channel. If operating on a guild channel, this
-// endpoint requires the 'VIEW_CHANNEL' permission to be present on the current user. If the
-// current user is missing the 'READ_MESSAGE_HISTORY' permission in the channel then this will
-// return no messages (since they cannot read the message history).
-// The query parameter is a message ID prefixed with one of the following character :
-// - '>' for fetching messages after
-// - '<' for fetching messages before
-// - '~' for fetching messages around
-// For example, to retrieve 50 messages around (25 before, 25 after) a message having the
-// ID 221588207995121520, set query to "~221588207995121520".
-// Limit is a positive integer between 1 and 100 that default to 50 if set to 0.
-func (c *Client) GetChannelMessages(channelID string, query string, limit int) ([]Message, error) {
-	if query == "" {
-		return nil, errors.New("empty query")
-	}
-
-	q := url.Values{}
-	switch query[0] {
-	case '>':
-		q.Add("after", query[1:])
-	case '<':
-		q.Add("before", query[1:])
-	case '~':
-		q.Add("around", query[1:])
-	default:
-		return nil, errors.New("lll-formatted query: prefix the message ID with '>' (after), '<' (before) or '~' (around)")
-	}
-
-	if limit > 0 {
-		if limit > 100 {
-			limit = 100
-		}
-		q.Set("limit", strconv.Itoa(limit))
-	}
-
-	e := endpoint.GetChannelMessages(channelID, q.Encode())
-	resp, err := c.doReq(http.MethodGet, e, nil)
+// Returns the deleted channel on success. Fires a Channel Delete Gateway event.
+func (r *ChannelResource) Delete() (*Channel, error) {
+	e := endpoint.DeleteChannel(r.channelID)
+	resp, err := r.client.doReq(http.MethodDelete, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -151,40 +112,19 @@ func (c *Client) GetChannelMessages(channelID string, query string, limit int) (
 		return nil, apiError(resp)
 	}
 
-	var msgs []Message
-	if err = json.NewDecoder(resp.Body).Decode(&msgs); err != nil {
+	var ch Channel
+	if err = json.NewDecoder(resp.Body).Decode(&ch); err != nil {
 		return nil, err
 	}
-	return msgs, nil
+	return &ch, nil
 }
 
-// GetChannelMessage returns a specific message in the channel. If operating on a guild channel,
-// this endpoints requires the 'READ_MESSAGE_HISTORY' permission to be present on the current user.
-func (c *Client) GetChannelMessage(channelID, messageID string) (*Message, error) {
-	e := endpoint.GetChannelMessage(channelID, messageID)
-	resp, err := c.doReq(http.MethodGet, e, nil)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, apiError(resp)
-	}
-
-	var msg Message
-	if err = json.NewDecoder(resp.Body).Decode(&msg); err != nil {
-		return nil, err
-	}
-	return &msg, nil
-}
-
-// UpdateChannelPermissions updates the channel permission overwrites for a user or role in a channel.
+// UpdatePermissions updates the channel permission overwrites for a user or role in the channel.
 // typ is "member" if targetID is a user or "role" if it is a role.
 // If the channel permission overwrites do not not exist, they are created.
 // Only usable for guild channels. Requires the 'MANAGE_ROLES' permission.
-func (c *Client) UpdateChannelPermissions(channelID, targetID string, allow, deny int, typ string) error {
-	s := struct {
+func (r *ChannelResource) UpdatePermissions(targetID string, allow, deny int, typ string) error {
+	st := struct {
 		ID    string `json:"id,omitempty"`
 		Allow int    `json:"allow,omitempty"`
 		Deny  int    `json:"deny,omitempty"`
@@ -196,13 +136,13 @@ func (c *Client) UpdateChannelPermissions(channelID, targetID string, allow, den
 		Type:  typ,
 	}
 
-	b, err := json.Marshal(s)
+	b, err := json.Marshal(st)
 	if err != nil {
 		return err
 	}
 
-	e := endpoint.UpdateChannelPermissions(channelID, targetID)
-	resp, err := c.doReq(http.MethodPut, e, b)
+	e := endpoint.EditChannelPermissions(r.channelID, targetID)
+	resp, err := r.client.doReq(http.MethodPut, e, b)
 	if err != nil {
 		return err
 	}
@@ -214,11 +154,11 @@ func (c *Client) UpdateChannelPermissions(channelID, targetID string, allow, den
 	return nil
 }
 
-// DeleteChannelPermission deletes a channel permission overwrite for a user or role in a
+// DeletePermission deletes the channel permission overwrite for a user or role in a
 // channel. Only usable for guild channels. Requires the 'MANAGE_ROLES' permission.
-func (c *Client) DeleteChannelPermission(channelID, targetID string) error {
+func (r *ChannelResource) DeletePermission(channelID, targetID string) error {
 	e := endpoint.DeleteChannelPermission(channelID, targetID)
-	resp, err := c.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}
@@ -230,11 +170,11 @@ func (c *Client) DeleteChannelPermission(channelID, targetID string) error {
 	return nil
 }
 
-// GetChannelInvites returns a list of invite objects (with invite metadata) for the channel.
+// Invites returns a list of invites (with invite metadata) for the channel.
 // Only usable for guild channels. Requires the 'MANAGE_CHANNELS' permission.
-func (c *Client) GetChannelInvites(channelID string) ([]Invite, error) {
-	e := endpoint.GetChannelInvites(channelID)
-	resp, err := c.doReq(http.MethodGet, e, nil)
+func (r *ChannelResource) Invites() ([]Invite, error) {
+	e := endpoint.GetChannelInvites(r.channelID)
+	resp, err := r.client.doReq(http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -251,24 +191,33 @@ func (c *Client) GetChannelInvites(channelID string) ([]Invite, error) {
 	return invites, nil
 }
 
-// CreateInvite allows to specify Invite settings when creating one.
-type CreateInvite struct {
-	MaxAge    int  `json:"max_age,omitempty"`
-	MaxUses   int  `json:"max_uses,omitempty"`
-	Temporary bool `json:"temporary,omitempty"` // Whether this invite only grants temporary membership.
-	Unique    bool `json:"unique,omitempty"`
+// createChannelInvite allows to specify Invite settings when creating one.
+type createChannelInvite struct {
+	MaxAge  int `json:"max_age,omitempty"`
+	MaxUses int `json:"max_uses,omitempty"`
+	// Whether this invite only grants temporary membership.
+	Temporary bool `json:"temporary,omitempty"`
+	// If true, don't try to reuse a similar invite
+	// (useful for creating many unique one time use invites).
+	Unique bool `json:"unique,omitempty"`
 }
 
-// CreateChannelInvite creates a new invite object for the channel. Only usable for guild channels.
+// NewInvite creates a new invite for the channel. Only usable for guild channels.
 // Requires the CREATE_INSTANT_INVITE permission.
-func (c *Client) CreateChannelInvite(channelID string, i *CreateInvite) (*Invite, error) {
+func (r *ChannelResource) NewInvite(maxAge, maxUses int, temporary, unique bool) (*Invite, error) {
+	i := createChannelInvite{
+		MaxAge:    maxAge,
+		MaxUses:   maxUses,
+		Temporary: temporary,
+		Unique:    unique,
+	}
 	b, err := json.Marshal(i)
 	if err != nil {
 		return nil, err
 	}
 
-	e := endpoint.CreateChannelInvite(channelID)
-	resp, err := c.doReq(http.MethodPost, e, b)
+	e := endpoint.CreateChannelInvite(r.channelID)
+	resp, err := r.client.doReq(http.MethodPost, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -285,12 +234,27 @@ func (c *Client) CreateChannelInvite(channelID string, i *CreateInvite) (*Invite
 	return &invite, nil
 }
 
-// AddRecipient adds a recipient to an existing Group DM or to a
+// AddRecipient adds a recipient to the existing Group DM or to a
 // DM channel, creating a new Group DM channel.
 // Groups have a limit of 10 recipients, including the current user.
-func (c *Client) AddRecipient(channelID, recipientID string) error {
-	e := endpoint.AddRecipient(channelID, recipientID)
-	resp, err := c.doReq(http.MethodPut, e, nil)
+func (r *ChannelResource) AddRecipient(channelID, recipientID string) error {
+	e := endpoint.GroupDMAddRecipient(channelID, recipientID)
+	resp, err := r.client.doReq(http.MethodPut, e, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	//
+	if resp.StatusCode != http.StatusNoContent {
+		return apiError(resp)
+	}
+	return nil
+}
+
+// RemoveRecipient removes a recipient from the Group DM.
+func (r *ChannelResource) RemoveRecipient(recipientID string) error {
+	e := endpoint.GroupDMRemoveRecipient(r.channelID, recipientID)
+	resp, err := r.client.doReq(http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}
@@ -302,29 +266,14 @@ func (c *Client) AddRecipient(channelID, recipientID string) error {
 	return nil
 }
 
-// RemoveRecipient removes a recipient from a Group DM
-func (c *Client) RemoveRecipient(channelID, recipientID string) error {
-	e := endpoint.RemoveRecipient(channelID, recipientID)
-	resp, err := c.doReq(http.MethodDelete, e, nil)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusNoContent {
-		return apiError(resp)
-	}
-	return nil
-}
-
-// TriggerTyping triggers a typing indicator for the specified channel.
+// TriggerTyping triggers a typing indicator for the channel.
 // Generally bots should not implement this route. However, if a bot is
 // responding to a command and expects the computation to take a few
 // seconds, this endpoint may be called to let the user know that the
 // bot is processing their message. Fires a Typing Start Gateway event.
-func (c *Client) TriggerTyping(channelID string) error {
-	e := endpoint.TriggerTyping(channelID)
-	resp, err := c.doReq(http.MethodPost, e, nil)
+func (r *ChannelResource) TriggerTyping() error {
+	e := endpoint.TriggerTypingIndicator(r.channelID)
+	resp, err := r.client.doReq(http.MethodPost, e, nil)
 	if err != nil {
 		return err
 	}
@@ -334,4 +283,46 @@ func (c *Client) TriggerTyping(channelID string) error {
 		return apiError(resp)
 	}
 	return nil
+}
+
+// Webhooks returns webhooks for the channel.
+func (r *ChannelResource) Webhooks() ([]Webhook, error) {
+	e := endpoint.GetChannelWebhooks(r.channelID)
+	return r.client.getWebhooks(e)
+}
+
+// NewWebhook creates a new webhook for the channel. Requires the 'MANAGE_WEBHOOKS'
+// permission.
+// name must contain between 2 and 32 characters. avatar is an avatar data string,
+// see https://discordapp.com/developers/docs/resources/user#avatar-data for more info.
+// It can be left empty to have the default avatar.
+func (r *ChannelResource) NewWebhook(name, avatar string) (*Webhook, error) {
+	st := struct {
+		Name   string `json:"name,omitempty"`
+		Avatar string `json:"avatar,omitempty"`
+	}{
+		Name:   name,
+		Avatar: avatar,
+	}
+	b, err := json.Marshal(st)
+	if err != nil {
+		return nil, err
+	}
+
+	e := endpoint.CreateWebhook(r.channelID)
+	resp, err := r.client.doReq(http.MethodPost, e, b)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, apiError(resp)
+	}
+
+	var w Webhook
+	if err = json.NewDecoder(resp.Body).Decode(&w); err != nil {
+		return nil, err
+	}
+	return &w, nil
 }
