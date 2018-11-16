@@ -36,14 +36,6 @@ type Channel struct {
 	LastPinTimestamp time.Time `json:"last_pin_timestamp,omitempty"`
 }
 
-// CreateInvite allows to specify Invite settings when creating one.
-type CreateInvite struct {
-	MaxAge    int  `json:"max_age,omitempty"`
-	MaxUses   int  `json:"max_uses,omitempty"`
-	Temporary bool `json:"temporary,omitempty"` // Whether this invite only grants temporary membership.
-	Unique    bool `json:"unique,omitempty"`
-}
-
 // ChannelResource is a resource that allows to perform various actions on a Discord channel.
 // Create one with Client.Channel.
 type ChannelResource struct {
@@ -194,9 +186,26 @@ func (r *ChannelResource) Invites() ([]Invite, error) {
 	return invites, nil
 }
 
+// createChannelInvite allows to specify Invite settings when creating one.
+type createChannelInvite struct {
+	MaxAge  int `json:"max_age,omitempty"`
+	MaxUses int `json:"max_uses,omitempty"`
+	// Whether this invite only grants temporary membership.
+	Temporary bool `json:"temporary,omitempty"`
+	// If true, don't try to reuse a similar invite
+	// (useful for creating many unique one time use invites).
+	Unique bool `json:"unique,omitempty"`
+}
+
 // NewInvite creates a new invite object for the channel. Only usable for guild channels.
 // Requires the CREATE_INSTANT_INVITE permission.
-func (r *ChannelResource) NewInvite(i *CreateInvite) (*Invite, error) {
+func (r *ChannelResource) NewInvite(maxAge, maxUses int, temporary, unique bool) (*Invite, error) {
+	i := createChannelInvite{
+		MaxAge:    maxAge,
+		MaxUses:   maxUses,
+		Temporary: temporary,
+		Unique:    unique,
+	}
 	b, err := json.Marshal(i)
 	if err != nil {
 		return nil, err
