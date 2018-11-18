@@ -19,9 +19,6 @@ func NewHTTP(state *discord.State) {
 }
 
 func (d *httpDebugger) index(w http.ResponseWriter, r *http.Request) {
-	d.state.RLock()
-	defer d.state.RUnlock()
-
 	state := struct {
 		UsersCount             int `json:"users_count"`
 		GuildsCount            int `json:"guilds_count"`
@@ -49,9 +46,6 @@ func (d *httpDebugger) index(w http.ResponseWriter, r *http.Request) {
 }
 
 func (d *httpDebugger) all(w http.ResponseWriter, r *http.Request) {
-	d.state.RLock()
-	defer d.state.RUnlock()
-
 	state := struct {
 		CurrentUser       *discord.User                        `json:"current_user"`
 		Users             map[string]*discord.User             `json:"users"`

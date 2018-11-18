@@ -68,14 +68,7 @@ is constantly updated so it always have the newest data available.
 This session state acts as a cache to avoid making requests over the HTTP API
 each time. If you need to get information about the current user :
 
-	c.State.RLock()
 	user := c.State.CurrentUser()
-	// Do stuff with user
-	c.State.RUnlock()
-
-Note that for this state to be thread safe and to continue to be updated while
-being used, it needs to be locked/unlocked (with its RLock and RUnlock
-methods) when accessed.
 
 Because this state might become memory hungry for bots that are in a very
 large number of servers, it can be disabled with the WithStateTracking option

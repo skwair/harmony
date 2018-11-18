@@ -43,6 +43,20 @@ type Overwrite struct {
 	Deny  int
 }
 
+// Clone returns a clone of this Overwrite.
+func (o *Overwrite) Clone() *Overwrite {
+	if o == nil {
+		return nil
+	}
+
+	return &Overwrite{
+		ID:    o.ID,
+		Type:  o.Type,
+		Allow: o.Allow,
+		Deny:  o.Deny,
+	}
+}
+
 // Contains returns whether the given permission is set in permissions.
 func Contains(permissions, permission int) bool {
 	return permissions&permission == permission
