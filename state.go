@@ -9,11 +9,9 @@ import (
 
 // State is a cache of the state of the application that is updated in real-time
 // as events are received from the Gateway.
-// The state must be locked by calling its RLock method before being used, else data
-// races can occur. It must then be unlocked with the RUnlock method so it can continue
-// to be updated as events flows in.
-// This state is meant to be read-only, modifying it will likely result
-// in unexpected behavior.
+// Objects returned by State methods are snapshots of original objects used
+// internally by the State. This means they are safe to be used and modified
+// but they won't be updated as new events are received.
 type State struct {
 	mu sync.RWMutex
 
@@ -45,90 +43,159 @@ func newState() *State {
 	}
 }
 
-// RLock locks the state for reading, preventing it from being updated.
-func (s *State) RLock() {
-	s.mu.RLock()
-}
-
-// RUnlock releases the read lock on the state, allowing it to be updated
-// as events are received from the gateway.
-func (s *State) RUnlock() {
-	s.mu.RUnlock()
-}
-
 // CurrentUser returns the current user from the state.
 func (s *State) CurrentUser() *User {
-	return s.currentUser
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.currentUser.Clone()
 }
 
 // User returns a user given its ID from the state.
 func (s *State) User(id string) *User {
-	return s.users[id]
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.users[id].Clone()
 }
 
 // Guild returns a guild given its ID from the state.
 func (s *State) Guild(id string) *Guild {
-	return s.guilds[id]
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.guilds[id].Clone()
 }
 
 // Channel returns a channel given its ID from the state.
 func (s *State) Channel(id string) *Channel {
-	return s.channels[id]
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.channels[id].Clone()
 }
 
 // GroupDM returns a group DM given its ID from the state.
 func (s *State) GroupDM(id string) *Channel {
-	return s.groups[id]
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.groups[id].Clone()
 }
 
 // DM returns a DM given its ID from the state.
 func (s *State) DM(id string) *Channel {
-	return s.dms[id]
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.dms[id].Clone()
 }
 
 // Presence returns a presence given a user ID from the state.
 func (s *State) Presence(userID string) *Presence {
-	return s.presences[userID]
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.presences[userID].Clone()
 }
 
 // UnavailableGuild returns an unavailable guild given its ID from the state.
 func (s *State) UnavailableGuild(id string) *UnavailableGuild {
-	return s.unavailableGuilds[id]
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	return s.unavailableGuilds[id].Clone()
 }
 
 // Users returns a map of user ID to user from the state.
 func (s *State) Users() map[string]*User {
-	return s.users
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	newMap := make(map[string]*User)
+	for k, v := range s.users {
+		newMap[k] = v.Clone()
+	}
+
+	return newMap
 }
 
 // Guilds returns a map of guild ID to guild from the state.
 func (s *State) Guilds() map[string]*Guild {
-	return s.guilds
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	newMap := make(map[string]*Guild)
+	for k, v := range s.guilds {
+		newMap[k] = v.Clone()
+	}
+
+	return newMap
 }
 
 // Channels returns a map of channels ID to channels from the state.
 func (s *State) Channels() map[string]*Channel {
-	return s.channels
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	newMap := make(map[string]*Channel)
+	for k, v := range s.channels {
+		newMap[k] = v.Clone()
+	}
+
+	return newMap
 }
 
 // GroupDMs returns a map of group DM ID to group DM from the state.
 func (s *State) GroupDMs() map[string]*Channel {
-	return s.groups
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	newMap := make(map[string]*Channel)
+	for k, v := range s.channels {
+		newMap[k] = v.Clone()
+	}
+
+	return newMap
 }
 
 // DMs returns a map of DM ID to DM from the state.
 func (s *State) DMs() map[string]*Channel {
-	return s.dms
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	newMap := make(map[string]*Channel)
+	for k, v := range s.channels {
+		newMap[k] = v.Clone()
+	}
+
+	return newMap
 }
 
 // Presences returns a map of user ID to presence from the state.
 func (s *State) Presences() map[string]*Presence {
-	return s.presences
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	newMap := make(map[string]*Presence)
+	for k, v := range s.presences {
+		newMap[k] = v.Clone()
+	}
+
+	return newMap
 }
 
 // UnavailableGuilds returns a map of guild ID to unavailable guild from the state.
 func (s *State) UnavailableGuilds() map[string]*UnavailableGuild {
-	return s.unavailableGuilds
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	newMap := make(map[string]*UnavailableGuild)
+	for k, v := range s.unavailableGuilds {
+		newMap[k] = v.Clone()
+	}
+
+	return newMap
 }
 
 // RTT returns the Round Trip Time between the client and Discord's Gateway.
