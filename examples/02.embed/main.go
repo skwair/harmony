@@ -79,9 +79,7 @@ func (b *bot) onNewMessage(m *discord.Message) {
 			).
 			Build()
 
-		_, err := b.client.Channel(m.ChannelID).SendEmbed(
-			"this `supports` __a__ **subset** *of* ~~markdown~~ 😃 ```js\nfunction foo(bar) {\n  console.log(bar);\n}\n\nfoo(1);```", e)
-		if err != nil {
+		if _, err := b.client.Channel(m.ChannelID).SendEmbed(e); err != nil {
 			fmt.Fprintf(os.Stderr, "could not send message: %v", err)
 		}
 	}
