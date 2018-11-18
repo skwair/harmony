@@ -1,6 +1,7 @@
 [![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/skwair/discord)
 [![License MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat-square)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-online-7289DA.svg?style=flat-square)](https://discord.gg/3sVFWQC)
+[![Build Status](https://travis-ci.org/skwair/discord.svg?branch=master)](https://travis-ci.org/skwair/discord)
 
 
 # Discord
