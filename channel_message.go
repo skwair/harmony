@@ -286,7 +286,7 @@ func (r *ChannelResource) SendFiles(files ...File) (*Message, error) {
 	return r.SendFilesWithOptions("", "", nil, false, files...)
 }
 
-// SendFiles sends some attached files with an optional text and/or embedded rich
+// SendFilesWithOptions sends some attached files with an optional text and/or embedded rich
 // content to the channel.
 // See SendMessageWithOptions for required permissions and the embed sub package for more information
 // about embeds.

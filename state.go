@@ -307,17 +307,17 @@ func (s *State) updateChannel(c *Channel) {
 		s.groups[c.ID] = c
 
 	case channel.TypeGuildText, channel.TypeGuildVoice, channel.TypeGuildCategory:
-		chs := s.guilds[c.GuildID].Channels
+		guild := s.guilds[c.GuildID]
 		var found bool
-		for i := 0; i < len(chs); i++ {
-			if chs[i].ID == c.ID {
-				chs[i] = *c
+		for i := 0; i < len(guild.Channels); i++ {
+			if guild.Channels[i].ID == c.ID {
+				guild.Channels[i] = *c
 				found = true
 				break
 			}
 		}
 		if !found {
-			chs = append(chs, *c)
+			guild.Channels = append(guild.Channels, *c)
 		}
 	}
 

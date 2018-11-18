@@ -190,7 +190,7 @@ func (c *Client) Webhook(id string) *WebhookResource {
 	return &WebhookResource{webhookID: id, client: c}
 }
 
-// GetWebhook returns the webhook.
+// Get returns the webhook.
 func (r *WebhookResource) Get() (*Webhook, error) {
 	e := endpoint.GetWebhook(r.webhookID)
 	resp, err := r.client.doReq(http.MethodGet, e, nil)

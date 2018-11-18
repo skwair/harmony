@@ -238,7 +238,7 @@ func (r *CurrentUserResource) Connections() ([]Connection, error) {
 	return conns, nil
 }
 
-// SetUserStatus sets the current user's status. You need to be connected to the
+// SetStatus sets the current user's status. You need to be connected to the
 // Gateway to call this method, else it will return ErrGatewayNotConnected.
 func (r *CurrentUserResource) SetStatus(status *Status) error {
 	if !r.client.isConnected() {

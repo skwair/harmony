@@ -43,7 +43,7 @@ func (b *bucket) lockAndWait() {
 
 	if b.remaining == 0 {
 		// We are out of tokens in this bucket, wait until it refills.
-		time.Sleep(time.Unix(b.reset, 0).Sub(time.Now()))
+		time.Sleep(time.Until(time.Unix(b.reset, 0)))
 		b.remaining = b.limit
 	}
 
