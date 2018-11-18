@@ -93,12 +93,14 @@ func (vc *VoiceConnection) readUDP(ch chan<- *rtpFrame) {
 		// Handle UDP heartbeat ACK.
 		if l == 8 {
 			atomic.StoreInt64(&vc.lastUDPHeartbeatACK, time.Now().UnixNano())
-			udpSeq := binary.LittleEndian.Uint64(buf[:l])
-			// Since the UDP heartbeat sequence number is incremented right after it
-			// is sent, we should receive the number just before.
-			if udpSeq != atomic.LoadUint64(&vc.udpHeartbeatSequence)-1 {
-				// TODO: check the sequence number in the UDP heartbeat ?
-			}
+
+			// TODO: check the sequence number in the UDP heartbeat ?
+			// udpSeq := binary.LittleEndian.Uint64(buf[:l])
+			// // Since the UDP heartbeat sequence number is incremented right after it
+			// // is sent, we should receive the number just before.
+			// if udpSeq != atomic.LoadUint64(&vc.udpHeartbeatSequence)-1 {
+			// }
+
 			continue
 		}
 		// Skip non audio packets.

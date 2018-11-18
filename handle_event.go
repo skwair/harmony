@@ -67,7 +67,7 @@ func (c *Client) handleEvent(p *payload) error {
 	// Heartbeat ACK.
 	case 11:
 		if c.withStateTracking {
-			c.State.setRTT(time.Now().Sub(time.Unix(0, c.lastHeartbeatSend)))
+			c.State.setRTT(time.Since(time.Unix(0, c.lastHeartbeatSend)))
 		}
 		atomic.StoreInt64(&c.lastHeartbeatACK, time.Now().UnixNano())
 	}

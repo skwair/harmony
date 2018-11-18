@@ -52,7 +52,7 @@ const (
 func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	var err error
 	switch typ {
-	// case eventHello:
+	case eventHello:
 	case eventReady:
 		atomic.StoreInt32(&c.connected, 1)
 		var r Ready
@@ -62,7 +62,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		c.handle(eventReady, &r)
 	case eventResumed:
 		atomic.StoreInt32(&c.connected, 1)
-	// case eventInvalidSession:
+	case eventInvalidSession:
 
 	case eventChannelCreate:
 		var ch Channel

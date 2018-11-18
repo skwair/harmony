@@ -2,7 +2,7 @@ package guild
 
 import "github.com/skwair/discord/optional"
 
-// GuildMemberSettings are the settings of a guild member, all fields are optional
+// MemberSettings are the settings of a guild member, all fields are optional
 // and only those explicitly set will be modified.
 type MemberSettings struct {
 	Nick  *optional.String      `json:"nick,omitempty"`

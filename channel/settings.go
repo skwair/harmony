@@ -57,7 +57,7 @@ func WithName(name string) Setting {
 	}
 }
 
-// WithName sets the type of a channel. Can only be used when creating channels.
+// WithType sets the type of a channel. Can only be used when creating channels.
 func WithType(typ Type) Setting {
 	return func(s *Settings) {
 		s.Type = optional.NewInt(int(typ))

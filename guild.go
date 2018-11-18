@@ -450,7 +450,7 @@ func (r *GuildResource) VanityURL() (*Invite, error) {
 	}
 
 	var invite Invite
-	if err = json.NewDecoder(resp.Body).Decode(invite); err != nil {
+	if err = json.NewDecoder(resp.Body).Decode(&invite); err != nil {
 		return nil, err
 	}
 	return &invite, nil

@@ -171,11 +171,13 @@ func (c *Client) wait() {
 // with a 1006 code, calls the registered error handler and finally
 // signals to all other goroutines (heartbeat, listen, etc.) to stop.
 func (c *Client) onGatewayError(err error) {
-	c.conn.WriteControl(
+	if err := c.conn.WriteControl(
 		websocket.CloseMessage,
 		websocket.FormatCloseMessage(websocket.CloseAbnormalClosure, ""),
 		time.Now().Add(time.Second*10),
-	)
+	); err != nil {
+		c.errorHandler(fmt.Errorf("could not properly close websocket: %v", err))
+	}
 	c.errorHandler(err)
 	close(c.stop)
 }
@@ -185,11 +187,13 @@ func (c *Client) onGatewayError(err error) {
 // connection with a 1000 code and resets the session of this Client
 // so it can open a new fresh connection by calling Connect() again.
 func (c *Client) onDisconnect() {
-	c.conn.WriteControl(
+	if err := c.conn.WriteControl(
 		websocket.CloseMessage,
 		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
 		time.Now().Add(time.Second*10),
-	)
+	); err != nil {
+		c.errorHandler(fmt.Errorf("could not properly close websocket: %v", err))
+	}
 	// Reset the sequence number and the session ID so
 	// the user gets a new fresh session if reconnecting
 	// with the same client.

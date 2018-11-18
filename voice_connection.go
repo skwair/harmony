@@ -89,8 +89,6 @@ type VoiceConnection struct {
 }
 
 var (
-	silenceFrame = []byte{0xf8, 0xff, 0xfe}
-
 	defaultVoiceErrorHandler = func(err error) { log.Println("voice connection error:", err) }
 )
 
@@ -401,21 +399,25 @@ func (vc *VoiceConnection) wait() {
 }
 
 func (vc *VoiceConnection) onError(err error) {
-	vc.conn.WriteControl(
+	if err := vc.conn.WriteControl(
 		websocket.CloseMessage,
 		websocket.FormatCloseMessage(websocket.CloseAbnormalClosure, ""),
 		time.Now().Add(time.Second*10),
-	)
+	); err != nil {
+		vc.errorHandler(fmt.Errorf("could not properly close websocket: %v", err))
+	}
 	vc.errorHandler(err)
 	close(vc.stop)
 }
 
 func (vc *VoiceConnection) onDisconnect() {
-	vc.conn.WriteControl(
+	if err := vc.conn.WriteControl(
 		websocket.CloseMessage,
 		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
 		time.Now().Add(time.Second*10),
-	)
+	); err != nil {
+		vc.errorHandler(fmt.Errorf("could not properly close websocket: %v", err))
+	}
 	atomic.StoreUint64(&vc.udpHeartbeatSequence, 0)
 }
 
