@@ -406,11 +406,11 @@ func (r *ChannelResource) GetReactions(messageID, emoji string, limit int, befor
 	return users, nil
 }
 
-// CreateReaction adds a reaction to a message in the channel. This endpoint requires
+// AddReaction adds a reaction to a message in the channel. This endpoint requires
 // the 'READ_MESSAGE_HISTORY' permission to be present on the current user. Additionally,
 // if nobody else has reacted to the message using this emoji, this endpoint requires
 // the'ADD_REACTIONS' permission to be present on the current user.
-func (r *ChannelResource) CreateReaction(messageID, emoji string) error {
+func (r *ChannelResource) AddReaction(messageID, emoji string) error {
 	e := endpoint.CreateReaction(r.channelID, messageID, url.PathEscape(emoji))
 	resp, err := r.client.doReq(http.MethodPut, e, nil)
 	if err != nil {
@@ -424,8 +424,8 @@ func (r *ChannelResource) CreateReaction(messageID, emoji string) error {
 	return nil
 }
 
-// DeleteReaction deletes a reaction the current user has made for the message.
-func (r *ChannelResource) DeleteReaction(messageID, emoji string) error {
+// RemoveReaction removes a reaction the current user has made for the message.
+func (r *ChannelResource) RemoveReaction(messageID, emoji string) error {
 	e := endpoint.DeleteOwnReaction(r.channelID, messageID, url.PathEscape(emoji))
 	resp, err := r.client.doReq(http.MethodDelete, e, nil)
 	if err != nil {
@@ -439,9 +439,9 @@ func (r *ChannelResource) DeleteReaction(messageID, emoji string) error {
 	return nil
 }
 
-// DeleteUserReaction deletes another user's reaction. This endpoint requires the
+// RemoveUserReaction removes another user's reaction. This endpoint requires the
 // 'MANAGE_MESSAGES' permission to be present on the current user.
-func (r *ChannelResource) DeleteUserReaction(messageID, userID, emoji string) error {
+func (r *ChannelResource) RemoveUserReaction(messageID, userID, emoji string) error {
 	e := endpoint.DeleteUserReaction(r.channelID, messageID, userID, url.PathEscape(emoji))
 	resp, err := r.client.doReq(http.MethodDelete, e, nil)
 	if err != nil {
@@ -455,9 +455,9 @@ func (r *ChannelResource) DeleteUserReaction(messageID, userID, emoji string) er
 	return nil
 }
 
-// DeleteAllReactions deletes all reactions on a message. This endpoint requires the
+// RemoveAllReactions removes all reactions on a message. This endpoint requires the
 // 'MANAGE_MESSAGES' permission to be present on the current user.
-func (r *ChannelResource) DeleteAllReactions(messageID string) error {
+func (r *ChannelResource) RemoveAllReactions(messageID string) error {
 	e := endpoint.DeleteAllReactions(r.channelID, messageID)
 	resp, err := r.client.doReq(http.MethodDelete, e, nil)
 	if err != nil {
