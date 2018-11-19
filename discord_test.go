@@ -7,6 +7,8 @@ import (
 
 	"github.com/skwair/discord"
 	"github.com/skwair/discord/channel"
+	"github.com/skwair/discord/permission"
+	"github.com/skwair/discord/role"
 )
 
 func TestDiscord(t *testing.T) {
@@ -28,6 +30,7 @@ func TestDiscord(t *testing.T) {
 	if err = client.Connect(); err != nil {
 		t.Fatalf("could not connect to gateway: %v", err)
 	}
+	defer client.Disconnect()
 
 	// Purge existing channels.
 	chs, err := client.Guild(guildID).Channels()
@@ -45,24 +48,26 @@ func TestDiscord(t *testing.T) {
 		lastMsgID string
 	)
 
+	currentUserID := client.State.CurrentUser().ID
+
 	t.Run("create channels", func(t *testing.T) {
 		// Create a new channel category.
-		chSettings := channel.NewSettings(
+		settings := channel.NewSettings(
 			channel.WithName("test-category"),
 			channel.WithType(channel.TypeGuildCategory),
 		)
-		cat, err := client.Guild(guildID).NewChannel(chSettings)
+		cat, err := client.Guild(guildID).NewChannel(settings)
 		if err != nil {
 			t.Fatalf("could not create channel category: %v", err)
 		}
 
 		// Create a new text channel in this category.
-		chSettings = channel.NewSettings(
+		settings = channel.NewSettings(
 			channel.WithName("test-text-channel"),
 			channel.WithType(channel.TypeGuildText),
 			channel.WithParent(cat.ID), // Set this channel as a child of the new category.
 		)
-		txtCh, err = client.Guild(guildID).NewChannel(chSettings)
+		txtCh, err = client.Guild(guildID).NewChannel(settings)
 		if err != nil {
 			t.Fatalf("could not create text channel: %v", err)
 		}
@@ -116,8 +121,8 @@ func TestDiscord(t *testing.T) {
 			t.Fatalf("expected to have %d user with this reaction; got %d", 0, len(users))
 		}
 
-		if users[0].ID != client.State.CurrentUser().ID {
-			t.Fatalf("expected the ID of the user to be %s; got %s", client.State.CurrentUser().ID, users[0].ID)
+		if users[0].ID != currentUserID {
+			t.Fatalf("expected the ID of the user to be %s; got %s", currentUserID, users[0].ID)
 		}
 
 		users, err = client.Channel(txtCh.ID).GetReactions(lastMsgID, "👎", 0, "", "")
@@ -154,6 +159,64 @@ func TestDiscord(t *testing.T) {
 	t.Run("remove pin", func(t *testing.T) {
 		if err = client.Channel(txtCh.ID).UnpinMessage(lastMsgID); err != nil {
 			t.Fatalf("could not unpin last message: %v", err)
+		}
+	})
+
+	var testRole *discord.Role
+
+	t.Run("new role", func(t *testing.T) {
+		perms := permission.ReadMessageHistory | permission.SendMessages
+
+		settings := role.NewSettings(
+			role.WithName("test-role"),
+			role.WithColor(0x336677),
+			role.WithHoist(true),
+			role.WithMentionable(true),
+			role.WithPermissions(perms),
+		)
+		testRole, err = client.Guild(guildID).NewRole(settings)
+		if err != nil {
+			t.Fatalf("could not create new role: %v", err)
+		}
+	})
+
+	t.Run("add role", func(t *testing.T) {
+		if err = client.Guild(guildID).AddMemberRole(currentUserID, testRole.ID); err != nil {
+			t.Fatalf("could not add new role to user: %v", err)
+		}
+	})
+
+	t.Run("get guild member#01", func(t *testing.T) {
+		member, err := client.Guild(guildID).Member(currentUserID)
+		if err != nil {
+			t.Fatalf("could not get guild member: %v", err)
+		}
+
+		if !member.HasRole(testRole.ID) {
+			t.Fatal("guild member should have test role")
+		}
+	})
+
+	t.Run("remove role", func(t *testing.T) {
+		if err = client.Guild(guildID).RemoveMemberRole(currentUserID, testRole.ID); err != nil {
+			t.Fatalf("could not remove role from user: %v", err)
+		}
+	})
+
+	t.Run("get guild member#02", func(t *testing.T) {
+		member, err := client.Guild(guildID).Member(currentUserID)
+		if err != nil {
+			t.Fatalf("could not get guild member: %v", err)
+		}
+
+		if member.HasRole(testRole.ID) {
+			t.Fatal("guild member should not have test role anymore")
+		}
+	})
+
+	t.Run("delete role", func(t *testing.T) {
+		if err = client.Guild(guildID).DeleteRole(testRole.ID); err != nil {
+			t.Fatalf("could not delete test role: %v", err)
 		}
 	})
 }
