@@ -60,6 +60,26 @@ func (g *Guild) Clone() *Guild {
 		guild.Emojis = append(guild.Emojis, *emoji)
 	}
 
+	for i := 0; i < len(g.VoiceStates); i++ {
+		vs := g.VoiceStates[i].Clone()
+		guild.VoiceStates = append(guild.VoiceStates, *vs)
+	}
+
+	for i := 0; i < len(g.Members); i++ {
+		member := g.Members[i].Clone()
+		guild.Members = append(guild.Members, *member)
+	}
+
+	for i := 0; i < len(g.Channels); i++ {
+		ch := g.Channels[i].Clone()
+		guild.Channels = append(guild.Channels, *ch)
+	}
+
+	for i := 0; i < len(g.Presences); i++ {
+		presence := g.Presences[i].Clone()
+		guild.Presences = append(guild.Presences, *presence)
+	}
+
 	guild.Features = append(guild.Features, g.Features...)
 
 	return guild
