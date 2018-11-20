@@ -27,6 +27,18 @@ func (m *GuildMember) PermissionsIn(g *Guild, ch *Channel) (permissions int) {
 	return computeOverwrites(ch, m, base)
 }
 
+// HasRole returns whether this member has the given role.
+// Note that this method does not try to fetch this member latest roles, it instead looks
+// in the roles it already had when this member object was created.
+func (m *GuildMember) HasRole(id string) bool {
+	for _, roleID := range m.Roles {
+		if roleID == id {
+			return true
+		}
+	}
+	return false
+}
+
 // Member returns a single guild member given its user ID.
 func (r *GuildResource) Member(userID string) (*GuildMember, error) {
 	e := endpoint.GetGuildMember(r.guildID, userID)
