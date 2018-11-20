@@ -1,6 +1,6 @@
 package guild
 
-import "github.com/skwair/discord/optional"
+import "github.com/skwair/harmony/optional"
 
 // MemberSettings are the settings of a guild member, all fields are optional
 // and only those explicitly set will be modified.

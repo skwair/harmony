@@ -1,7 +1,7 @@
 package guild
 
 import (
-	"github.com/skwair/discord/optional"
+	"github.com/skwair/harmony/optional"
 )
 
 // Settings are the settings of a guild, all fields are optional and only those

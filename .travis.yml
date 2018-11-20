@@ -2,7 +2,7 @@ language: go
 go:
   - 1.11.x
 install:
-  - go get github.com/skwair/discord
+  - go get github.com/skwair/harmony
   - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.12.2
 script:
   - golangci-lint run

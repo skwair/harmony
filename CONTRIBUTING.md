@@ -10,8 +10,8 @@ Please note we have a code of conduct, please follow it in all your interactions
 If your issue is a question about this module, please consider using the [discord server](https://discord.gg/uhe5qxn)
 where you will get the fastest answer.
 
-For other issues, please existing templates for [bug reports](https://github.com/skwair/discord/issues/new?template=bug_report.md)
-and [feature requests](https://github.com/skwair/discord/issues/new?template=feature_request.md).
+For other issues, please existing templates for [bug reports](https://github.com/skwair/harmony/issues/new?template=bug_report.md)
+and [feature requests](https://github.com/skwair/harmony/issues/new?template=feature_request.md).
 
 # Submitting Patches
 
@@ -20,7 +20,7 @@ and [feature requests](https://github.com/skwair/discord/issues/new?template=fea
 1. Clone the repo:
 
 ```sh
-git clone https://github.com/skwair/discord.git
+git clone https://github.com/skwair/harmony.git
 ```
 
 2. Create a new branch for your changes:
@@ -40,7 +40,7 @@ git commit -a -v
 5. Add your fork as a git remote:
 
 ```sh
-git remote add fork git://github.com/<your-github-username>/discord.git
+git remote add fork git://github.com/<your-github-username>/harmony.git
 ```
 
 6. Push your changes to your fork:

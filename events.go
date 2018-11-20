@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 import "time"
 
@@ -11,7 +11,7 @@ func (c *Client) registerHandler(event string, h handler) {
 	defer c.mu.Unlock()
 
 	if h == nil {
-		panic("discord: nil handler")
+		panic("harmony: nil handler")
 	}
 	c.handlersMu.Lock()
 	c.handlers[event] = h

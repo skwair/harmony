@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 import (
 	"encoding/json"
@@ -7,9 +7,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/skwair/discord/channel"
-	"github.com/skwair/discord/guild"
-	"github.com/skwair/discord/internal/endpoint"
+	"github.com/skwair/harmony/channel"
+	"github.com/skwair/harmony/guild"
+	"github.com/skwair/harmony/internal/endpoint"
 )
 
 // Guild in Discord represents an isolated collection of users and channels,

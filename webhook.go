@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 import (
 	"encoding/json"
@@ -8,9 +8,9 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/skwair/discord/embed"
-	"github.com/skwair/discord/internal/endpoint"
-	"github.com/skwair/discord/webhook"
+	"github.com/skwair/harmony/embed"
+	"github.com/skwair/harmony/internal/endpoint"
+	"github.com/skwair/harmony/webhook"
 )
 
 // Webhook is a low-effort way to post messages to channels in Discord.

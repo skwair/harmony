@@ -1,10 +1,10 @@
-package discord
+package harmony
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/skwair/discord/internal/endpoint"
+	"github.com/skwair/harmony/internal/endpoint"
 )
 
 // Emoji represents a Discord emoji (both standard and custom).

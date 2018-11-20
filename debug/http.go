@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/skwair/discord"
+	"github.com/skwair/harmony"
 )
 
 type httpDebugger struct {
-	state *discord.State
+	state *harmony.State
 }
 
-func NewHTTP(state *discord.State) {
+func NewHTTP(state *harmony.State) {
 	d := httpDebugger{state}
 
 	http.HandleFunc("/debug/state/index", d.index)
@@ -47,14 +47,14 @@ func (d *httpDebugger) index(w http.ResponseWriter, r *http.Request) {
 
 func (d *httpDebugger) all(w http.ResponseWriter, r *http.Request) {
 	state := struct {
-		CurrentUser       *discord.User                        `json:"current_user"`
-		Users             map[string]*discord.User             `json:"users"`
-		Guilds            map[string]*discord.Guild            `json:"guilds"`
-		Presences         map[string]*discord.Presence         `json:"presences"`
-		Channels          map[string]*discord.Channel          `json:"channels"`
-		DMs               map[string]*discord.Channel          `json:"dms"`
-		Groups            map[string]*discord.Channel          `json:"groups"`
-		UnavailableGuilds map[string]*discord.UnavailableGuild `json:"unavailable_guilds"`
+		CurrentUser       *harmony.User                        `json:"current_user"`
+		Users             map[string]*harmony.User             `json:"users"`
+		Guilds            map[string]*harmony.Guild            `json:"guilds"`
+		Presences         map[string]*harmony.Presence         `json:"presences"`
+		Channels          map[string]*harmony.Channel          `json:"channels"`
+		DMs               map[string]*harmony.Channel          `json:"dms"`
+		Groups            map[string]*harmony.Channel          `json:"groups"`
+		UnavailableGuilds map[string]*harmony.UnavailableGuild `json:"unavailable_guilds"`
 	}{
 		CurrentUser:       d.state.CurrentUser(),
 		Users:             d.state.Users(),

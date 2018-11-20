@@ -1,30 +1,30 @@
-package discord_test
+package harmony_test
 
 import (
 	"fmt"
 	"os"
 	"testing"
 
-	"github.com/skwair/discord"
-	"github.com/skwair/discord/channel"
-	"github.com/skwair/discord/permission"
-	"github.com/skwair/discord/role"
+	"github.com/skwair/harmony"
+	"github.com/skwair/harmony/channel"
+	"github.com/skwair/harmony/permission"
+	"github.com/skwair/harmony/role"
 )
 
-func TestDiscord(t *testing.T) {
-	token := os.Getenv("DISCORD_TEST_BOT_TOKEN")
+func TestHarmony(t *testing.T) {
+	token := os.Getenv("HARMONY_TEST_BOT_TOKEN")
 	if token == "" {
-		t.Fatal("environment variable DISCORD_TEST_BOT_TOKEN not set")
+		t.Fatal("environment variable HARMONY_TEST_BOT_TOKEN not set")
 	}
 
-	guildID := os.Getenv("DISCORD_TEST_GUILD_ID")
+	guildID := os.Getenv("HARMONY_TEST_GUILD_ID")
 	if guildID == "" {
-		t.Fatal("environment variable DISCORD_TEST_GUILD_ID not set")
+		t.Fatal("environment variable HARMONY_TEST_GUILD_ID not set")
 	}
 
-	client, err := discord.NewClient(discord.WithBotToken(token))
+	client, err := harmony.NewClient(harmony.WithBotToken(token))
 	if err != nil {
-		t.Fatalf("could not create discord client: %v", err)
+		t.Fatalf("could not create harmony client: %v", err)
 	}
 
 	if err = client.Connect(); err != nil {
@@ -44,7 +44,7 @@ func TestDiscord(t *testing.T) {
 	}
 
 	var (
-		txtCh     *discord.Channel
+		txtCh     *harmony.Channel
 		lastMsgID string
 	)
 
@@ -162,7 +162,7 @@ func TestDiscord(t *testing.T) {
 		}
 	})
 
-	var testRole *discord.Role
+	var testRole *harmony.Role
 
 	t.Run("new role", func(t *testing.T) {
 		perms := permission.ReadMessageHistory | permission.SendMessages

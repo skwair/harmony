@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 type MessageActivityType int
 

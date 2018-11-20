@@ -1,13 +1,13 @@
-package discord
+package harmony
 
 import (
 	"encoding/json"
 	"net/http"
 	"time"
 
-	"github.com/skwair/discord/integration"
+	"github.com/skwair/harmony/integration"
 
-	"github.com/skwair/discord/internal/endpoint"
+	"github.com/skwair/harmony/internal/endpoint"
 )
 
 type Integration struct {

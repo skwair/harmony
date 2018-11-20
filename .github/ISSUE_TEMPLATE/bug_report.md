@@ -11,6 +11,6 @@ A clear an concise description of what you expected to see.
 A clear an concise description of what you actually saw.
 
 **What version of the module are you using ?**
-<!-- This can be found in the discord.go file of the module or in your project's go.mod file. -->
+<!-- This can be found in the harmony.go file of the module or in your project's go.mod file. -->
 
 `vX.Y.Z`

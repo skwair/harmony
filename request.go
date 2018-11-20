@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 import (
 	"bytes"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/skwair/discord/internal/endpoint"
+	"github.com/skwair/harmony/internal/endpoint"
 )
 
 // doReq calls doReqWithHeader with the Content-Type to "application/json" if the body is not nil.
@@ -39,9 +39,9 @@ func (c *Client) doReqWithHeader(method string, e *endpoint.Endpoint, body []byt
 		}
 	}
 	req.Header.Set("Authorization", c.token)
-	// NOTE: maybe allow the "DiscordBot" to be configurable when creating a client.
+	// NOTE: maybe allow the "Harmony" to be configurable when creating a client.
 	// If we allow it, how would doReqNoAuthWithHeader get it ?
-	ua := fmt.Sprintf("%s (github.com/skwair/discord, %s)", "DiscordBot", version)
+	ua := fmt.Sprintf("%s (github.com/skwair/harmony, %s)", "Harmony", version)
 	req.Header.Set("User-Agent", ua)
 
 	c.limiter.Wait(e.Key)
@@ -96,7 +96,7 @@ func doReqNoAuthWithHeader(method, url string, body []byte, h http.Header) (*htt
 			req.Header.Add(k, v)
 		}
 	}
-	ua := fmt.Sprintf("%s (github.com/skwair/discord, %s", "DiscordBot", version)
+	ua := fmt.Sprintf("%s (github.com/skwair/harmony, %s", "Harmony", version)
 	req.Header.Set("User-Agent", ua)
 
 	resp, err := http.DefaultClient.Do(req)

@@ -1,6 +1,6 @@
 package webhook
 
-import "github.com/skwair/discord/optional"
+import "github.com/skwair/harmony/optional"
 
 // Settings describes a webhook's settings.
 type Settings struct {

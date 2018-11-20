@@ -1,11 +1,11 @@
-package discord
+package harmony
 
 import (
 	"encoding/json"
 	"net/http"
 	"sync/atomic"
 
-	"github.com/skwair/discord/internal/endpoint"
+	"github.com/skwair/harmony/internal/endpoint"
 )
 
 // VoiceState represents the voice state of a user.

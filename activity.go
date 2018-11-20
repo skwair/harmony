@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 // ActivityType describes what the user is doing.
 type ActivityType int

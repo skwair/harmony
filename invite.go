@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/skwair/discord/internal/endpoint"
+	"github.com/skwair/harmony/internal/endpoint"
 )
 
 // Invite represents a code that when used, adds a user to a guild or group DM channel.
