@@ -77,9 +77,11 @@ Create a bot (or use an existing one) and add it to the freshly created server.
 
 > See the [example directory](https://github.com/skwair/discord/blob/master/examples) for information on how to create a bot and add it to a server.
 
-3. Set required environment variables
+3. Set required environment variables and run the tests
 
 Set `DISCORD_TEST_BOT_TOKEN` to the token of your bot and `DISCORD_TEST_GUILD_ID` to the ID of the server you created and simply run:
+
+⚠️ **For the tests to be reproducible, they will start by deleting ALL channels in the provided server. Please make sure to provide a server created ONLY for those tests.** ⚠️
 
 ```bash
 go test -v -race ./...
