@@ -1,11 +1,11 @@
-package discord
+package harmony
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/skwair/discord/internal/endpoint"
-	"github.com/skwair/discord/role"
+	"github.com/skwair/harmony/internal/endpoint"
+	"github.com/skwair/harmony/role"
 )
 
 // Role represents a set of permissions attached to a group of users.

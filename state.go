@@ -1,10 +1,10 @@
-package discord
+package harmony
 
 import (
 	"sync"
 	"time"
 
-	"github.com/skwair/discord/channel"
+	"github.com/skwair/harmony/channel"
 )
 
 // State is a cache of the state of the application that is updated in real-time

@@ -1,6 +1,6 @@
 package integration
 
-import "github.com/skwair/discord/optional"
+import "github.com/skwair/harmony/optional"
 
 // Settings describes a guild integration's settings.
 type Settings struct {

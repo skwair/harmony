@@ -1,13 +1,13 @@
-package discord
+package harmony
 
 import (
 	"encoding/json"
 	"net/http"
 	"time"
 
-	"github.com/skwair/discord/channel"
-	"github.com/skwair/discord/internal/endpoint"
-	"github.com/skwair/discord/permission"
+	"github.com/skwair/harmony/channel"
+	"github.com/skwair/harmony/internal/endpoint"
+	"github.com/skwair/harmony/permission"
 )
 
 // Channel represents a guild or DM channel within Discord.

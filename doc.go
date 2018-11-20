@@ -1,5 +1,7 @@
+package harmony
+
 /*
-Package discord provides an interface to the Discord API
+Package harmony provides an interface to the Discord API
 (https://discordapp.com/developers/docs/intro).
 
 Getting started
@@ -7,12 +9,12 @@ Getting started
 The first thing you do is to create a Client. For a normal user,
 you can get one like this:
 
-	c := discord.NewClient(discord.WithToken("userToken"))
+	c := harmony.NewClient(harmony.WithToken("userToken"))
 
 If you want to create a client for a bot, use WithBotToken instead
 of WithToken, without prefixing the token with "Bot :":
 
-	c := discord.NewClient(discord.WithBotToken("botToken"))
+	c := harmony.NewClient(harmony.WithBotToken("botToken"))
 
 You can pass more configuration parameters to NewClient. Review the
 documentation of NewClient for more information.
@@ -30,7 +32,7 @@ Once connected to the Gateway, you have full access to the Discord API.
 
 Using the HTTP API
 
-Discord's HTTP API is organized by resource:
+Harmony's HTTP API is organized by resource:
 
 	- Guild
 	- Channel
@@ -53,7 +55,7 @@ To receive messages, use the HandleMessageCreate method and give it your
 handler. It will be called each time a message is sent to a channel your
 bot is in with the message as a parameter.
 
-	c.HandleMessageCreate(func(msg *discord.Message) {
+	c.HandleMessageCreate(func(msg *harmony.Message) {
 		fmt.Println(msg.Content)
 	})
 
@@ -72,6 +74,5 @@ each time. If you need to get information about the current user :
 
 Because this state might become memory hungry for bots that are in a very
 large number of servers, it can be disabled with the WithStateTracking option
-while creating the Discord client.
+while creating the harmony client.
 */
-package discord

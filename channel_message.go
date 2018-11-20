@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 import (
 	"encoding/json"
@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/skwair/discord/embed"
-	"github.com/skwair/discord/internal/endpoint"
+	"github.com/skwair/harmony/embed"
+	"github.com/skwair/harmony/internal/endpoint"
 )
 
 // MessageType describes the type of a message. Different fields

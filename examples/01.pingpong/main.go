@@ -6,18 +6,18 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/skwair/discord"
+	"github.com/skwair/harmony"
 )
 
 // Creating a struct that will hold your bot's dependencies.
-// For this simple example, there is just the Discord client,
+// For this simple example, there is just the harmony client,
 // but for a more complex bot, you could have a logger, a
 // database, etc.
 //
 // This is not mandatory but it's a good way to keep your
 // code clean and readable.
 type bot struct {
-	client *discord.Client
+	client *harmony.Client
 }
 
 func main() {
@@ -31,10 +31,10 @@ func main() {
 		return
 	}
 
-	// Create a discord client with a bot token.
+	// Create a harmony client with a bot token.
 	// Using WithBotToken will automatically prepend your bot token
 	// with "Bot ", which is a requirement by Discord for bot users.
-	c, err := discord.NewClient(discord.WithBotToken(botToken))
+	c, err := harmony.NewClient(harmony.WithBotToken(botToken))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return
@@ -67,8 +67,8 @@ func main() {
 }
 
 // By declaring your handlers as methods of the bot struct, they
-// have access to your bot's dependencies (here, the Discord client).
-func (b *bot) onNewMessage(m *discord.Message) {
+// have access to your bot's dependencies (here, the harmony client).
+func (b *bot) onNewMessage(m *harmony.Message) {
 	// If the new message's content is "ping",
 	// Reply with "pong", logging any error
 	// that occurs.

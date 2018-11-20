@@ -1,8 +1,8 @@
 package channel
 
 import (
-	"github.com/skwair/discord/optional"
-	"github.com/skwair/discord/permission"
+	"github.com/skwair/harmony/optional"
+	"github.com/skwair/harmony/permission"
 )
 
 // Type describes the type of a channel. Different fields

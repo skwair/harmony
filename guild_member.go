@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 import (
 	"encoding/json"
@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/skwair/discord/guild"
-	"github.com/skwair/discord/internal/endpoint"
+	"github.com/skwair/harmony/guild"
+	"github.com/skwair/harmony/internal/endpoint"
 )
 
 // GuildMember represents a User in a Guild.

@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 // Clone returns a clone of this User.
 func (u *User) Clone() *User {

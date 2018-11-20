@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 import (
 	"errors"
@@ -9,7 +9,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/skwair/discord/internal/rate"
+	"github.com/skwair/harmony/internal/rate"
 )
 
 const (

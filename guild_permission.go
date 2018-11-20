@@ -1,6 +1,6 @@
-package discord
+package harmony
 
-import "github.com/skwair/discord/permission"
+import "github.com/skwair/harmony/permission"
 
 // computeBasePermissions returns the base permissions a member has in a given guild.
 func computeBasePermissions(g *Guild, m *GuildMember) (permissions int) {

@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 // Connection that the user has attached.
 type Connection struct {

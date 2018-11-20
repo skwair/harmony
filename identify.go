@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 import (
 	"runtime"
@@ -30,7 +30,7 @@ func (c *Client) identify() error {
 		Token: c.token,
 		Properties: map[string]string{
 			"$os":      strings.Title(runtime.GOOS),
-			"$browser": "github.com/skwair/discord",
+			"$browser": "github.com/skwair/harmony",
 		},
 		Compress:       true,
 		LargeThreshold: c.largeThreshold,

@@ -1,4 +1,4 @@
-module github.com/skwair/discord
+module github.com/skwair/harmony
 
 require (
 	github.com/gorilla/websocket v1.4.0

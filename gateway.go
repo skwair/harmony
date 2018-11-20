@@ -1,10 +1,10 @@
-package discord
+package harmony
 
 import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/skwair/discord/internal/endpoint"
+	"github.com/skwair/harmony/internal/endpoint"
 )
 
 // Gateway returns a valid WSS URL, which the client can use for connecting.

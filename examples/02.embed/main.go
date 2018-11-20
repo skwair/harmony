@@ -7,15 +7,15 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/skwair/discord"
-	"github.com/skwair/discord/embed"
+	"github.com/skwair/harmony"
+	"github.com/skwair/harmony/embed"
 )
 
 // NOTE: the structure of this bot is detailed in the
 // first example : 01.pingpong.
 
 type bot struct {
-	client *discord.Client
+	client *harmony.Client
 }
 
 func main() {
@@ -25,7 +25,7 @@ func main() {
 		return
 	}
 
-	c, err := discord.NewClient(discord.WithBotToken(botToken))
+	c, err := harmony.NewClient(harmony.WithBotToken(botToken))
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return
@@ -48,7 +48,7 @@ func main() {
 	<-sig
 }
 
-func (b *bot) onNewMessage(m *discord.Message) {
+func (b *bot) onNewMessage(m *harmony.Message) {
 	// If the new message's content is "!embed",
 	// reply with a complex message containing embedded content.
 	// This message corresponds to what you can see here :

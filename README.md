@@ -1,14 +1,14 @@
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/skwair/discord)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/skwair/harmony)
 [![License MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat-square)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-online-7289DA.svg?style=flat-square)](https://discord.gg/3sVFWQC)
-[![Build Status](https://travis-ci.org/skwair/discord.svg?branch=master)](https://travis-ci.org/skwair/discord)
+[![Build Status](https://travis-ci.org/skwair/harmony.svg?branch=master)](https://travis-ci.org/skwair/harmony)
 
 
-# Discord
+# Harmony
 
 <img align="right" height="200" src=".github/discord-gopher.png">
 
-An unofficial client for the [Discord](http://discordapp.com) API written in [Go](https://golang.org).
+Harmony is a peaceful [Go](https://golang.org) module for interacting with [Discord](http://discordapp.com)'s API.
 
 Although this package is usable, it still is under active development so please don't use it for anything other than experiments, yet.
 
@@ -27,10 +27,10 @@ Make sure you have a working Go installation, if not see [this page](https://gol
 Then, install this package with the `go get` command :
 
 ```sh
-go get -u github.com/skwair/discord
+go get -u github.com/skwair/harmony
 ```
 
-> Note that `go get -u` will always pull the latest version from the master branch before Go 1.11. With newer versions and Go modules enabled, the latest minor or patch release will be downloaded. `go get github.com/skwair/discord@major.minor.patch` can be used to download a specific version. See [Go modules](https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies) for more information.
+> Note that `go get -u` will always pull the latest version from the master branch before Go 1.11. With newer versions and Go modules enabled, the latest minor or patch release will be downloaded. `go get github.com/skwair/harmony@major.minor.patch` can be used to download a specific version. See [Go modules](https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies) for more information.
 
 # Usage
 
@@ -41,11 +41,11 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/skwair/discord"
+	"github.com/skwair/harmony"
 )
 
 func main() {
-    c, err := discord.NewClient(discord.WithBotToken("your.bot.token"))
+    c, err := harmony.NewClient(harmony.WithBotToken("your.bot.token"))
     if err != nil {
         log.Fatal(err)
     }
@@ -59,7 +59,7 @@ func main() {
 }
 ```
 
-For information about how to create bots and more examples on how to use this package, check out the [examples](https://github.com/skwair/discord/blob/master/examples) directory and the [tests](https://github.com/skwair/discord/blob/master/discord_test.go).
+For information about how to create bots and more examples on how to use this package, check out the [examples](https://github.com/skwair/harmony/blob/master/examples) directory and the [tests](https://github.com/skwair/harmony/blob/master/harmony_test.go).
 
 # Testing
 
@@ -75,11 +75,11 @@ From a Discord client and with you main account, simply create a new server. The
 
 Create a bot (or use an existing one) and add it to the freshly created server.
 
-> See the [example directory](https://github.com/skwair/discord/blob/master/examples) for information on how to create a bot and add it to a server.
+> See the [example directory](https://github.com/skwair/harmony/blob/master/examples) for information on how to create a bot and add it to a server.
 
 3. Set required environment variables and run the tests
 
-Set `DISCORD_TEST_BOT_TOKEN` to the token of your bot and `DISCORD_TEST_GUILD_ID` to the ID of the server you created and simply run:
+Set `HARMONY_TEST_BOT_TOKEN` to the token of your bot and `HARMONY_TEST_GUILD_ID` to the ID of the server you created and simply run:
 
 ⚠️ **For the tests to be reproducible, they will start by deleting ALL channels in the provided server. Please make sure to provide a server created ONLY for those tests.** ⚠️
 
@@ -99,6 +99,6 @@ Another difference is in the "event handler" mechanism. Instead of having a sing
 
 # License
 
-This project is licensed under the MIT License - see the [LICENSE](https://github.com/skwair/discord/blob/master/LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](https://github.com/skwair/harmony/blob/master/LICENSE) file for details.
 
 Original logo by [Renee French](https://instagram.com/reneefrench), dressed with the cool t-shirt by [@HlneChd](https://twitter.com/hlnechd).

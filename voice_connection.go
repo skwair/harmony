@@ -1,4 +1,4 @@
-package discord
+package harmony
 
 import (
 	"encoding/binary"
@@ -27,7 +27,7 @@ type VoiceConnection struct {
 	// containing Opus encoded audio data.
 	Recv chan *AudioPacket
 
-	// Keep a reference to the Discord Client
+	// Keep a reference to the harmony Client
 	// so this voice connection is able to
 	// send some payloads to the Gateway
 	// (needed when disconnecting).
