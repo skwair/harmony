@@ -16,6 +16,7 @@ Although this package is usable, it still is under active development so please 
 
 - [Installation](#installation)
 - [Usage](#usage)
+- [Testing](#testing)
 - [How does it compare to DiscordGo ?](#how-does-it-compare-to-discordgo-)
 - [License](#license)
 
@@ -58,7 +59,33 @@ func main() {
 }
 ```
 
-For information about how to create bots and more examples on how to use this package, check out the [examples](https://github.com/skwair/discord/blob/master/examples) directory.
+For information about how to create bots and more examples on how to use this package, check out the [examples](https://github.com/skwair/discord/blob/master/examples) directory and the [tests](https://github.com/skwair/discord/blob/master/discord_test.go).
+
+# Testing
+
+For now, only some end to end tests are provided with this module. To run them, you will need a valid bot token and a valid Discord server ID. The bot attached to the token must be in the server with administrator permissions.
+
+1. Create a Discord test server
+
+From a Discord client and with you main account, simply create a new server. Then, right click on the new server and get it's ID.
+
+> Note that for the UI to have the `Copy ID` option when right clicking on the server, you will need to enable developer mode. You can find this option in `User settings > Appearance > Advanced > Developer Mode`.
+
+2. Create a bot and add it to the test Discord server
+
+Create a bot (or use an existing one) and add it to the freshly created server.
+
+> See the [example directory](https://github.com/skwair/discord/blob/master/examples) for information on how to create a bot and add it to a server.
+
+3. Set required environment variables
+
+Set `DISCORD_TEST_BOT_TOKEN` to the token of your bot and `DISCORD_TEST_GUILD_ID` to the ID of the server you created and simply run:
+
+```bash
+go test -v -race ./...
+```
+
+> Step 1 and 2 must be done only once for initial setup. Once you have your bot token and the ID of your test server, you can run the tests as many times as you want.
 
 # How does it compare to [DiscordGo](https://github.com/bwmarrin/discordgo) ?
 
