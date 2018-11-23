@@ -7,10 +7,10 @@ import (
 	"time"
 )
 
+// handleEvent handles all events received from Discord's Gateway once connected to it.
 func (c *Client) handleEvent(p *payload) error {
 	switch p.Op {
-	// Dispatch.
-	case 0:
+	case gatewayOpcodeDispatch:
 		atomic.StoreInt64(&c.sequence, p.S)
 		// Those two events should be sent through the payloads channel if the
 		// client is currently connecting to a voice channel so the ConnectToVoice
@@ -24,20 +24,20 @@ func (c *Client) handleEvent(p *payload) error {
 		}
 
 	// Heartbeat requested from the Gateway (used for ping checking).
-	case 1:
+	case gatewayOpcodeHeartbeat:
 		if err := c.sendHeartbeatPayload(); err != nil {
 			return err
 		}
 
-	// Reconnect.
-	case 7:
+	// Gateway is asking us to reconnect.
+	case gatewayOpcodeReconnect:
 		c.Disconnect()
 		if err := c.Connect(); err != nil {
 			return err
 		}
 
-	// Invalid Session.
-	case 9:
+	// Gateway is telling us our session ID is invalid.
+	case gatewayOpcodeInvalidSession:
 		var resumable bool
 		if err := json.Unmarshal(p.D, &resumable); err != nil {
 			return err
@@ -60,12 +60,10 @@ func (c *Client) handleEvent(p *payload) error {
 			}
 		}
 
-	// Hello.
-	case 10:
+	case gatewayOpcodeHello:
 		// Handled by Connect()
 
-	// Heartbeat ACK.
-	case 11:
+	case gatewayOpcodeHeartbeatACK:
 		if c.withStateTracking {
 			c.State.setRTT(time.Since(time.Unix(0, c.lastHeartbeatSend)))
 		}
@@ -76,43 +74,24 @@ func (c *Client) handleEvent(p *payload) error {
 
 func (vc *VoiceConnection) handleEvent(p *payload) error {
 	switch p.Op {
-	// Ready.
-	case 2:
-		// Those two events should be sent through the payloads channel if this
+	case voiceOpcodeReady, voiceOpcodeSessionDescription, voiceOpcodeHello:
+		// Those events should be sent through the payloads channel if this
 		// voice connection is currently connecting to a voice channel so the
-		// ConnectToVoice method can receive them.
-		if atomic.LoadInt32(&vc.connectingToVoice) == 1 {
-			vc.payloads <- p
-		}
-
-	// Session description.
-	case 4:
-		// Those two events should be sent through the payloads channel if this
-		// voice connection is currently connecting to a voice channel so the
-		// ConnectToVoice method can receive them.
-		if atomic.LoadInt32(&vc.connectingToVoice) == 1 {
+		// connect method can receive them.
+		if vc.isConnecting() {
 			vc.payloads <- p
 		}
 
 	// Heartbeat ACK.
-	case 6:
+	case voiceOpcodeHeartbeatACK:
 		// TODO: Check nonce ?
 		atomic.StoreInt64(&vc.lastHeartbeatACK, time.Now().UnixNano())
 
-	// Hello.
-	case 8:
-		// Those two events should be sent through the payloads channel if this
-		// voice connection is currently connecting to a voice channel so the
-		// ConnectToVoice method can receive them.
-		if atomic.LoadInt32(&vc.connectingToVoice) == 1 {
-			vc.payloads <- p
-		}
+	// Resume acknowledged by the voice server.
+	case voiceOpcodeResumed:
 
-	// Resumed.
-	case 9:
-
-	// Client disconnect.
-	case 13:
+	// A client has disconnected from the voice channel.
+	case voiceOpcodeClientDisconnect:
 	}
 	return nil
 }

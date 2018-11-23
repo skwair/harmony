@@ -80,5 +80,5 @@ func (vc *VoiceConnection) Speaking(s bool, delay int) error {
 		Delay:    delay,
 		SSRC:     vc.ssrc,
 	}
-	return vc.sendPayload(5, p)
+	return vc.sendPayload(voiceOpcodeSpeaking, p)
 }
