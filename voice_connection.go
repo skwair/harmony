@@ -136,7 +136,7 @@ type voiceIdentify struct {
 	Token     string `json:"token"`
 }
 
-// voiceReady payload is received when the client successfuly identified
+// voiceReady payload is received when the client successfully identified
 // with the voice server.
 type voiceReady struct {
 	SSRC  uint32   `json:"ssrc"`
@@ -217,7 +217,7 @@ func (vc *VoiceConnection) connect() error {
 		SelfMute:  vc.mute,
 		SelfDeaf:  vc.deaf,
 	}
-	if err := vc.client.sendPayload(4, vsu); err != nil {
+	if err := vc.client.sendPayload(gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
 		return err
 	}
 
@@ -252,7 +252,7 @@ func (vc *VoiceConnection) connect() error {
 	atomic.StoreInt32(&vc.connectingToVoice, 1)
 	defer atomic.StoreInt32(&vc.connectingToVoice, 0)
 
-	vc.wg.Add(2) // listen starts an additionnal goroutine.
+	vc.wg.Add(2) // listen starts an additional goroutine.
 	go vc.listen()
 
 	go vc.wait() // wait does not count in the waitgroup.
@@ -263,14 +263,14 @@ func (vc *VoiceConnection) connect() error {
 		SessionID: vc.client.sessionID,
 		Token:     vc.token,
 	}
-	if err = vc.sendPayload(0, i); err != nil {
+	if err = vc.sendPayload(voiceOpcodeIdentify, i); err != nil {
 		return err
 	}
 
 	// The Gateway should send us a Hello packet defining the heartbeat
 	// interval when we connect to the websocket.
 	p := <-vc.payloads
-	if p.Op != 8 {
+	if p.Op != voiceOpcodeHello {
 		return fmt.Errorf("expected Opcode 8 Hello; got Opcode %d", p.Op)
 	}
 
@@ -289,7 +289,7 @@ func (vc *VoiceConnection) connect() error {
 
 	// Now we should receive a Ready packet.
 	p = <-vc.payloads
-	if p.Op != 2 {
+	if p.Op != voiceOpcodeReady {
 		return fmt.Errorf("expected Opcode 2 Ready; got Opcode %d", p.Op)
 	}
 
@@ -333,14 +333,14 @@ func (vc *VoiceConnection) connect() error {
 			Mode:    "xsalsa20_poly1305",
 		},
 	}
-	if err = vc.sendPayload(1, sp); err != nil {
+	if err = vc.sendPayload(voiceOpcodeSelectProtocol, sp); err != nil {
 		return err
 	}
 
 	// Now we should receive a Session Description packet.
 	p = <-vc.payloads
-	if p.Op != 4 {
-		return fmt.Errorf("expected Opcode 4 Ready; got Opcode %d", p.Op)
+	if p.Op != voiceOpcodeSessionDescription {
+		return fmt.Errorf("expected Opcode 4 Session Description; got Opcode %d", p.Op)
 	}
 
 	var sd sessionDescription
@@ -372,7 +372,7 @@ func (vc *VoiceConnection) Disconnect() {
 	vsu := &voiceStateUpdate{
 		GuildID: vc.guildID,
 	}
-	if err := vc.client.sendPayload(4, vsu); err != nil {
+	if err := vc.client.sendPayload(gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
 		vc.errorHandler(err)
 	}
 
@@ -487,4 +487,10 @@ func getStateAndServer(ch chan *payload) (*VoiceState, *VoiceServerUpdate, error
 		}
 	}
 	return &state, &server, nil
+}
+
+// isConnecting returns whether this voice connection is currently connecting
+// to a voice channel.
+func (vc *VoiceConnection) isConnecting() bool {
+	return atomic.LoadInt32(&vc.connectingToVoice) == 1
 }

@@ -11,7 +11,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-// payload of a Discord Gateway or Voice event.
+// payload is the content of a Discord Gateway or Voice event.
 type payload struct {
 	// Opcode for the payload.
 	Op int `json:"op"`
@@ -69,7 +69,7 @@ func sendPayload(connWMu *sync.Mutex, conn *websocket.Conn, p *payload) error {
 // it into a payload.
 func recvPayload(connRMu *sync.Mutex, conn *websocket.Conn) (*payload, error) {
 	connRMu.Lock()
-	t, b, err := conn.ReadMessage()
+	typ, b, err := conn.ReadMessage()
 	connRMu.Unlock()
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func recvPayload(connRMu *sync.Mutex, conn *websocket.Conn) (*payload, error) {
 	br := bytes.NewReader(b)
 	rc = ioutil.NopCloser(br)
 	// If the payload is compressed, we first need to decompress it.
-	if t == websocket.BinaryMessage {
+	if typ == websocket.BinaryMessage {
 		rc, err = zlib.NewReader(rc)
 		if err != nil {
 			return nil, err

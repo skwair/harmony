@@ -40,7 +40,7 @@ func (c *Client) identify() error {
 		i.Shard = &[2]int{c.shard[0], c.shard[1]}
 	}
 
-	return c.sendPayload(2, i)
+	return c.sendPayload(gatewayOpcodeIdentify, i)
 }
 
 // resume is used to replay missed events when a disconnected client resumes.
@@ -57,5 +57,5 @@ func (c *Client) resume() error {
 		SessionID: c.sessionID,
 		Seq:       atomic.LoadInt64(&c.sequence),
 	}
-	return c.sendPayload(6, r)
+	return c.sendPayload(gatewayOpcodeResume, r)
 }

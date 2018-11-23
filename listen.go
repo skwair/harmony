@@ -14,8 +14,8 @@ func (vc *VoiceConnection) listen() {
 	listen(&vc.wg, vc.stop, vc.error, vc.recvPayloads, vc.handleEvent)
 }
 
-// listen uses the receiver to receive payloads and passes them to the
-// handler as they arrive. It should be called in a separate goroutine.
+// listen uses the given receiver to receive payloads and passes them to the
+// given handler as they arrive. It should be called in a separate goroutine.
 // It will decrement the given wait group when done, can be stopped
 // by closing the stop channel and will report any error that occurs with
 // the errCh channel.

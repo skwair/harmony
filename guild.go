@@ -484,7 +484,7 @@ func (r *GuildResource) RequestGuildMembers(query string, limit int) error {
 		return ErrGatewayNotConnected
 	}
 
-	return r.client.sendPayload(8, &requestGuildMembers{
+	return r.client.sendPayload(gatewayOpcodeRequestGuildMembers, &requestGuildMembers{
 		GuildID: r.guildID,
 		Query:   query,
 		Limit:   limit,

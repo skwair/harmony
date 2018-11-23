@@ -26,7 +26,7 @@ func (c *Client) sendHeartbeatPayload() error {
 		sequence = &seq
 	}
 	atomic.StoreInt64(&c.lastHeartbeatSend, time.Now().UnixNano())
-	return c.sendPayload(1, sequence)
+	return c.sendPayload(gatewayOpcodeHeartbeat, sequence)
 }
 
 // heartbeat periodically sends a heartbeat payload to the Voice server.
@@ -36,7 +36,7 @@ func (vc *VoiceConnection) heartbeat(every time.Duration) {
 
 // sendHeartbeatPayload sends a single heartbeat payload containing a nonce.
 func (vc *VoiceConnection) sendHeartbeatPayload() error {
-	return vc.sendPayload(3, time.Now().Unix())
+	return vc.sendPayload(voiceOpcodeHeartbeat, time.Now().Unix())
 }
 
 // heartbeat periodically calls the heartbeater function to send a heartbeat payload.

@@ -245,5 +245,5 @@ func (r *CurrentUserResource) SetStatus(status *Status) error {
 		return ErrGatewayNotConnected
 	}
 
-	return r.client.sendPayload(3, status)
+	return r.client.sendPayload(gatewayOpcodeStatusUpdate, status)
 }
