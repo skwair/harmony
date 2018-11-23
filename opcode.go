@@ -14,8 +14,6 @@ const (
 	gatewayOpcodeHeartbeatACK
 )
 
-//     harmony_test.go:31: could not connect to gateway: expected Opcode 0 Ready; got Opcode 9
-
 const (
 	voiceOpcodeIdentify = iota
 	voiceOpcodeSelectProtocol
