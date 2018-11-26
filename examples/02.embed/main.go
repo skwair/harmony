@@ -33,7 +33,7 @@ func main() {
 
 	b := &bot{client: c}
 
-	c.HandleMessageCreate(b.onNewMessage)
+	c.OnMessageCreate(b.onNewMessage)
 
 	if err = c.Connect(); err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)

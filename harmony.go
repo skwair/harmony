@@ -49,15 +49,15 @@ to send a message to a channel:
 
 Registering event handlers
 
-To receive messages, use the HandleMessageCreate method and give it your
+To receive messages, use the OnMessageCreate method and give it your
 handler. It will be called each time a message is sent to a channel your
 bot is in with the message as a parameter.
 
-	c.HandleMessageCreate(func(msg *harmony.Message) {
+	c.OnMessageCreate(func(msg *harmony.Message) {
 		fmt.Println(msg.Content)
 	})
 
-To register handlers for other types of events, see Client.Handle* methods.
+To register handlers for other types of events, see Client.On* methods.
 
 Using the state
 
