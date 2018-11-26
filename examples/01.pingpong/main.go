@@ -45,7 +45,7 @@ func main() {
 	// Register a callback for MESSAGE_CREATE events.
 	// Note that we won't receive events before the client
 	// is actually connected to the Gateway.
-	c.HandleMessageCreate(b.onNewMessage)
+	c.OnMessageCreate(b.onNewMessage)
 
 	// Connect to the Gateway. From now on, our registered
 	// handler for MESSAGE_CREATE will be called when there

@@ -25,7 +25,7 @@ func (h readyHandler) handle(v interface{}) {
 }
 
 // HandleReady registers the handler function for the "READY" event.
-func (c *Client) HandleReady(f func(r *Ready)) {
+func (c *Client) OnReady(f func(r *Ready)) {
 	c.registerHandler(eventReady, readyHandler(f))
 }
 
@@ -37,7 +37,7 @@ func (h channelCreateHandler) handle(v interface{}) {
 
 // HandleChannelCreate registers the handler function for the "CHANNEL_CREATE" event.
 // This event is fired when a new channel is created, relevant to the current user.
-func (c *Client) HandleChannelCreate(f func(c *Channel)) {
+func (c *Client) OnChannelCreate(f func(c *Channel)) {
 	c.registerHandler(eventChannelCreate, channelCreateHandler(f))
 }
 
@@ -49,7 +49,7 @@ func (h channelUpdateHandler) handle(v interface{}) {
 
 // HandleChannelUpdate registers the handler function for the "CHANNEL_UPDATE" event.
 // This event is fired when a channel is updated, relevant to the current user.
-func (c *Client) HandleChannelUpdate(f func(c *Channel)) {
+func (c *Client) OnChannelUpdate(f func(c *Channel)) {
 	c.registerHandler(eventChannelUpdate, channelUpdateHandler(f))
 }
 
@@ -61,7 +61,7 @@ func (h channelDeleteHandler) handle(v interface{}) {
 
 // HandleChannelDelete registers the handler function for the "CHANNEL_DELETE" event.
 // This event is fired when a channel is deleted, relevant to the current user.
-func (c *Client) HandleChannelDelete(f func(c *Channel)) {
+func (c *Client) OnChannelDelete(f func(c *Channel)) {
 	c.registerHandler(eventChannelDelete, channelDeleteHandler(f))
 }
 
@@ -80,7 +80,7 @@ func (h channelPinsUpdateHandler) handle(v interface{}) {
 // HandleChannelPinsUpdate registers the handler function for the "CHANNEL_PINS_UPDATE" event.
 // This event is fired when a message is pinned or unpinned, but not when a pinned message
 // is deleted.
-func (c *Client) HandleChannelPinsUpdate(f func(cpu *ChannelPinsUpdate)) {
+func (c *Client) OnChannelPinsUpdate(f func(cpu *ChannelPinsUpdate)) {
 	c.registerHandler(eventChannelPinsUpdate, channelPinsUpdateHandler(f))
 }
 
@@ -95,7 +95,7 @@ func (h guildCreateHandler) handle(v interface{}) {
 // 	1. When a user is initially connecting, to lazily load and backfill information for all unavailable guilds sent in the Ready event.
 // 	2. When a Guild becomes available again to the client.
 // 	3. When the current user joins a new Guild.
-func (c *Client) HandleGuildCreate(f func(g *Guild)) {
+func (c *Client) OnGuildCreate(f func(g *Guild)) {
 	c.registerHandler(eventGuildCreate, guildCreateHandler(f))
 }
 
@@ -106,7 +106,7 @@ func (h guildUpdateHandler) handle(v interface{}) {
 }
 
 // HandleGuildUpdate registers the handler function for the "GUILD_UPDATE" event.
-func (c *Client) HandleGuildUpdate(f func(g *Guild)) {
+func (c *Client) OnGuildUpdate(f func(g *Guild)) {
 	c.registerHandler(eventGuildUpdate, guildUpdateHandler(f))
 }
 
@@ -120,7 +120,7 @@ func (h guildDeleteHandler) handle(v interface{}) {
 // This event is fired when a guild becomes unavailable during a guild outage,
 // or when the user leaves or is removed from a guild. If the unavailable field
 // is not set, the user was removed from the guild.
-func (c *Client) HandleGuildDelete(f func(g *UnavailableGuild)) {
+func (c *Client) OnGuildDelete(f func(g *UnavailableGuild)) {
 	c.registerHandler(eventGuildDelete, guildDeleteHandler(f))
 }
 
@@ -136,7 +136,7 @@ func (h guildBanAddHandler) handle(v interface{}) {
 }
 
 // HandleGuildBanAdd registers the handler function for the "GUILD_BAN_ADD" event.
-func (c *Client) HandleGuildBanAdd(f func(ban *GuildBan)) {
+func (c *Client) OnGuildBanAdd(f func(ban *GuildBan)) {
 	c.registerHandler(eventGuildBanAdd, guildBanAddHandler(f))
 }
 
@@ -148,7 +148,7 @@ func (h guildBanRemoveHandler) handle(v interface{}) {
 
 // HandleGuildBanRemove registers the handler function for the "GUILD_BAN_REMOVE" event.
 // This event is fired when a guild is updated.
-func (c *Client) HandleGuildBanRemove(f func(ban *GuildBan)) {
+func (c *Client) OnGuildBanRemove(f func(ban *GuildBan)) {
 	c.registerHandler(eventGuildBanRemove, guildBanRemoveHandler(f))
 }
 
@@ -165,7 +165,7 @@ func (h guildEmojisUpdateHandler) handle(v interface{}) {
 
 // HandleGuildEmojisUpdate registers the handler function for the "GUILD_EMOJIS_UPDATE" event.
 // Fired when a guild's emojis have been updated.
-func (c *Client) HandleGuildEmojisUpdate(f func(emojis *GuildEmojis)) {
+func (c *Client) OnGuildEmojisUpdate(f func(emojis *GuildEmojis)) {
 	c.registerHandler(eventGuildEmojisUpdate, guildEmojisUpdateHandler(f))
 }
 
@@ -177,7 +177,7 @@ func (h guildIntegrationUpdateHandler) handle(v interface{}) {
 
 // HandleGuildIntegrationsUpdate registers the handler function for the "GUILD_INTEGRATIONS_UPDATE" event.
 // Fired when a guild integration is updated.
-func (c *Client) HandleGuildIntegrationsUpdate(f func(guildID string)) {
+func (c *Client) OnGuildIntegrationsUpdate(f func(guildID string)) {
 	c.registerHandler(eventGuildIntegrationsUpdate, guildIntegrationUpdateHandler(f))
 }
 
@@ -194,7 +194,7 @@ func (h guildMemberAddHandler) handle(v interface{}) {
 
 // HandleGuildMemberAdd registers the handler function for the "GUILD_MEMBER_ADD" event.
 // Fired when a new user joins a guild.
-func (c *Client) HandleGuildMemberAdd(f func(m *GuildMemberAdd)) {
+func (c *Client) OnGuildMemberAdd(f func(m *GuildMemberAdd)) {
 	c.registerHandler(eventGuildMemberAdd, guildMemberAddHandler(f))
 }
 
@@ -211,7 +211,7 @@ func (h guildMemberRemoveHandler) handle(v interface{}) {
 
 // HandleGuildMemberRemove registers the handler function for the "GUILD_MEMBER_REMOVE" event.
 // Fired when a user is removed from a guild (leave/kick/ban).
-func (c *Client) HandleGuildMemberRemove(f func(m *GuildMemberRemove)) {
+func (c *Client) OnGuildMemberRemove(f func(m *GuildMemberRemove)) {
 	c.registerHandler(eventGuildMemberRemove, guildMemberRemoveHandler(f))
 }
 
@@ -230,7 +230,7 @@ func (h guildMemberUpdateHandler) handle(v interface{}) {
 
 // HandleGuildMemberUpdate registers the handler function for the "GUILD_MEMBER_UPDATE" event.
 // Fired when a guild member is updated.
-func (c *Client) HandleGuildMemberUpdate(f func(m *GuildMemberUpdate)) {
+func (c *Client) OnGuildMemberUpdate(f func(m *GuildMemberUpdate)) {
 	c.registerHandler(eventGuildMemberUpdate, guildMemberUpdateHandler(f))
 }
 
@@ -247,7 +247,7 @@ func (h guildMembersChunkHandler) handle(v interface{}) {
 
 // HandleGuildMembersChunk registers the handler function for the "GUILD_MEMBERS_CHUNK" event.
 // Sent in response to Guild Request Members.
-func (c *Client) HandleGuildMembersChunk(f func(m *GuildMembersChunk)) {
+func (c *Client) OnGuildMembersChunk(f func(m *GuildMembersChunk)) {
 	c.registerHandler(eventGuildMembersChunk, guildMembersChunkHandler(f))
 }
 
@@ -264,7 +264,7 @@ func (h guildRoleCreateHandler) handle(v interface{}) {
 
 // HandleGuildRoleCreate registers the handler function for the "GUILD_ROLE_CREATE" event.
 // Fired when a guild role is created.
-func (c *Client) HandleGuildRoleCreate(f func(r *GuildRole)) {
+func (c *Client) OnGuildRoleCreate(f func(r *GuildRole)) {
 	c.registerHandler(eventGuildRoleCreate, guildRoleCreateHandler(f))
 }
 
@@ -276,7 +276,7 @@ func (h guildRoleUpdateHandler) handle(v interface{}) {
 
 // HandleGuildRoleUpdate registers the handler function for the "GUILD_ROLE_UPDATE" event.
 // Fired when a guild role is updated.
-func (c *Client) HandleGuildRoleUpdate(f func(r *GuildRole)) {
+func (c *Client) OnGuildRoleUpdate(f func(r *GuildRole)) {
 	c.registerHandler(eventGuildRoleUpdate, guildRoleUpdateHandler(f))
 }
 
@@ -293,7 +293,7 @@ func (h guildRoleDeleteHandler) handle(v interface{}) {
 
 // HandleGuildRoleDelete registers the handler function for the "GUILD_ROLE_DELETE" event.
 // Fired when a guild role is deleted.
-func (c *Client) HandleGuildRoleDelete(f func(r *GuildRoleDelete)) {
+func (c *Client) OnGuildRoleDelete(f func(r *GuildRoleDelete)) {
 	c.registerHandler(eventGuildRoleDelete, guildRoleDeleteHandler(f))
 }
 
@@ -305,7 +305,7 @@ func (h messageCreateHandler) handle(v interface{}) {
 
 // HandleMessageCreate registers the handler function for the "MESSAGE_CREATE" event.
 // Fired when a message is created.
-func (c *Client) HandleMessageCreate(f func(m *Message)) {
+func (c *Client) OnMessageCreate(f func(m *Message)) {
 	c.registerHandler(eventMessageCreate, messageCreateHandler(f))
 }
 
@@ -318,7 +318,7 @@ func (h messageUpdateHandler) handle(v interface{}) {
 // HandleMessageUpdate registers the handler function for the "MESSAGE_UPDATE" event.
 // Fired when a message is updated. Unlike creates, message updates may contain only
 // a subset of the full message object payload (but will always contain an id and channel_id).
-func (c *Client) HandleMessageUpdate(f func(m *Message)) {
+func (c *Client) OnMessageUpdate(f func(m *Message)) {
 	c.registerHandler(eventMessageUpdate, messageUpdateHandler(f))
 }
 
@@ -335,7 +335,7 @@ func (h messageDeleteHandler) handle(v interface{}) {
 
 // HandleMessageDelete registers the handler function for the "MESSAGE_DELETE" event.
 // Fired when a message is deleted.
-func (c *Client) HandleMessageDelete(f func(m *MessageDelete)) {
+func (c *Client) OnMessageDelete(f func(m *MessageDelete)) {
 	c.registerHandler(eventMessageDelete, messageDeleteHandler(f))
 }
 
@@ -353,7 +353,7 @@ func (h messageDeleteBulkHandler) handle(v interface{}) {
 
 // HandleMessageDeleteBulk registers the handler function for the "MESSAGE_DELETE_BULK" event.
 // Fired when multiple messages are deleted at once.
-func (c *Client) HandleMessageDeleteBulk(f func(mdb *MessageDeleteBulk)) {
+func (c *Client) OnMessageDeleteBulk(f func(mdb *MessageDeleteBulk)) {
 	c.registerHandler(eventMessageDeleteBulk, messageDeleteBulkHandler(f))
 }
 
@@ -369,7 +369,7 @@ func (h messageAckHandler) handle(v interface{}) {
 }
 
 // HandleMessageAck registers the handler function for the "MESSAGE_ACK" event.
-func (c *Client) HandleMessageAck(f func(ack *MessageAck)) {
+func (c *Client) OnMessageAck(f func(ack *MessageAck)) {
 	c.registerHandler(eventMessageAck, messageAckHandler(f))
 }
 
@@ -389,7 +389,7 @@ func (h messageReactionAddHandler) handle(v interface{}) {
 
 // HandleMessageReactionAdd registers the handler function for the "MESSAGE_REACTION_ADD" event.
 // Fired when a user adds a reaction to a message.
-func (c *Client) HandleMessageReactionAdd(f func(r *MessageReaction)) {
+func (c *Client) OnMessageReactionAdd(f func(r *MessageReaction)) {
 	c.registerHandler(eventMessageReactionAdd, messageReactionAddHandler(f))
 }
 
@@ -401,7 +401,7 @@ func (h messageReactionRemoveHandler) handle(v interface{}) {
 
 // HandleMessageReactionRemove registers the handler function for the "MESSAGE_REACTION_REMOVE" event.
 // Fired when a user removes a reaction from a message.
-func (c *Client) HandleMessageReactionRemove(f func(r *MessageReaction)) {
+func (c *Client) OnMessageReactionRemove(f func(r *MessageReaction)) {
 	c.registerHandler(eventMessageReactionRemove, messageReactionRemoveHandler(f))
 }
 
@@ -419,7 +419,7 @@ func (h messageReactionRemoveAllHandler) handle(v interface{}) {
 
 // HandleMessageReactionRemoveAll registers the handler function for the "MESSAGE_REACTION_REMOVE_ALL" event.
 // Fired when a user explicitly removes all reactions from a message.
-func (c *Client) HandleMessageReactionRemoveAll(f func(r *MessageReactionRemoveAll)) {
+func (c *Client) OnMessageReactionRemoveAll(f func(r *MessageReactionRemoveAll)) {
 	c.registerHandler(eventMessageReactionRemoveAll, messageReactionRemoveAllHandler(f))
 }
 
@@ -435,7 +435,7 @@ func (h presenceUpdateHandler) handle(v interface{}) {
 // is the id field, everything else is optional. Along with this limitation, no fields
 // are required, and the types of the fields are not validated. Your client should expect
 // any combination of fields and types within this event.
-func (c *Client) HandlePresenceUpdate(f func(p *Presence)) {
+func (c *Client) OnPresenceUpdate(f func(p *Presence)) {
 	c.registerHandler(eventPresenceUpdate, presenceUpdateHandler(f))
 }
 
@@ -454,7 +454,7 @@ func (h typingStartHandler) handle(v interface{}) {
 
 // HandleTypingStart registers the handler function for the "TYPING_START" event.
 // Fired when a user starts typing in a channel.
-func (c *Client) HandleTypingStart(f func(ts *TypingStart)) {
+func (c *Client) OnTypingStart(f func(ts *TypingStart)) {
 	c.registerHandler(eventTypingStart, typingStartHandler(f))
 }
 
@@ -466,7 +466,7 @@ func (h userUpdateHandler) handle(v interface{}) {
 
 // HandleUserUpdate registers the handler function for the "USER_UPDATE" event.
 // Fired when properties about the user change.
-func (c *Client) HandleUserUpdate(f func(u *User)) {
+func (c *Client) OnUserUpdate(f func(u *User)) {
 	c.registerHandler(eventUserUpdate, userUpdateHandler(f))
 }
 
@@ -478,7 +478,7 @@ func (h voiceStateUpdateHandler) handle(v interface{}) {
 
 // HandleVoiceStateUpdate registers the handler function for the "VOICE_STATE_UPDATE" event.
 // Fired when someone joins/leaves/moves voice channels.
-func (c *Client) HandleVoiceStateUpdate(f func(vs *VoiceState)) {
+func (c *Client) OnVoiceStateUpdate(f func(vs *VoiceState)) {
 	c.registerHandler(eventVoiceStateUpdate, voiceStateUpdateHandler(f))
 }
 
@@ -497,7 +497,7 @@ func (h voiceServerUpdateHandler) handle(v interface{}) {
 // HandleVoiceServerUpdate registers the handler function for the "VOICE_SERVER_UPDATE" event.
 // Fired when a guild's voice server is updated. This is Fired when initially connecting to voice,
 // and when the current voice instance fails over to a new server.
-func (c *Client) HandleVoiceServerUpdate(f func(vs *VoiceServerUpdate)) {
+func (c *Client) OnVoiceServerUpdate(f func(vs *VoiceServerUpdate)) {
 	c.registerHandler(eventVoiceServerUpdate, voiceServerUpdateHandler(f))
 }
 
@@ -514,6 +514,6 @@ func (h webhooksUpdateHandler) handle(v interface{}) {
 
 // HandleWebhooksUpdate registers the handler function for the "WEBHOOKS_UPDATE" event.
 // Fired when a guild channel's webhook is created, updated, or deleted.
-func (c *Client) HandleWebhooksUpdate(f func(wu *WebhooksUpdate)) {
+func (c *Client) OnWebhooksUpdate(f func(wu *WebhooksUpdate)) {
 	c.registerHandler(eventWebhooksUpdate, webhooksUpdateHandler(f))
 }
