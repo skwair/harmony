@@ -15,29 +15,29 @@ import (
 // Guild in Discord represents an isolated collection of users and channels,
 // and are often referred to as "servers" in the UI.
 type Guild struct {
-	ID                          string   `json:"id"`
-	Name                        string   `json:"name,omitempty"`
-	Icon                        *string  `json:"icon,omitempty"`
-	Splash                      *string  `json:"splash,omitempty"`
-	Owner                       bool     `json:"owner,omitempty"`
-	OwnerID                     string   `json:"owner_id,omitempty"`
-	Permissions                 int      `json:"permissions,omitempty"`
-	Region                      string   `json:"region,omitempty"`
-	AFKChannelID                *string  `json:"afk_channel_id,omitempty"`
-	AFKTimeout                  int      `json:"afk_timeout,omitempty"`
-	EmbedEnabled                bool     `json:"embed_enabled,omitempty"`
-	EmbedChannelID              string   `json:"embed_channel_id,omitempty"`
-	VerificationLevel           int      `json:"verification_level,omitempty"`
-	DefaultMessageNotifications int      `json:"default_message_notifications,omitempty"`
-	ExplicitContentFilter       int      `json:"explicit_content_filter,omitempty"`
-	Roles                       []Role   `json:"roles,omitempty"`
-	Emojis                      []Emoji  `json:"emojis,omitempty"`
-	Features                    []string `json:"features,omitempty"`
-	MFALevel                    int      `json:"mfa_level,omitempty"`
-	ApplicationID               *string  `json:"application_id,omitempty"`
-	WidgetEnabled               bool     `json:"widget_enabled,omitempty"`
-	WidgetChannelID             string   `json:"widget_channel_id,omitempty"`
-	SystemChannelID             *string  `json:"system_channel_id,omitempty"`
+	ID                          string                         `json:"id"`
+	Name                        string                         `json:"name,omitempty"`
+	Icon                        *string                        `json:"icon,omitempty"`
+	Splash                      *string                        `json:"splash,omitempty"`
+	Owner                       bool                           `json:"owner,omitempty"`
+	OwnerID                     string                         `json:"owner_id,omitempty"`
+	Permissions                 int                            `json:"permissions,omitempty"`
+	Region                      string                         `json:"region,omitempty"`
+	AFKChannelID                *string                        `json:"afk_channel_id,omitempty"`
+	AFKTimeout                  int                            `json:"afk_timeout,omitempty"`
+	EmbedEnabled                bool                           `json:"embed_enabled,omitempty"`
+	EmbedChannelID              string                         `json:"embed_channel_id,omitempty"`
+	VerificationLevel           guild.VerificationLevel        `json:"verification_level,omitempty"`
+	DefaultMessageNotifications guild.DefaultNotificationLevel `json:"default_message_notifications,omitempty"`
+	ExplicitContentFilter       guild.ExplicitContentFilter    `json:"explicit_content_filter,omitempty"`
+	Roles                       []Role                         `json:"roles,omitempty"`
+	Emojis                      []Emoji                        `json:"emojis,omitempty"`
+	Features                    []string                       `json:"features,omitempty"`
+	MFALevel                    int                            `json:"mfa_level,omitempty"`
+	ApplicationID               *string                        `json:"application_id,omitempty"`
+	WidgetEnabled               bool                           `json:"widget_enabled,omitempty"`
+	WidgetChannelID             string                         `json:"widget_channel_id,omitempty"`
+	SystemChannelID             *string                        `json:"system_channel_id,omitempty"`
 
 	// Following fields are only sent within the GUILD_CREATE event.
 	JoinedAt    time.Time     `json:"joined_at,omitempty"`

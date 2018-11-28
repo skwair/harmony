@@ -48,13 +48,31 @@ func WithRegion(region string) Setting {
 	}
 }
 
+// VerificationLevel is the level of verification that applies on a server.
+// Members must meet criteria before they can send messages or initiate
+// direct message conversations with other guild members.
+// This does not apply for members that have a role assigned to them.
+type VerificationLevel int
+
+const (
+	// VerificationLevelNone means there is no verification.
+	VerificationLevelNone VerificationLevel = iota
+	// VerificationLevelLow means a member must have
+	// a verified email on their account.
+	VerificationLevelLow
+	// VerificationLevelMedium means a member must be
+	// registered on Discord for longer than 5 minutes.
+	VerificationLevelMedium
+	// VerificationLevelHigh means a member must be
+	// in this server for longer than 10 minutes.
+	VerificationLevelHigh
+	// VerificationLevelVeryHigh means a member must have
+	// a verified phone number.
+	VerificationLevelVeryHigh
+)
+
 // WithVerificationLevel sets the verification level of a guild.
-//	- 0 for none (unrestricted)
-//	- 1 for low (must have verified email on account)
-//	- 2 for medium (must be registered on Discord for longer than 5 minutes)
-//	- 3 for high (must be a member of the server for longer than 10 minutes)
-//	- 4 for very high (must have a verified phone number)
-func WithVerificationLevel(lvl int) Setting {
+func WithVerificationLevel(lvl VerificationLevel) Setting {
 	return func(s *Settings) {
 		if lvl < 0 {
 			lvl = 0
@@ -63,14 +81,26 @@ func WithVerificationLevel(lvl int) Setting {
 			lvl = 4
 		}
 
-		s.VerificationLevel = optional.NewInt(lvl)
+		s.VerificationLevel = optional.NewInt(int(lvl))
 	}
 }
 
+// DefaultNotificationLevel determines whether members who have not explicitly
+// set their notification settings receive a notification for every message
+// sent in this server or not.
+type DefaultNotificationLevel int
+
+const (
+	// DefaultNotificationLevelAll means a notification
+	// will be sent for all messages.
+	DefaultNotificationLevelAll DefaultNotificationLevel = iota
+	// DefaultNotificationLevelMentionOnly means a
+	// notification will be sent for mentions only.
+	DefaultNotificationLevelMentionOnly
+)
+
 // WithDefaultMessageNotifications sets the default notification level of a guild.
-//	- 0 for all messages
-//	- 1 for mentions only
-func WithDefaultMessageNotifications(lvl int) Setting {
+func WithDefaultMessageNotifications(lvl DefaultNotificationLevel) Setting {
 	return func(s *Settings) {
 		if lvl < 0 {
 			lvl = 0
@@ -79,15 +109,26 @@ func WithDefaultMessageNotifications(lvl int) Setting {
 			lvl = 1
 		}
 
-		s.DefaultMessageNotifications = optional.NewInt(lvl)
+		s.DefaultMessageNotifications = optional.NewInt(int(lvl))
 	}
 }
 
+// ExplicitContentFilter determines how the explicit content filter
+// should behave for a server.
+type ExplicitContentFilter int
+
+const (
+	// ExplicitContentFilterDisabled disables the filter.
+	ExplicitContentFilterDisabled ExplicitContentFilter = iota
+	// ExplicitContentFilterWithoutRole filters messages from
+	// members without a role.
+	ExplicitContentFilterWithoutRole
+	// ExplicitContentFilterAll filters messages from all members.
+	ExplicitContentFilterAll
+)
+
 // WithExplicitContentFilter sets the explicit content filter of a guild.
-//	- 0 for disabled
-//	- 1 for member without roles
-//	- 2 for all members
-func WithExplicitContentFilter(lvl int) Setting {
+func WithExplicitContentFilter(lvl ExplicitContentFilter) Setting {
 	return func(s *Settings) {
 		if lvl < 0 {
 			lvl = 0
@@ -96,7 +137,7 @@ func WithExplicitContentFilter(lvl int) Setting {
 			lvl = 2
 		}
 
-		s.ExplicitContentFilter = optional.NewInt(lvl)
+		s.ExplicitContentFilter = optional.NewInt(int(lvl))
 	}
 }
 
