@@ -167,7 +167,7 @@ func (r *CurrentUserResource) LeaveGuild(id string) error {
 // DMs returns the list of direct message channels the current user is in.
 // This endpoint does not seem to be available for Bot users, always returning
 // an empty list of channels.
-func (r *CurrentUserResource) DMs(id string) ([]Channel, error) {
+func (r *CurrentUserResource) DMs() ([]Channel, error) {
 	e := endpoint.GetUserDMs()
 	resp, err := r.client.doReq(http.MethodGet, e, nil)
 	if err != nil {
