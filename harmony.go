@@ -66,7 +66,7 @@ sent by Discord's Gateway. As events are received by the client, this state
 is constantly updated so it always have the newest data available.
 
 This session state acts as a cache to avoid making requests over the HTTP API
-each time. If you need to get information about the current user :
+each time. If you need to get information about the current user:
 
 	user := c.State.CurrentUser()
 

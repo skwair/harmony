@@ -12,19 +12,19 @@ Harmony is a peaceful [Go](https://golang.org) module for interacting with [Disc
 
 Although this package is usable, it still is under active development so please don't use it for anything other than experiments, yet.
 
-**Contents :**
+**Contents**
 
 - [Installation](#installation)
 - [Usage](#usage)
 - [Testing](#testing)
-- [How does it compare to DiscordGo ?](#how-does-it-compare-to-discordgo-)
+- [How does it compare to DiscordGo?](#how-does-it-compare-to-discordgo-)
 - [License](#license)
 
 # Installation
 
 Make sure you have a working Go installation, if not see [this page](https://golang.org/dl) first.
 
-Then, install this package with the `go get` command :
+Then, install this package with the `go get` command:
 
 ```sh
 go get -u github.com/skwair/harmony
@@ -89,7 +89,7 @@ go test -v -race ./...
 
 > Step 1 and 2 must be done only once for initial setup. Once you have your bot token and the ID of your test server, you can run the tests as many times as you want.
 
-# How does it compare to [DiscordGo](https://github.com/bwmarrin/discordgo) ?
+# How does it compare to [DiscordGo](https://github.com/bwmarrin/discordgo)?
 
 DiscordGo offers some additional features right now, such as a way to create and manage your [Discord applications](https://discordapp.com/developers/applications/me). The majority of features though, such a receiving events, sending messages, receiving and sending voice data, etc. are also implemented in this library.
 
