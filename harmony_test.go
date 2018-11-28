@@ -43,12 +43,7 @@ func TestHarmony(t *testing.T) {
 		}
 	}
 
-	var (
-		txtCh     *harmony.Channel
-		lastMsgID string
-	)
-
-	currentUserID := client.State.CurrentUser().ID
+	var txtCh *harmony.Channel
 
 	t.Run("create channels", func(t *testing.T) {
 		// Create a new channel category.
@@ -73,6 +68,11 @@ func TestHarmony(t *testing.T) {
 		}
 	})
 
+	var (
+		firstMsgIDs []string
+		lastMsgID   string
+	)
+
 	t.Run("send messages", func(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			content := fmt.Sprintf("foobar %d", i)
@@ -80,7 +80,12 @@ func TestHarmony(t *testing.T) {
 			if err != nil {
 				t.Fatalf("could not send message (%d): %v", i, err)
 			}
-			lastMsgID = msg.ID
+
+			if i == 4 {
+				lastMsgID = msg.ID
+			} else {
+				firstMsgIDs = append(firstMsgIDs, msg.ID)
+			}
 		}
 	})
 
@@ -95,6 +100,23 @@ func TestHarmony(t *testing.T) {
 		}
 	})
 
+	t.Run("edit message", func(t *testing.T) {
+		if _, err = client.Channel(txtCh.ID).EditMessage(lastMsgID, "foobar edited"); err != nil {
+			t.Fatalf("could not edit message: %v", err)
+		}
+	})
+
+	t.Run("get single message", func(t *testing.T) {
+		msg, err := client.Channel(txtCh.ID).Message(lastMsgID)
+		if err != nil {
+			t.Fatalf("coult not get single message: %v", err)
+		}
+
+		if msg.Content != "foobar edited" {
+			t.Fatalf("expected message content to be %q; got %q", "foobar edited", msg.Content)
+		}
+	})
+
 	t.Run("add reactions", func(t *testing.T) {
 		if err = client.Channel(txtCh.ID).AddReaction(lastMsgID, "👍"); err != nil {
 			t.Fatalf("could not add reaction to last message: %v", err)
@@ -105,11 +127,13 @@ func TestHarmony(t *testing.T) {
 		}
 	})
 
-	t.Run("remove reactions", func(t *testing.T) {
+	t.Run("remove reaction", func(t *testing.T) {
 		if err = client.Channel(txtCh.ID).RemoveReaction(lastMsgID, "👎"); err != nil {
 			t.Fatalf("could not remove reaction to last message: %v", err)
 		}
 	})
+
+	currentUserID := client.State.CurrentUser().ID
 
 	t.Run("get reactions", func(t *testing.T) {
 		users, err := client.Channel(txtCh.ID).GetReactions(lastMsgID, "👍", 0, "", "")
@@ -118,7 +142,7 @@ func TestHarmony(t *testing.T) {
 		}
 
 		if len(users) != 1 {
-			t.Fatalf("expected to have %d user with this reaction; got %d", 0, len(users))
+			t.Fatalf("expected to have %d user with this reaction; got %d", 1, len(users))
 		}
 
 		if users[0].ID != currentUserID {
@@ -132,6 +156,12 @@ func TestHarmony(t *testing.T) {
 
 		if len(users) != 0 {
 			t.Fatalf("expected to have %d user with this reaction; got %d", 0, len(users))
+		}
+	})
+
+	t.Run("remove all reactions", func(t *testing.T) {
+		if err = client.Channel(txtCh.ID).RemoveAllReactions(lastMsgID); err != nil {
+			t.Fatalf("could not remove all reactions to last message: %v", err)
 		}
 	})
 
@@ -159,6 +189,18 @@ func TestHarmony(t *testing.T) {
 	t.Run("remove pin", func(t *testing.T) {
 		if err = client.Channel(txtCh.ID).UnpinMessage(lastMsgID); err != nil {
 			t.Fatalf("could not unpin last message: %v", err)
+		}
+	})
+
+	t.Run("delete single message", func(t *testing.T) {
+		if err = client.Channel(txtCh.ID).DeleteMessage(lastMsgID); err != nil {
+			t.Fatalf("could not delete single message: %v", err)
+		}
+	})
+
+	t.Run("delete messages", func(t *testing.T) {
+		if err = client.Channel(txtCh.ID).DeleteMessageBulk(firstMsgIDs); err != nil {
+			t.Fatalf("could not delete messages: %v", err)
 		}
 	})
 
