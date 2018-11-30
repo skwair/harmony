@@ -19,7 +19,7 @@ func (c *Client) heartbeat(every time.Duration) {
 }
 
 // sendHeartbeatPayload sends a single heartbeat payload
-// containing the sequence number.
+// to the Gateway containing the sequence number.
 func (c *Client) sendHeartbeatPayload() error {
 	var sequence *int64 // nil or seq if seq > 0
 	if seq := atomic.LoadInt64(&c.sequence); seq != 0 {
@@ -29,12 +29,13 @@ func (c *Client) sendHeartbeatPayload() error {
 	return c.sendPayload(gatewayOpcodeHeartbeat, sequence)
 }
 
-// heartbeat periodically sends a heartbeat payload to the Voice server.
+// heartbeat periodically sends a heartbeat payload to the voice server.
 func (vc *VoiceConnection) heartbeat(every time.Duration) {
 	heartbeat(&vc.wg, vc.stop, vc.error, every, vc.sendHeartbeatPayload, &vc.lastHeartbeatACK)
 }
 
-// sendHeartbeatPayload sends a single heartbeat payload containing a nonce.
+// sendHeartbeatPayload sends a single heartbeat payload
+// to the voice server containing a nonce.
 func (vc *VoiceConnection) sendHeartbeatPayload() error {
 	return vc.sendPayload(voiceOpcodeHeartbeat, time.Now().Unix())
 }
@@ -43,12 +44,14 @@ func (vc *VoiceConnection) sendHeartbeatPayload() error {
 // It should be called in a separate goroutine. It will decrement the given
 // wait group when done, can be stopped by closing the stop channel and will
 // report any error that occurs with the errCh channel.
-func heartbeat(wg *sync.WaitGroup,
+func heartbeat(
+	wg *sync.WaitGroup,
 	stop chan struct{},
 	errCh chan<- error,
 	every time.Duration,
 	heartbeater func() error,
-	lastHeartbeatACK *int64) {
+	lastHeartbeatACK *int64,
+) {
 	defer wg.Done()
 
 	ticker := time.NewTicker(every)

@@ -9,7 +9,7 @@ func (c *Client) listen() {
 	listen(&c.wg, c.stop, c.error, c.recvPayloads, c.handleEvent)
 }
 
-// listen listens for payloads sent by the Voice server.
+// listen listens for payloads sent by the voice server.
 func (vc *VoiceConnection) listen() {
 	listen(&vc.wg, vc.stop, vc.error, vc.recvPayloads, vc.handleEvent)
 }
@@ -19,19 +19,21 @@ func (vc *VoiceConnection) listen() {
 // It will decrement the given wait group when done, can be stopped
 // by closing the stop channel and will report any error that occurs with
 // the errCh channel.
-func listen(wg *sync.WaitGroup,
+func listen(
+	wg *sync.WaitGroup,
 	stop chan struct{},
 	errCh chan<- error,
 	receiver func(ch chan<- *payload),
-	handler func(p *payload) error) {
+	handler func(p *payload) error,
+) {
 	defer wg.Done()
 
-	ch := make(chan *payload)
-	go receiver(ch)
+	payloads := make(chan *payload)
+	go receiver(payloads)
 
 	for {
 		select {
-		case p := <-ch:
+		case p := <-payloads:
 			if err := handler(p); err != nil {
 				errCh <- err
 				return
@@ -51,14 +53,16 @@ func (vc *VoiceConnection) recvPayloads(ch chan<- *payload) {
 }
 
 // recvPayloads uses the receiver to receive payloads and send them
-// through pCh as they arrive. It should be called in a separate
+// through payloads as they arrive. It should be called in a separate
 // goroutine. It will decrement the given wait group when done, can be
 // stopped by closing the stop channel and will report any error that
 // occurs with the errCh channel.
-func recvPayloads(wg *sync.WaitGroup,
-	pCh chan<- *payload,
+func recvPayloads(
+	wg *sync.WaitGroup,
+	payloads chan<- *payload,
 	errCh chan<- error,
-	receiver func() (*payload, error)) {
+	receiver func() (*payload, error),
+) {
 	defer wg.Done()
 
 	for {
@@ -78,6 +82,7 @@ func recvPayloads(wg *sync.WaitGroup,
 			errCh <- err
 			return
 		}
-		pCh <- p
+
+		payloads <- p
 	}
 }
