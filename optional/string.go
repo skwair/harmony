@@ -11,7 +11,7 @@ type String struct {
 // MarshalJSON implements the json.Marshaler interface.
 func (s *String) MarshalJSON() ([]byte, error) {
 	if s.nil {
-		return []byte(`"null"`), nil
+		return []byte(`null`), nil
 	}
 
 	return json.Marshal(s.s)

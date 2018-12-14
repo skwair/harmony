@@ -11,7 +11,7 @@ type Bool struct {
 // MarshalJSON implements the json.Marshaler interface.
 func (b *Bool) MarshalJSON() ([]byte, error) {
 	if b.nil {
-		return []byte(`"null"`), nil
+		return []byte(`null`), nil
 	}
 
 	return json.Marshal(b.b)
