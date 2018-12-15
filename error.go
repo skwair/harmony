@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net"
 	"net/http"
+	"strings"
 )
 
 var (
@@ -15,30 +17,90 @@ var (
 	ErrNoFileProvided = errors.New("no file provided")
 )
 
-// APIError is an error returned by the Discord HTTP API.
+// APIError is a generic error returned by the Discord HTTP API.
 type APIError struct {
-	HTTPCode int    `json:"http_code"`
-	Code     int    `json:"code"`
-	Message  string `json:"message"`
+	HTTPCode int      `json:"http_code"`
+	Code     int      `json:"code"`
+	Message  string   `json:"message"`
+	Misc     []string `json:"_misc"`
 }
 
+// Error implements the error interface.
 func (e APIError) Error() string {
-	return fmt.Sprintf("%d %s: %s (code %d)",
-		e.HTTPCode,
-		http.StatusText(e.HTTPCode),
-		e.Message,
-		e.Code,
-	)
+	var s strings.Builder
+
+	s.WriteString(fmt.Sprintf("%d %s:", e.HTTPCode, http.StatusText(e.HTTPCode)))
+
+	if e.Message != "" {
+		s.WriteString(fmt.Sprintf(" %s", e.Message))
+	}
+
+	if e.Code != 0 {
+		s.WriteString(fmt.Sprintf(" (code: %d)", e.Code))
+	}
+
+	var i int
+	for _, m := range e.Misc {
+		if i > 0 {
+			s.WriteRune(',')
+		}
+
+		s.WriteString(fmt.Sprintf(" %s", m))
+		i++
+	}
+	return s.String()
+}
+
+// ValidationError is a validation error returned by the Discord HTTP API
+// when it receives invalid parameters.
+type ValidationError struct {
+	HTTPCode int
+	Errors   map[string][]string
+}
+
+// Error implements the error interface.
+func (e ValidationError) Error() string {
+	var s strings.Builder
+
+	s.WriteString(fmt.Sprintf("%d %s:", e.HTTPCode, http.StatusText(e.HTTPCode)))
+
+	var i int
+	for key, errs := range e.Errors {
+		if i > 0 {
+			s.WriteRune(',')
+		}
+
+		s.WriteString(fmt.Sprintf(" field %q: %v", key, errs))
+		i++
+	}
+	return s.String()
 }
 
 // apiError is a helper function that extracts an API error from
-// an HTTP response and returns it as an APIError.
+// an HTTP response and returns it as an APIError or a ValidationError.
 func apiError(resp *http.Response) error {
-	apiErr := APIError{HTTPCode: resp.StatusCode}
-	if err := json.NewDecoder(resp.Body).Decode(&apiErr); err != nil {
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
 		return err
 	}
-	return apiErr
+
+	apiErr := APIError{HTTPCode: resp.StatusCode}
+	if err = json.Unmarshal(b, &apiErr); err != nil {
+		return err
+	}
+
+	// If one of those is set then treat this error as a generic one.
+	if apiErr.Code != 0 || apiErr.Message != "" || apiErr.Misc != nil {
+		return apiErr
+	}
+
+	// If this API error has no code, no message, an no misc info
+	// then this probably is a validation error.
+	validationErr := &ValidationError{HTTPCode: resp.StatusCode}
+	if err = json.Unmarshal(b, &validationErr.Errors); err != nil {
+		return err
+	}
+	return validationErr
 }
 
 func isConnectionClosed(err error) bool {
