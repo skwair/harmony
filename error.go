@@ -46,8 +46,8 @@ func (e APIError) Error() string {
 		}
 
 		s.WriteString(fmt.Sprintf(" %s", m))
+		i++
 	}
-
 	return s.String()
 }
 
