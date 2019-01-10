@@ -171,12 +171,16 @@ func (c *Client) wait() {
 // with a 1006 code, calls the registered error handler and finally
 // signals to all other goroutines (heartbeat, listen, etc.) to stop.
 func (c *Client) onGatewayError(err error) {
-	if err := c.conn.WriteControl(
+	if writeErr := c.conn.WriteControl(
 		websocket.CloseMessage,
 		websocket.FormatCloseMessage(websocket.CloseAbnormalClosure, ""),
 		time.Now().Add(time.Second*10),
-	); err != nil {
-		c.errorHandler(fmt.Errorf("could not properly close websocket: %v", err))
+	); writeErr != nil {
+		c.errorHandler(fmt.Errorf("could not properly close websocket: %v", writeErr))
+		// If we can't properly close the websocket connection,
+		// we should reset our session so the next call to Connect
+		// won't try to resume a corrupted session forever.
+		c.resetGatewaySession()
 	}
 	c.errorHandler(err)
 	close(c.stop)
@@ -194,11 +198,9 @@ func (c *Client) onDisconnect() {
 	); err != nil {
 		c.errorHandler(fmt.Errorf("could not properly close websocket: %v", err))
 	}
-	// Reset the sequence number and the session ID so
-	// the user gets a new fresh session if reconnecting
-	// with the same client.
-	atomic.StoreInt64(&c.sequence, 0)
-	c.sessionID = ""
+	// Reset the Gateway session so the user gets a new
+	// fresh session if reconnecting with the same Client.
+	c.resetGatewaySession()
 }
 
 // isConnected reports whether the client is currently connected to the Gateway.
@@ -210,4 +212,13 @@ func (c *Client) isConnected() bool {
 // a voice server.
 func (c *Client) isConnectingToVoice() bool {
 	return atomic.LoadInt32(&c.connectingToVoice) == 1
+}
+
+// resetGatewaySession resets the session ID as well as the sequence number
+// of the Gateway connection.
+// After a session reset, a call to Connect will send an Identify payload and
+// start a new fresh session, instead of trying to resume an existing session.
+func (c *Client) resetGatewaySession() {
+	c.sessionID = ""
+	atomic.StoreInt64(&c.sequence, 0)
 }

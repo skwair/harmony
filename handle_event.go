@@ -53,8 +53,8 @@ func (c *Client) handleEvent(p *payload) error {
 			// sending a fresh Identify payload.
 			// https://discordapp.com/developers/docs/topics/gateway#resuming.
 			time.Sleep(time.Duration(rand.Intn(5)+1) * time.Second)
-			c.sessionID = ""
-			atomic.StoreInt64(&c.sequence, 0)
+
+			c.resetGatewaySession()
 			if err := c.identify(); err != nil {
 				return err
 			}
