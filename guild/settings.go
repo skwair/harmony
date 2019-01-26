@@ -153,10 +153,21 @@ func WithAFKChannel(id string) Setting {
 	}
 }
 
+// AFKTimeout is the set of allowed values for AFK timeouts.
+type AFKTimeout int
+
+const (
+	AFKTimeoutOneMinute      AFKTimeout = 60
+	AFKTimeoutFiveMinutes    AFKTimeout = 300
+	AFKTimeoutFifteenMinutes AFKTimeout = 900
+	AFKTimeoutThirtyMinutes  AFKTimeout = 1800
+	AFKTimeoutOneHour        AFKTimeout = 3600
+)
+
 // WithAFKTimeout sets the AFK timeout of a guild.
-func WithAFKTimeout(sec int) Setting {
+func WithAFKTimeout(t AFKTimeout) Setting {
 	return func(s *Settings) {
-		s.AFKTimeout = optional.NewInt(sec)
+		s.AFKTimeout = optional.NewInt(int(t))
 	}
 }
 
