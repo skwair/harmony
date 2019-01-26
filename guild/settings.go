@@ -12,8 +12,8 @@ type Settings struct {
 	VerificationLevel           *optional.Int    `json:"verification_level,omitempty"`
 	DefaultMessageNotifications *optional.Int    `json:"default_message_notifications,omitempty"`
 	ExplicitContentFilter       *optional.Int    `json:"explicit_content_filter,omitempty"`
-	AfkChannelID                *optional.String `json:"afk_channel_id,omitempty"`
-	AfkTimeout                  *optional.Int    `json:"afk_timeout,omitempty"`
+	AFKChannelID                *optional.String `json:"afk_channel_id,omitempty"`
+	AFKTimeout                  *optional.Int    `json:"afk_timeout,omitempty"`
 	Icon                        *optional.String `json:"icon,omitempty"`
 	OwnerID                     *optional.String `json:"owner_id,omitempty"`
 	Splash                      *optional.String `json:"splash,omitempty"`
@@ -141,17 +141,22 @@ func WithExplicitContentFilter(lvl ExplicitContentFilter) Setting {
 	}
 }
 
-// WithAfkChannel sets the AFK channel ID of a guild.
-func WithAfkChannel(id string) Setting {
+// WithAFKChannel sets the AFK channel ID of a guild.
+// An empty id will disable the AFK channel.
+func WithAFKChannel(id string) Setting {
 	return func(s *Settings) {
-		s.AfkChannelID = optional.NewString(id)
+		if id == "" {
+			s.AFKChannelID = optional.NewNilString()
+		} else {
+			s.AFKChannelID = optional.NewString(id)
+		}
 	}
 }
 
-// WithAfkTimeout sets the AFK timeout of a guild.
-func WithAfkTimeout(sec int) Setting {
+// WithAFKTimeout sets the AFK timeout of a guild.
+func WithAFKTimeout(sec int) Setting {
 	return func(s *Settings) {
-		s.AfkTimeout = optional.NewInt(sec)
+		s.AFKTimeout = optional.NewInt(sec)
 	}
 }
 
