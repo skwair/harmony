@@ -95,7 +95,9 @@ DiscordGo offers some additional features right now, such as a way to create and
 
 The main difference resides in the Gateway (websocket) real time API implementation. This library takes a different approach (using more synchronisation mechanisms) to avoid having to rely on hacks like [this](https://github.com/bwmarrin/discordgo/blob/8325a6bf6dd6c91ed4040a1617b07287b8fb0eba/wsapi.go#L868) or [this](https://github.com/bwmarrin/discordgo/blob/8325a6bf6dd6c91ed4040a1617b07287b8fb0eba/wsapi.go#L822), hopefully providing a more robust implementation as well as a better user experience.
 
-Another difference is in the "event handler" mechanism. Instead of having a single [method](https://github.com/bwmarrin/discordgo/blob/73f6772a2b7cc95e29c462e4f15bf07cbe0d3854/event.go#L111) that takes an `interface{}` as a parameter and guesses for which event you registered a handler based on its concrete type, this library provides one method per event type, making it clear what signature your handler must have and ensuring it at compile time, not at runtime.
+Another difference is in the "event handler" mechanism. Instead of having a single [method](https://github.com/bwmarrin/discordgo/blob/8325a6bf6dd6c91ed4040a1617b07287b8fb0eba/event.go#L120) that takes an `interface{}` as a parameter and guesses for which event you registered a handler based on its concrete type, this library provides one method per event type, making it clear what signature your handler must have and ensuring it at compile time, not at runtime.
+
+Finally, this library has a full support of the [context](https://golang.org/pkg/context/) package, allowing the use of timeouts, deadlines and cancellation when interacting with Discord's API.
 
 # License
 
