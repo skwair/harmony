@@ -80,8 +80,8 @@ func (b *bot) onNewMessage(m *harmony.Message) {
 			).
 			Build()
 
-		if _, err := b.client.Channel(m.ChannelID).SendEmbed(context.Background(), e); err != nil {
-			fmt.Fprintf(os.Stderr, "could not send message: %v", err)
+		if _, err := b.client.Channel(m.ChannelID).Send(context.Background(), harmony.WithEmbed(e)); err != nil {
+			log.Println(err)
 		}
 	}
 }

@@ -194,84 +194,80 @@ func (r *ChannelResource) DeleteMessageBulk(ctx context.Context, messageIDs []st
 	return nil
 }
 
+// MessageOption allows to customize the content of a message.
+type MessageOption func(*createMessage)
+
+// WithContent sets the content of a message.
+func WithContent(text string) MessageOption {
+	return MessageOption(func(m *createMessage) {
+		m.Content = text
+	})
+}
+
+// WithEmbed sets the embed of a message.
+func WithEmbed(e *embed.Embed) MessageOption {
+	return MessageOption(func(m *createMessage) {
+		m.Embed = e
+	})
+}
+
+// WithFiles attach files to a message.
+func WithFiles(files ...File) MessageOption {
+	return MessageOption(func(m *createMessage) {
+		m.files = files
+	})
+}
+
+// WithTTS enables TTS for a message.
+func WithTTS() MessageOption {
+	return MessageOption(func(m *createMessage) {
+		m.TTS = true
+	})
+}
+
+// WithNonce sets the nonce of a message.
+// The nonce will be returned in the result and also transmitted to other clients.
+func WithNonce(n string) MessageOption {
+	return MessageOption(func(m *createMessage) {
+		m.Nonce = n
+	})
+}
+
+// Send sends a message to the channel. If operating on a guild channel,
+// this endpoint requires the 'SEND_MESSAGES' permission to be present on the
+// current user. If the option WithTTS is set, the 'SEND_TTS_MESSAGES' permission is
+// required for the message to be spoken. Returns the message sent.
+// Fires a Message Create Gateway event.
+// Before using this endpoint, you must connect to the gateway at least once.
+func (r *ChannelResource) Send(ctx context.Context, opts ...MessageOption) (*Message, error) {
+	var msg createMessage
+
+	for _, opt := range opts {
+		opt(&msg)
+	}
+
+	return r.client.sendMessage(ctx, r.channelID, &msg)
+}
+
+// SendMessage is a shorthand for Send(ctx, WithContent(text)).
+func (r *ChannelResource) SendMessage(ctx context.Context, text string) (*Message, error) {
+	return r.Send(ctx, WithContent(text))
+}
+
 // createMessage describes a message creation.
 type createMessage struct {
 	Content string       `json:"content,omitempty"` // Up to 2000 characters.
 	Nonce   string       `json:"nonce,omitempty"`
 	TTS     bool         `json:"tts,omitempty"`
 	Embed   *embed.Embed `json:"embed,omitempty"`
+
+	files []File
 }
 
 // json implements the multipartPayload interface so createMessage can be used as
 // a payload with the multipartFromFiles method.
 func (cm *createMessage) json() ([]byte, error) {
 	return json.Marshal(cm)
-}
-
-func (c *Client) sendMessage(ctx context.Context, channelID string, msg *createMessage) (*Message, error) {
-	if msg.Embed != nil && msg.Embed.Type == "" {
-		msg.Embed.Type = "rich"
-	}
-
-	b, err := json.Marshal(msg)
-	if err != nil {
-		return nil, err
-	}
-
-	e := endpoint.CreateMessage(channelID)
-	resp, err := c.doReq(ctx, http.MethodPost, e, b)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return nil, apiError(resp)
-	}
-
-	var m Message
-	if err = json.NewDecoder(resp.Body).Decode(&m); err != nil {
-		return nil, err
-	}
-	return &m, nil
-}
-
-// SendMessage is like SendMessageWithOptions with an empty nonce and text to speech disabled.
-func (r *ChannelResource) SendMessage(ctx context.Context, text string) (*Message, error) {
-	return r.SendMessageWithOptions(ctx, text, "", false)
-}
-
-// SendMessageWithOptions posts a message to the channel. If operating on a guild channel,
-// this endpoint requires the 'SEND_MESSAGES' permission to be present on the
-// current user. If the tts field is set to true, the 'SEND_TTS_MESSAGES' permission is
-// required for the message to be spoken. Returns the message sent.
-// Fires a Message Create Gateway event.
-// Before using this endpoint, you must connect to the gateway at least once.
-// The nonce will be returned in the result and also transmitted to other clients.
-// You can set it to empty if you do not need this feature.
-func (r *ChannelResource) SendMessageWithOptions(ctx context.Context, text, nonce string, tts bool) (*Message, error) {
-	return r.client.sendMessage(ctx, r.channelID, &createMessage{
-		Content: text,
-		Nonce:   nonce,
-		TTS:     tts,
-	})
-}
-
-// SendEmbed is like SendEmbedWithOptions with no text, an empty nonce and text to speech disabled.
-func (r *ChannelResource) SendEmbed(ctx context.Context, embed *embed.Embed) (*Message, error) {
-	return r.SendEmbedWithOptions(ctx, embed, "", "", false)
-}
-
-// SendEmbedWithOptions sends some embedded rich content attached to a message to the channel.
-// See SendMessageWithOptions for required permissions and the embed sub package for more information
-// about embeds.
-func (r *ChannelResource) SendEmbedWithOptions(ctx context.Context, embed *embed.Embed, text, nonce string, tts bool) (*Message, error) {
-	return r.client.sendMessage(ctx, r.channelID, &createMessage{
-		Content: text,
-		Nonce:   nonce,
-		TTS:     tts,
-		Embed:   embed,
-	})
 }
 
 // File is a file along with its name. It is used to send files
@@ -281,34 +277,29 @@ type File struct {
 	Reader io.Reader
 }
 
-// SendFiles is like SendFilesWithOptions with no text, an empty nonce, no
-// embed and text to speech disabled.
-func (r *ChannelResource) SendFiles(ctx context.Context, files ...File) (*Message, error) {
-	return r.SendFilesWithOptions(ctx, "", "", nil, false, files...)
-}
-
-// SendFilesWithOptions sends some attached files with an optional text and/or embedded rich
-// content to the channel.
-// See SendMessageWithOptions for required permissions and the embed sub package for more information
-// about embeds.
-func (r *ChannelResource) SendFilesWithOptions(ctx context.Context, text, nonce string, embed *embed.Embed, tts bool, files ...File) (*Message, error) {
-	if len(files) < 1 {
-		return nil, ErrNoFileProvided
+func (c *Client) sendMessage(ctx context.Context, channelID string, msg *createMessage) (*Message, error) {
+	if msg.Embed != nil && msg.Embed.Type == "" {
+		msg.Embed.Type = "rich"
 	}
 
-	cm := &createMessage{
-		Content: text,
-		Embed:   embed,
-		Nonce:   nonce,
-		TTS:     tts,
+	var (
+		b   []byte
+		h   http.Header
+		err error
+	)
+	if len(msg.files) > 0 {
+		b, h, err = multipartFromFiles(msg, msg.files...)
+	} else {
+		h = http.Header{}
+		h.Set("Content-Type", "application/json")
+		b, err = json.Marshal(msg)
 	}
-	b, h, err := multipartFromFiles(cm, files...)
 	if err != nil {
 		return nil, err
 	}
 
-	e := endpoint.CreateMessage(r.channelID)
-	resp, err := r.client.doReqWithHeader(ctx, http.MethodPost, e, b, h)
+	e := endpoint.CreateMessage(channelID)
+	resp, err := c.doReqWithHeader(ctx, http.MethodPost, e, b, h)
 	if err != nil {
 		return nil, err
 	}
