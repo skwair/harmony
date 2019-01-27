@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -20,9 +21,9 @@ type Emoji struct {
 
 // Emojis returns the list of emojis of the guild.
 // Requires the MANAGE_EMOJIS permission.
-func (r *GuildResource) Emojis() ([]Emoji, error) {
+func (r *GuildResource) Emojis(ctx context.Context) ([]Emoji, error) {
 	e := endpoint.ListGuildEmojis(r.guildID)
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -40,9 +41,9 @@ func (r *GuildResource) Emojis() ([]Emoji, error) {
 }
 
 // Emoji returns an emoji from the guild.
-func (r *GuildResource) Emoji(emojiID string) (*Emoji, error) {
+func (r *GuildResource) Emoji(ctx context.Context, emojiID string) (*Emoji, error) {
 	e := endpoint.GetGuildEmoji(r.guildID, emojiID)
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +63,7 @@ func (r *GuildResource) Emoji(emojiID string) (*Emoji, error) {
 // NewEmoji creates a new emoji for the guild. image is the base64 encoded data of a
 // 128*128 image. Requires the 'MANAGE_EMOJIS' permission. Fires a Guild Emojis Update
 // Gateway event.
-func (r *GuildResource) NewEmoji(name, image string, roles []string) (*Emoji, error) {
+func (r *GuildResource) NewEmoji(ctx context.Context, name, image string, roles []string) (*Emoji, error) {
 	st := struct {
 		Name  string   `json:"name"`
 		Image string   `json:"image"`
@@ -78,7 +79,7 @@ func (r *GuildResource) NewEmoji(name, image string, roles []string) (*Emoji, er
 	}
 
 	e := endpoint.CreateGuildEmoji(r.guildID)
-	resp, err := r.client.doReq(http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +98,7 @@ func (r *GuildResource) NewEmoji(name, image string, roles []string) (*Emoji, er
 
 // ModifyEmoji modifies the given emoji for the guild. Requires the 'MANAGE_EMOJIS'
 // permission. Fires a Guild Emojis Update Gateway event.
-func (r *GuildResource) ModifyEmoji(emojiID, name string, roles []string) (*Emoji, error) {
+func (r *GuildResource) ModifyEmoji(ctx context.Context, emojiID, name string, roles []string) (*Emoji, error) {
 	st := struct {
 		Name  string   `json:"name"`
 		Roles []string `json:"roles"`
@@ -111,7 +112,7 @@ func (r *GuildResource) ModifyEmoji(emojiID, name string, roles []string) (*Emoj
 	}
 
 	e := endpoint.ModifyGuildEmoji(r.guildID, emojiID)
-	resp, err := r.client.doReq(http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -130,9 +131,9 @@ func (r *GuildResource) ModifyEmoji(emojiID, name string, roles []string) (*Emoj
 
 // DeleteEmoji deletes the given emoji. Requires the 'MANAGE_EMOJIS' permission.
 // Fires a Guild Emojis Update Gateway event.
-func (r *GuildResource) DeleteEmoji(emojiID string) error {
+func (r *GuildResource) DeleteEmoji(ctx context.Context, emojiID string) error {
 	e := endpoint.DeleteGuildEmoji(r.guildID, emojiID)
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}

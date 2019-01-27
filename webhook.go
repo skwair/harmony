@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -27,9 +28,9 @@ type Webhook struct {
 
 // GetWebhookWithToken is like GetWebhook except this call does not require
 // authentication and returns no user in the webhook.
-func GetWebhookWithToken(id, token string) (*Webhook, error) {
+func GetWebhookWithToken(ctx context.Context, id, token string) (*Webhook, error) {
 	url := fmt.Sprintf("/webhooks/%s/%s", id, token)
-	resp, err := doReqNoAuth(http.MethodGet, url, nil)
+	resp, err := doReqNoAuth(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -49,14 +50,14 @@ func GetWebhookWithToken(id, token string) (*Webhook, error) {
 // ModifyWebhookWithToken is like ModifyWebhook except this call does not require
 // authentication, does not allow to change the channel_id parameter in the webhook settings,
 // and does not return a user in the webhook.
-func ModifyWebhookWithToken(id, token string, s *webhook.Settings) (*Webhook, error) {
+func ModifyWebhookWithToken(ctx context.Context, id, token string, s *webhook.Settings) (*Webhook, error) {
 	b, err := json.Marshal(s)
 	if err != nil {
 		return nil, err
 	}
 
 	url := fmt.Sprintf("/webhooks/%s/%s", id, token)
-	resp, err := doReqNoAuth(http.MethodPatch, url, b)
+	resp, err := doReqNoAuth(ctx, http.MethodPatch, url, b)
 	if err != nil {
 		return nil, err
 	}
@@ -74,9 +75,9 @@ func ModifyWebhookWithToken(id, token string, s *webhook.Settings) (*Webhook, er
 }
 
 // DeleteWebhookWithToken is like DeleteWebhook except it does not require authentication.
-func DeleteWebhookWithToken(id, token string) error {
+func DeleteWebhookWithToken(ctx context.Context, id, token string) error {
 	url := fmt.Sprintf("/webhooks/%s/%s", id, token)
-	resp, err := doReqNoAuth(http.MethodDelete, url, nil)
+	resp, err := doReqNoAuth(ctx, http.MethodDelete, url, nil)
 	if err != nil {
 		return err
 	}
@@ -109,7 +110,7 @@ func (p *WebhookParameters) json() ([]byte, error) {
 // execution parameters. wait indicates if we should wait for server confirmation
 // of message send before response. If wait is set to false, the returned Message
 // will be nil even if there is no error.
-func ExecuteWebhook(id, token string, p *WebhookParameters, wait bool) (*Message, error) {
+func ExecuteWebhook(ctx context.Context, id, token string, p *WebhookParameters, wait bool) (*Message, error) {
 	if p == nil {
 		return nil, errors.New("p is nil")
 	}
@@ -136,7 +137,7 @@ func ExecuteWebhook(id, token string, p *WebhookParameters, wait bool) (*Message
 	q := url.Values{}
 	q.Set("wait", strconv.FormatBool(wait))
 	url := fmt.Sprintf("/webhooks/%s/%s?%s", id, token, q.Encode())
-	resp, err := doReqNoAuthWithHeader(http.MethodPost, url, b, h)
+	resp, err := doReqNoAuthWithHeader(ctx, http.MethodPost, url, b, h)
 	if err != nil {
 		return nil, err
 	}
@@ -160,8 +161,8 @@ func ExecuteWebhook(id, token string, p *WebhookParameters, wait bool) (*Message
 	return &m, nil
 }
 
-func (c *Client) getWebhooks(e *endpoint.Endpoint) ([]Webhook, error) {
-	resp, err := c.doReq(http.MethodGet, e, nil)
+func (c *Client) getWebhooks(ctx context.Context, e *endpoint.Endpoint) ([]Webhook, error) {
+	resp, err := c.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -191,9 +192,9 @@ func (c *Client) Webhook(id string) *WebhookResource {
 }
 
 // Get returns the webhook.
-func (r *WebhookResource) Get() (*Webhook, error) {
+func (r *WebhookResource) Get(ctx context.Context) (*Webhook, error) {
 	e := endpoint.GetWebhook(r.webhookID)
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -211,14 +212,14 @@ func (r *WebhookResource) Get() (*Webhook, error) {
 }
 
 // Modify modifies the webhook. Requires the 'MANAGE_WEBHOOKS' permission.
-func (r *WebhookResource) Modify(settings *webhook.Settings) (*Webhook, error) {
+func (r *WebhookResource) Modify(ctx context.Context, settings *webhook.Settings) (*Webhook, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.ModifyWebhook(r.webhookID)
-	resp, err := r.client.doReq(http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -236,9 +237,9 @@ func (r *WebhookResource) Modify(settings *webhook.Settings) (*Webhook, error) {
 }
 
 // Delete deletes the webhook.
-func (r *WebhookResource) Delete() error {
+func (r *WebhookResource) Delete(ctx context.Context) error {
 	e := endpoint.DeleteWebhook(r.webhookID)
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}

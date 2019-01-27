@@ -1,6 +1,7 @@
 package harmony_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -27,18 +28,18 @@ func TestHarmony(t *testing.T) {
 		t.Fatalf("could not create harmony client: %v", err)
 	}
 
-	if err = client.Connect(); err != nil {
+	if err = client.Connect(context.TODO()); err != nil {
 		t.Fatalf("could not connect to gateway: %v", err)
 	}
 	defer client.Disconnect()
 
 	// Purge existing channels.
-	chs, err := client.Guild(guildID).Channels()
+	chs, err := client.Guild(guildID).Channels(context.TODO())
 	if err != nil {
 		t.Fatalf("could not get guild channels: %v", err)
 	}
 	for _, ch := range chs {
-		if _, err = client.Channel(ch.ID).Delete(); err != nil {
+		if _, err = client.Channel(ch.ID).Delete(context.TODO()); err != nil {
 			t.Fatalf("could not delete channel %q: %v", ch.Name, err)
 		}
 	}
@@ -51,7 +52,7 @@ func TestHarmony(t *testing.T) {
 			channel.WithName("test-category"),
 			channel.WithType(channel.TypeGuildCategory),
 		)
-		cat, err := client.Guild(guildID).NewChannel(settings)
+		cat, err := client.Guild(guildID).NewChannel(context.TODO(), settings)
 		if err != nil {
 			t.Fatalf("could not create channel category: %v", err)
 		}
@@ -62,7 +63,7 @@ func TestHarmony(t *testing.T) {
 			channel.WithType(channel.TypeGuildText),
 			channel.WithParent(cat.ID), // Set this channel as a child of the new category.
 		)
-		txtCh, err = client.Guild(guildID).NewChannel(settings)
+		txtCh, err = client.Guild(guildID).NewChannel(context.TODO(), settings)
 		if err != nil {
 			t.Fatalf("could not create text channel: %v", err)
 		}
@@ -76,7 +77,7 @@ func TestHarmony(t *testing.T) {
 	t.Run("send messages", func(t *testing.T) {
 		for i := 0; i < 5; i++ {
 			content := fmt.Sprintf("foobar %d", i)
-			msg, err := client.Channel(txtCh.ID).SendMessage(content)
+			msg, err := client.Channel(txtCh.ID).SendMessage(context.TODO(), content)
 			if err != nil {
 				t.Fatalf("could not send message (%d): %v", i, err)
 			}
@@ -90,7 +91,7 @@ func TestHarmony(t *testing.T) {
 	})
 
 	t.Run("get messages", func(t *testing.T) {
-		msgs, err := client.Channel(txtCh.ID).Messages("<"+lastMsgID, 0)
+		msgs, err := client.Channel(txtCh.ID).Messages(context.TODO(), "<"+lastMsgID, 0)
 		if err != nil {
 			t.Fatalf("could not retrieve text channel messages: %v", err)
 		}
@@ -101,13 +102,13 @@ func TestHarmony(t *testing.T) {
 	})
 
 	t.Run("edit message", func(t *testing.T) {
-		if _, err = client.Channel(txtCh.ID).EditMessage(lastMsgID, "foobar edited"); err != nil {
+		if _, err = client.Channel(txtCh.ID).EditMessage(context.TODO(), lastMsgID, "foobar edited"); err != nil {
 			t.Fatalf("could not edit message: %v", err)
 		}
 	})
 
 	t.Run("get single message", func(t *testing.T) {
-		msg, err := client.Channel(txtCh.ID).Message(lastMsgID)
+		msg, err := client.Channel(txtCh.ID).Message(context.TODO(), lastMsgID)
 		if err != nil {
 			t.Fatalf("coult not get single message: %v", err)
 		}
@@ -118,17 +119,17 @@ func TestHarmony(t *testing.T) {
 	})
 
 	t.Run("add reactions", func(t *testing.T) {
-		if err = client.Channel(txtCh.ID).AddReaction(lastMsgID, "👍"); err != nil {
+		if err = client.Channel(txtCh.ID).AddReaction(context.TODO(), lastMsgID, "👍"); err != nil {
 			t.Fatalf("could not add reaction to last message: %v", err)
 		}
 
-		if err = client.Channel(txtCh.ID).AddReaction(lastMsgID, "👎"); err != nil {
+		if err = client.Channel(txtCh.ID).AddReaction(context.TODO(), lastMsgID, "👎"); err != nil {
 			t.Fatalf("could not add reaction to last message: %v", err)
 		}
 	})
 
 	t.Run("remove reaction", func(t *testing.T) {
-		if err = client.Channel(txtCh.ID).RemoveReaction(lastMsgID, "👎"); err != nil {
+		if err = client.Channel(txtCh.ID).RemoveReaction(context.TODO(), lastMsgID, "👎"); err != nil {
 			t.Fatalf("could not remove reaction to last message: %v", err)
 		}
 	})
@@ -136,7 +137,7 @@ func TestHarmony(t *testing.T) {
 	currentUserID := client.State.CurrentUser().ID
 
 	t.Run("get reactions", func(t *testing.T) {
-		users, err := client.Channel(txtCh.ID).GetReactions(lastMsgID, "👍", 0, "", "")
+		users, err := client.Channel(txtCh.ID).GetReactions(context.TODO(), lastMsgID, "👍", 0, "", "")
 		if err != nil {
 			t.Fatalf("could not get reactions to last message: %v", err)
 		}
@@ -149,7 +150,7 @@ func TestHarmony(t *testing.T) {
 			t.Fatalf("expected the ID of the user to be %s; got %s", currentUserID, users[0].ID)
 		}
 
-		users, err = client.Channel(txtCh.ID).GetReactions(lastMsgID, "👎", 0, "", "")
+		users, err = client.Channel(txtCh.ID).GetReactions(context.TODO(), lastMsgID, "👎", 0, "", "")
 		if err != nil {
 			t.Fatalf("could not get reactions to last message: %v", err)
 		}
@@ -160,19 +161,19 @@ func TestHarmony(t *testing.T) {
 	})
 
 	t.Run("remove all reactions", func(t *testing.T) {
-		if err = client.Channel(txtCh.ID).RemoveAllReactions(lastMsgID); err != nil {
+		if err = client.Channel(txtCh.ID).RemoveAllReactions(context.TODO(), lastMsgID); err != nil {
 			t.Fatalf("could not remove all reactions to last message: %v", err)
 		}
 	})
 
 	t.Run("pin message", func(t *testing.T) {
-		if err = client.Channel(txtCh.ID).PinMessage(lastMsgID); err != nil {
+		if err = client.Channel(txtCh.ID).PinMessage(context.TODO(), lastMsgID); err != nil {
 			t.Fatalf("could not pin last message: %v", err)
 		}
 	})
 
 	t.Run("get pins", func(t *testing.T) {
-		pins, err := client.Channel(txtCh.ID).Pins()
+		pins, err := client.Channel(txtCh.ID).Pins(context.TODO())
 		if err != nil {
 			t.Fatalf("could not pin last message: %v", err)
 		}
@@ -187,19 +188,19 @@ func TestHarmony(t *testing.T) {
 	})
 
 	t.Run("remove pin", func(t *testing.T) {
-		if err = client.Channel(txtCh.ID).UnpinMessage(lastMsgID); err != nil {
+		if err = client.Channel(txtCh.ID).UnpinMessage(context.TODO(), lastMsgID); err != nil {
 			t.Fatalf("could not unpin last message: %v", err)
 		}
 	})
 
 	t.Run("delete single message", func(t *testing.T) {
-		if err = client.Channel(txtCh.ID).DeleteMessage(lastMsgID); err != nil {
+		if err = client.Channel(txtCh.ID).DeleteMessage(context.TODO(), lastMsgID); err != nil {
 			t.Fatalf("could not delete single message: %v", err)
 		}
 	})
 
 	t.Run("delete messages", func(t *testing.T) {
-		if err = client.Channel(txtCh.ID).DeleteMessageBulk(firstMsgIDs); err != nil {
+		if err = client.Channel(txtCh.ID).DeleteMessageBulk(context.TODO(), firstMsgIDs); err != nil {
 			t.Fatalf("could not delete messages: %v", err)
 		}
 	})
@@ -216,20 +217,20 @@ func TestHarmony(t *testing.T) {
 			role.WithMentionable(true),
 			role.WithPermissions(perms),
 		)
-		testRole, err = client.Guild(guildID).NewRole(settings)
+		testRole, err = client.Guild(guildID).NewRole(context.TODO(), settings)
 		if err != nil {
 			t.Fatalf("could not create new role: %v", err)
 		}
 	})
 
 	t.Run("add role", func(t *testing.T) {
-		if err = client.Guild(guildID).AddMemberRole(currentUserID, testRole.ID); err != nil {
+		if err = client.Guild(guildID).AddMemberRole(context.TODO(), currentUserID, testRole.ID); err != nil {
 			t.Fatalf("could not add new role to user: %v", err)
 		}
 	})
 
 	t.Run("get guild member#01", func(t *testing.T) {
-		member, err := client.Guild(guildID).Member(currentUserID)
+		member, err := client.Guild(guildID).Member(context.TODO(), currentUserID)
 		if err != nil {
 			t.Fatalf("could not get guild member: %v", err)
 		}
@@ -240,13 +241,13 @@ func TestHarmony(t *testing.T) {
 	})
 
 	t.Run("remove role", func(t *testing.T) {
-		if err = client.Guild(guildID).RemoveMemberRole(currentUserID, testRole.ID); err != nil {
+		if err = client.Guild(guildID).RemoveMemberRole(context.TODO(), currentUserID, testRole.ID); err != nil {
 			t.Fatalf("could not remove role from user: %v", err)
 		}
 	})
 
 	t.Run("get guild member#02", func(t *testing.T) {
-		member, err := client.Guild(guildID).Member(currentUserID)
+		member, err := client.Guild(guildID).Member(context.TODO(), currentUserID)
 		if err != nil {
 			t.Fatalf("could not get guild member: %v", err)
 		}
@@ -257,7 +258,7 @@ func TestHarmony(t *testing.T) {
 	})
 
 	t.Run("delete role", func(t *testing.T) {
-		if err = client.Guild(guildID).DeleteRole(testRole.ID); err != nil {
+		if err = client.Guild(guildID).DeleteRole(context.TODO(), testRole.ID); err != nil {
 			t.Fatalf("could not delete test role: %v", err)
 		}
 	})

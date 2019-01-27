@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 
@@ -26,9 +27,9 @@ type Role struct {
 
 // Roles returns a list of roles for the guild. Requires the 'MANAGE_ROLES'
 // permission.
-func (r *GuildResource) Roles() ([]Role, error) {
+func (r *GuildResource) Roles(ctx context.Context) ([]Role, error) {
 	e := endpoint.GetGuildRoles(r.guildID)
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -47,14 +48,14 @@ func (r *GuildResource) Roles() ([]Role, error) {
 
 // NewRole creates a new role for the guild. Requires the 'MANAGE_ROLES'
 // permission. Fires a Guild Role Create Gateway event.
-func (r *GuildResource) NewRole(settings *role.Settings) (*Role, error) {
+func (r *GuildResource) NewRole(ctx context.Context, settings *role.Settings) (*Role, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.CreateGuildRole(r.guildID)
-	resp, err := r.client.doReq(http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -80,14 +81,14 @@ type RolePosition struct {
 
 // ModifyRolePositions modifies the positions of a set of roles for the guild.
 // Requires 'MANAGE_ROLES' permission. Fires multiple Guild Role Update Gateway events.
-func (r *GuildResource) ModifyRolePositions(pos []RolePosition) ([]Role, error) {
+func (r *GuildResource) ModifyRolePositions(ctx context.Context, pos []RolePosition) ([]Role, error) {
 	b, err := json.Marshal(pos)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.ModifyGuildRolePositions(r.guildID)
-	resp, err := r.client.doReq(http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -106,14 +107,14 @@ func (r *GuildResource) ModifyRolePositions(pos []RolePosition) ([]Role, error) 
 
 // ModifyRole modifies a guild role. Requires the 'MANAGE_ROLES' permission.
 // Fires a Guild Role Update Gateway event.
-func (r *GuildResource) ModifyRole(id string, settings *role.Settings) (*Role, error) {
+func (r *GuildResource) ModifyRole(ctx context.Context, id string, settings *role.Settings) (*Role, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.ModifyGuildRole(r.guildID, id)
-	resp, err := r.client.doReq(http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -132,9 +133,9 @@ func (r *GuildResource) ModifyRole(id string, settings *role.Settings) (*Role, e
 
 // DeleteRole deletes a guild role. Requires the 'MANAGE_ROLES' permission.
 // Fires a Guild Role Delete Gateway event.
-func (r *GuildResource) DeleteRole(id string) error {
+func (r *GuildResource) DeleteRole(ctx context.Context, id string) error {
 	e := endpoint.DeleteGuildRole(r.guildID, id)
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}
@@ -148,9 +149,9 @@ func (r *GuildResource) DeleteRole(id string) error {
 
 // AddMemberRole adds a role to a guild member. Requires the 'MANAGE_ROLES'
 // permission. Fires a Guild Member Update Gateway event.
-func (r *GuildResource) AddMemberRole(userID, roleID string) error {
+func (r *GuildResource) AddMemberRole(ctx context.Context, userID, roleID string) error {
 	e := endpoint.AddGuildMemberRole(r.guildID, userID, roleID)
-	resp, err := r.client.doReq(http.MethodPut, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodPut, e, nil)
 	if err != nil {
 		return err
 	}
@@ -164,9 +165,9 @@ func (r *GuildResource) AddMemberRole(userID, roleID string) error {
 
 // RemoveMemberRole removes a role from a guild member. Requires the
 // 'MANAGE_ROLES' permission. Fires a Guild Member Update Gateway event.
-func (r *GuildResource) RemoveMemberRole(userID, roleID string) error {
+func (r *GuildResource) RemoveMemberRole(ctx context.Context, userID, roleID string) error {
 	e := endpoint.RemoveGuildMemberRole(r.guildID, userID, roleID)
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}

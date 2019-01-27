@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -17,9 +18,9 @@ type Ban struct {
 
 // Bans returns a list of bans for the users banned from this guild.
 // Requires the 'BAN_MEMBERS' permission.
-func (r *GuildResource) Bans() ([]Ban, error) {
+func (r *GuildResource) Bans(ctx context.Context) ([]Ban, error) {
 	e := endpoint.GetGuildBans(r.guildID)
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -39,15 +40,15 @@ func (r *GuildResource) Bans() ([]Ban, error) {
 // Ban is a shorthand to ban a user with no reason and without
 // deleting his messages. Requires the 'BAN_MEMBERS' permission.
 // For more control, use the BanWithReason method.
-func (r *GuildResource) Ban(userID string) error {
-	return r.BanWithReason(userID, 0, "")
+func (r *GuildResource) Ban(ctx context.Context, userID string) error {
+	return r.BanWithReason(ctx, userID, 0, "")
 }
 
 // BanWithReason creates a guild ban, and optionally delete previous messages
 // sent by the banned user. Requires the 'BAN_MEMBERS' permission.
 // Parameter delMsgDays is the number of days to delete messages for (0-7).
 // Fires a Guild Ban Add Gateway event.
-func (r *GuildResource) BanWithReason(userID string, delMsgDays int, reason string) error {
+func (r *GuildResource) BanWithReason(ctx context.Context, userID string, delMsgDays int, reason string) error {
 	q := url.Values{}
 	if reason != "" {
 		q.Set("reason", reason)
@@ -57,7 +58,7 @@ func (r *GuildResource) BanWithReason(userID string, delMsgDays int, reason stri
 	}
 
 	e := endpoint.CreateGuildBan(r.guildID, userID, q.Encode())
-	resp, err := r.client.doReq(http.MethodPut, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodPut, e, nil)
 	if err != nil {
 		return err
 	}
@@ -71,9 +72,9 @@ func (r *GuildResource) BanWithReason(userID string, delMsgDays int, reason stri
 
 // Unban removes the ban for a user. Requires the 'BAN_MEMBERS' permissions.
 // Fires a Guild Ban Remove Gateway event.
-func (r *GuildResource) Unban(userID string) error {
+func (r *GuildResource) Unban(ctx context.Context, userID string) error {
 	e := endpoint.RemoveGuildBan(r.guildID, userID)
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}

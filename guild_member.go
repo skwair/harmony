@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/url"
@@ -40,9 +41,9 @@ func (m *GuildMember) HasRole(id string) bool {
 }
 
 // Member returns a single guild member given its user ID.
-func (r *GuildResource) Member(userID string) (*GuildMember, error) {
+func (r *GuildResource) Member(ctx context.Context, userID string) (*GuildMember, error) {
 	e := endpoint.GetGuildMember(r.guildID, userID)
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ func (r *GuildResource) Member(userID string) (*GuildMember, error) {
 // limit must be between 1 and 1000 and will be set to those values if higher/lower.
 // after is the ID of the guild member you want to get the list from, leave it
 // empty to start from the beginning.
-func (r *GuildResource) Members(limit int, after string) ([]GuildMember, error) {
+func (r *GuildResource) Members(ctx context.Context, limit int, after string) ([]GuildMember, error) {
 	if limit < 1 {
 		limit = 1
 	}
@@ -78,7 +79,7 @@ func (r *GuildResource) Members(limit int, after string) ([]GuildMember, error) 
 	}
 
 	e := endpoint.ListGuildMembers(r.guildID, q.Encode())
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +99,7 @@ func (r *GuildResource) Members(limit int, after string) ([]GuildMember, error) 
 // AddMember adds a user to the guild, provided you have a valid oauth2 access
 // token for the user with the guilds.join scope. Fires a Guild Member Add Gateway event.
 // Requires the bot to have the CREATE_INSTANT_INVITE permission.
-func (r *GuildResource) AddMember(userID, token string, settings *guild.MemberSettings) (*GuildMember, error) {
+func (r *GuildResource) AddMember(ctx context.Context, userID, token string, settings *guild.MemberSettings) (*GuildMember, error) {
 	st := struct {
 		AccessToken string `json:"access_token,omitempty"`
 		*guild.MemberSettings
@@ -112,7 +113,7 @@ func (r *GuildResource) AddMember(userID, token string, settings *guild.MemberSe
 	}
 
 	e := endpoint.AddGuildMember(r.guildID, userID)
-	resp, err := r.client.doReq(http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -131,9 +132,9 @@ func (r *GuildResource) AddMember(userID, token string, settings *guild.MemberSe
 
 // RemoveMember removes the given user from the guild. Requires 'KICK_MEMBERS'
 // permission. Fires a Guild Member Remove Gateway event.
-func (r *GuildResource) RemoveMember(userID string) error {
+func (r *GuildResource) RemoveMember(ctx context.Context, userID string) error {
 	e := endpoint.RemoveGuildMember(r.guildID, userID)
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}
@@ -147,14 +148,14 @@ func (r *GuildResource) RemoveMember(userID string) error {
 
 // ModifyMember modifies attributes of a guild member. Fires a Guild Member
 // Update Gateway event.
-func (r *GuildResource) ModifyMember(userID string, settings *guild.MemberSettings) error {
+func (r *GuildResource) ModifyMember(ctx context.Context, userID string, settings *guild.MemberSettings) error {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return err
 	}
 
 	e := endpoint.ModifyGuildMember(r.guildID, userID)
-	resp, err := r.client.doReq(http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
 	if err != nil {
 		return err
 	}

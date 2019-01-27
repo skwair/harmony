@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -35,7 +36,7 @@ func main() {
 
 	c.OnMessageCreate(b.onNewMessage)
 
-	if err = c.Connect(); err != nil {
+	if err = c.Connect(context.Background()); err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return
 	}
@@ -79,7 +80,7 @@ func (b *bot) onNewMessage(m *harmony.Message) {
 			).
 			Build()
 
-		if _, err := b.client.Channel(m.ChannelID).SendEmbed(e); err != nil {
+		if _, err := b.client.Channel(m.ChannelID).SendEmbed(context.Background(), e); err != nil {
 			fmt.Fprintf(os.Stderr, "could not send message: %v", err)
 		}
 	}
