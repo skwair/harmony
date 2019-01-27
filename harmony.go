@@ -76,4 +76,4 @@ while creating the harmony client.
 */
 package harmony
 
-const version = "0.8.0"
+const version = "0.9.0"
