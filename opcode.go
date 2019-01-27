@@ -1,31 +1,31 @@
 package harmony
 
 const (
-	gatewayOpcodeDispatch = iota
-	gatewayOpcodeHeartbeat
-	gatewayOpcodeIdentify
-	gatewayOpcodeStatusUpdate
-	gatewayOpcodeVoiceStateUpdate
-	gatewayOpcodeResume
-	gatewayOpcodeReconnect
-	gatewayOpcodeRequestGuildMembers
-	gatewayOpcodeInvalidSession
-	gatewayOpcodeHello
-	gatewayOpcodeHeartbeatACK
+	gatewayOpcodeDispatch            = 0
+	gatewayOpcodeHeartbeat           = 1
+	gatewayOpcodeIdentify            = 2
+	gatewayOpcodeStatusUpdate        = 3
+	gatewayOpcodeVoiceStateUpdate    = 4
+	gatewayOpcodeResume              = 6
+	gatewayOpcodeReconnect           = 7
+	gatewayOpcodeRequestGuildMembers = 8
+	gatewayOpcodeInvalidSession      = 9
+	gatewayOpcodeHello               = 10
+	gatewayOpcodeHeartbeatACK        = 11
 )
 
 const (
-	voiceOpcodeIdentify = iota
-	voiceOpcodeSelectProtocol
-	voiceOpcodeReady
-	voiceOpcodeHeartbeat
-	voiceOpcodeSessionDescription
-	voiceOpcodeSpeaking
-	voiceOpcodeHeartbeatACK
-	voiceOpcodeResume
-	voiceOpcodeHello
-	voiceOpcodeResumed
-	voiceOpcodeClientDisconnect
+	voiceOpcodeIdentify           = 0
+	voiceOpcodeSelectProtocol     = 1
+	voiceOpcodeReady              = 2
+	voiceOpcodeHeartbeat          = 3
+	voiceOpcodeSessionDescription = 4
+	voiceOpcodeSpeaking           = 5
+	voiceOpcodeHeartbeatACK       = 6
+	voiceOpcodeResume             = 7
+	voiceOpcodeHello              = 8
+	voiceOpcodeResumed            = 9
+	voiceOpcodeClientDisconnect   = 13
 )
 
 // TODO: handle voice connection resumes.
