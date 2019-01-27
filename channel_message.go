@@ -197,7 +197,7 @@ func (r *ChannelResource) DeleteMessageBulk(ctx context.Context, messageIDs []st
 // MessageOption allows to customize the content of a message.
 type MessageOption func(*createMessage)
 
-// WithContent sets the content of a message.
+// WithContent sets the content of a message, up to 2000 characters
 func WithContent(text string) MessageOption {
 	return MessageOption(func(m *createMessage) {
 		m.Content = text
@@ -205,6 +205,7 @@ func WithContent(text string) MessageOption {
 }
 
 // WithEmbed sets the embed of a message.
+// See embed sub package for more information about embeds.
 func WithEmbed(e *embed.Embed) MessageOption {
 	return MessageOption(func(m *createMessage) {
 		m.Embed = e
@@ -218,7 +219,7 @@ func WithFiles(files ...File) MessageOption {
 	})
 }
 
-// WithTTS enables TTS for a message.
+// WithTTS enables text to speech for a message.
 func WithTTS() MessageOption {
 	return MessageOption(func(m *createMessage) {
 		m.TTS = true
