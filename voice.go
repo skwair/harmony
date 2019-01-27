@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"sync/atomic"
@@ -42,9 +43,9 @@ type speaking struct {
 }
 
 // GetVoiceRegions returns a list of available voice regions that can be used when creating servers.
-func (c *Client) GetVoiceRegions(guildID string) ([]VoiceRegion, error) {
+func (c *Client) GetVoiceRegions(ctx context.Context, guildID string) ([]VoiceRegion, error) {
 	e := endpoint.GetVoiceRegions()
-	resp, err := c.doReq(http.MethodGet, e, nil)
+	resp, err := c.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}

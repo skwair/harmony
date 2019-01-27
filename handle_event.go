@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"encoding/json"
 	"math/rand"
 	"sync/atomic"
@@ -32,7 +33,10 @@ func (c *Client) handleEvent(p *payload) error {
 	// Gateway is asking us to reconnect.
 	case gatewayOpcodeReconnect:
 		c.Disconnect()
-		if err := c.Connect(); err != nil {
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+		if err := c.Connect(ctx); err != nil {
 			return err
 		}
 

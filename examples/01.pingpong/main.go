@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -52,7 +53,7 @@ func main() {
 	// are new messages.
 	// This connection is designed to be long lived and to survive
 	// network failures, attempting to reconnect whenever a problem occurs.
-	if err = c.Connect(); err != nil {
+	if err = c.Connect(context.Background()); err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return
 	}
@@ -73,7 +74,7 @@ func (b *bot) onNewMessage(m *harmony.Message) {
 	// Reply with "pong", logging any error
 	// that occurs.
 	if m.Content == "ping" {
-		if _, err := b.client.Channel(m.ChannelID).SendMessage("pong"); err != nil {
+		if _, err := b.client.Channel(m.ChannelID).SendMessage(context.Background(), "pong"); err != nil {
 			log.Println(err)
 		}
 	}

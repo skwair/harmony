@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -22,7 +23,7 @@ var (
 )
 
 // Connect connects and identifies the client to the Discord gateway.
-func (c *Client) Connect() error {
+func (c *Client) Connect(ctx context.Context) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -36,7 +37,7 @@ func (c *Client) Connect() error {
 		// NOTE: not using GatewayBot here because a Client has no
 		// notion of automatic sharding. This is handled at a higher level,
 		// when creating a Client with the WithSharding option.
-		c.gatewayURL, err = c.Gateway()
+		c.gatewayURL, err = c.Gateway(ctx)
 		if err != nil {
 			return err
 		}
@@ -49,7 +50,7 @@ func (c *Client) Connect() error {
 	header := http.Header{}
 	header.Add("Accept-Encoding", "zlib")
 	gwURL := fmt.Sprintf("%s?v=%d&encoding=%s", c.gatewayURL, gatewayVersion, gatewayEncoding)
-	c.conn, _, err = websocket.DefaultDialer.Dial(gwURL, header)
+	c.conn, _, err = websocket.DefaultDialer.DialContext(ctx, gwURL, header)
 	if err != nil {
 		return err
 	}
@@ -149,7 +150,9 @@ func (c *Client) wait() {
 	// If there was an error, try to reconnect.
 	if err != nil {
 		for i := 0; true; i++ {
-			if err = c.Connect(); err != nil {
+			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+			if err = c.Connect(ctx); err != nil {
+				cancel()
 				duration := c.backoff.forAttempt(i)
 				c.errorHandler(fmt.Errorf("failed to reconnect: %v, retrying in %s", err, duration))
 				select {
@@ -160,6 +163,7 @@ func (c *Client) wait() {
 				}
 			} else {
 				// We could reconnect.
+				cancel()
 				return
 			}
 		}

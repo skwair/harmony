@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -83,7 +84,7 @@ type Attachment struct {
 // For example, to retrieve 50 messages around (25 before, 25 after) a message having the
 // ID 221588207995121520, set query to "~221588207995121520".
 // Limit is a positive integer between 1 and 100 that default to 50 if set to 0.
-func (r *ChannelResource) Messages(query string, limit int) ([]Message, error) {
+func (r *ChannelResource) Messages(ctx context.Context, query string, limit int) ([]Message, error) {
 	if query == "" {
 		return nil, errors.New("empty query")
 	}
@@ -108,7 +109,7 @@ func (r *ChannelResource) Messages(query string, limit int) ([]Message, error) {
 	}
 
 	e := endpoint.GetChannelMessages(r.channelID, q.Encode())
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -127,9 +128,9 @@ func (r *ChannelResource) Messages(query string, limit int) ([]Message, error) {
 
 // Message returns a specific message in the channel. If operating on a guild channel,
 // this endpoints requires the 'READ_MESSAGE_HISTORY' permission to be present on the current user.
-func (r *ChannelResource) Message(id string) (*Message, error) {
+func (r *ChannelResource) Message(ctx context.Context, id string) (*Message, error) {
 	e := endpoint.GetChannelMessage(r.channelID, id)
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -149,9 +150,9 @@ func (r *ChannelResource) Message(id string) (*Message, error) {
 // DeleteMessage deletes a message. If operating on a guild channel and trying to delete a
 // message that was not sent by the current user, this endpoint requires the 'MANAGE_MESSAGES'
 // permission. Fires a Message Delete Gateway event.
-func (r *ChannelResource) DeleteMessage(messageID string) error {
+func (r *ChannelResource) DeleteMessage(ctx context.Context, messageID string) error {
 	e := endpoint.DeleteMessage(r.channelID, messageID)
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}
@@ -169,7 +170,7 @@ func (r *ChannelResource) DeleteMessage(messageID string) error {
 // Any message IDs given that do not exist or are invalid will count towards the minimum and
 // maximum message count (currently 2 and 100 respectively). Additionally, duplicated IDs will
 // only be counted once.
-func (r *ChannelResource) DeleteMessageBulk(messageIDs []string) error {
+func (r *ChannelResource) DeleteMessageBulk(ctx context.Context, messageIDs []string) error {
 	st := struct {
 		Messages []string `json:"messages"`
 	}{
@@ -181,7 +182,7 @@ func (r *ChannelResource) DeleteMessageBulk(messageIDs []string) error {
 	}
 
 	e := endpoint.BulkDeleteMessage(r.channelID)
-	resp, err := r.client.doReq(http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
 	if err != nil {
 		return err
 	}
@@ -207,7 +208,7 @@ func (cm *createMessage) json() ([]byte, error) {
 	return json.Marshal(cm)
 }
 
-func (c *Client) sendMessage(channelID string, msg *createMessage) (*Message, error) {
+func (c *Client) sendMessage(ctx context.Context, channelID string, msg *createMessage) (*Message, error) {
 	if msg.Embed != nil && msg.Embed.Type == "" {
 		msg.Embed.Type = "rich"
 	}
@@ -218,7 +219,7 @@ func (c *Client) sendMessage(channelID string, msg *createMessage) (*Message, er
 	}
 
 	e := endpoint.CreateMessage(channelID)
-	resp, err := c.doReq(http.MethodPost, e, b)
+	resp, err := c.doReq(ctx, http.MethodPost, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -236,8 +237,8 @@ func (c *Client) sendMessage(channelID string, msg *createMessage) (*Message, er
 }
 
 // SendMessage is like SendMessageWithOptions with an empty nonce and text to speech disabled.
-func (r *ChannelResource) SendMessage(text string) (*Message, error) {
-	return r.SendMessageWithOptions(text, "", false)
+func (r *ChannelResource) SendMessage(ctx context.Context, text string) (*Message, error) {
+	return r.SendMessageWithOptions(ctx, text, "", false)
 }
 
 // SendMessageWithOptions posts a message to the channel. If operating on a guild channel,
@@ -248,8 +249,8 @@ func (r *ChannelResource) SendMessage(text string) (*Message, error) {
 // Before using this endpoint, you must connect to the gateway at least once.
 // The nonce will be returned in the result and also transmitted to other clients.
 // You can set it to empty if you do not need this feature.
-func (r *ChannelResource) SendMessageWithOptions(text, nonce string, tts bool) (*Message, error) {
-	return r.client.sendMessage(r.channelID, &createMessage{
+func (r *ChannelResource) SendMessageWithOptions(ctx context.Context, text, nonce string, tts bool) (*Message, error) {
+	return r.client.sendMessage(ctx, r.channelID, &createMessage{
 		Content: text,
 		Nonce:   nonce,
 		TTS:     tts,
@@ -257,15 +258,15 @@ func (r *ChannelResource) SendMessageWithOptions(text, nonce string, tts bool) (
 }
 
 // SendEmbed is like SendEmbedWithOptions with no text, an empty nonce and text to speech disabled.
-func (r *ChannelResource) SendEmbed(embed *embed.Embed) (*Message, error) {
-	return r.SendEmbedWithOptions(embed, "", "", false)
+func (r *ChannelResource) SendEmbed(ctx context.Context, embed *embed.Embed) (*Message, error) {
+	return r.SendEmbedWithOptions(ctx, embed, "", "", false)
 }
 
 // SendEmbedWithOptions sends some embedded rich content attached to a message to the channel.
 // See SendMessageWithOptions for required permissions and the embed sub package for more information
 // about embeds.
-func (r *ChannelResource) SendEmbedWithOptions(embed *embed.Embed, text, nonce string, tts bool) (*Message, error) {
-	return r.client.sendMessage(r.channelID, &createMessage{
+func (r *ChannelResource) SendEmbedWithOptions(ctx context.Context, embed *embed.Embed, text, nonce string, tts bool) (*Message, error) {
+	return r.client.sendMessage(ctx, r.channelID, &createMessage{
 		Content: text,
 		Nonce:   nonce,
 		TTS:     tts,
@@ -282,15 +283,15 @@ type File struct {
 
 // SendFiles is like SendFilesWithOptions with no text, an empty nonce, no
 // embed and text to speech disabled.
-func (r *ChannelResource) SendFiles(files ...File) (*Message, error) {
-	return r.SendFilesWithOptions("", "", nil, false, files...)
+func (r *ChannelResource) SendFiles(ctx context.Context, files ...File) (*Message, error) {
+	return r.SendFilesWithOptions(ctx, "", "", nil, false, files...)
 }
 
 // SendFilesWithOptions sends some attached files with an optional text and/or embedded rich
 // content to the channel.
 // See SendMessageWithOptions for required permissions and the embed sub package for more information
 // about embeds.
-func (r *ChannelResource) SendFilesWithOptions(text, nonce string, embed *embed.Embed, tts bool, files ...File) (*Message, error) {
+func (r *ChannelResource) SendFilesWithOptions(ctx context.Context, text, nonce string, embed *embed.Embed, tts bool, files ...File) (*Message, error) {
 	if len(files) < 1 {
 		return nil, ErrNoFileProvided
 	}
@@ -307,7 +308,7 @@ func (r *ChannelResource) SendFilesWithOptions(text, nonce string, embed *embed.
 	}
 
 	e := endpoint.CreateMessage(r.channelID)
-	resp, err := r.client.doReqWithHeader(http.MethodPost, e, b, h)
+	resp, err := r.client.doReqWithHeader(ctx, http.MethodPost, e, b, h)
 	if err != nil {
 		return nil, err
 	}
@@ -332,23 +333,23 @@ type editMessage struct {
 // EditMessage edits a previously sent message. You can only edit messages that have
 // been sent by the current user. Fires a Message Update Gateway event. See EditEmbed
 // if you need to edit some emended content.
-func (r *ChannelResource) EditMessage(messageID, content string) (*Message, error) {
-	return r.client.editMessage(r.channelID, messageID, &editMessage{content, nil})
+func (r *ChannelResource) EditMessage(ctx context.Context, messageID, content string) (*Message, error) {
+	return r.client.editMessage(ctx, r.channelID, messageID, &editMessage{content, nil})
 }
 
 // EditEmbed is like EditMessage but with embedded content support.
-func (r *ChannelResource) EditEmbed(messageID, content string, embed *embed.Embed) (*Message, error) {
-	return r.client.editMessage(r.channelID, messageID, &editMessage{content, embed})
+func (r *ChannelResource) EditEmbed(ctx context.Context, messageID, content string, embed *embed.Embed) (*Message, error) {
+	return r.client.editMessage(ctx, r.channelID, messageID, &editMessage{content, embed})
 }
 
-func (c *Client) editMessage(channelID, messageID string, edit *editMessage) (*Message, error) {
+func (c *Client) editMessage(ctx context.Context, channelID, messageID string, edit *editMessage) (*Message, error) {
 	b, err := json.Marshal(edit)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.EditMessage(channelID, messageID)
-	resp, err := c.doReq(http.MethodPatch, e, b)
+	resp, err := c.doReq(ctx, http.MethodPatch, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -376,7 +377,7 @@ type Reaction struct {
 // limit is the number of users to return and can be set to any value ranging from 1 to 100.
 // If set to 0, it defaults to 25. If more than 100 users reacted with the given emoji,
 // the before and after parameters can be used to fetch more users.
-func (r *ChannelResource) GetReactions(messageID, emoji string, limit int, before, after string) ([]User, error) {
+func (r *ChannelResource) GetReactions(ctx context.Context, messageID, emoji string, limit int, before, after string) ([]User, error) {
 	q := url.Values{}
 	if limit > 0 {
 		q.Set("limit", strconv.Itoa(limit))
@@ -389,7 +390,7 @@ func (r *ChannelResource) GetReactions(messageID, emoji string, limit int, befor
 	}
 
 	e := endpoint.GetReactions(r.channelID, messageID, url.PathEscape(emoji), q.Encode())
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -410,9 +411,9 @@ func (r *ChannelResource) GetReactions(messageID, emoji string, limit int, befor
 // the 'READ_MESSAGE_HISTORY' permission to be present on the current user. Additionally,
 // if nobody else has reacted to the message using this emoji, this endpoint requires
 // the'ADD_REACTIONS' permission to be present on the current user.
-func (r *ChannelResource) AddReaction(messageID, emoji string) error {
+func (r *ChannelResource) AddReaction(ctx context.Context, messageID, emoji string) error {
 	e := endpoint.CreateReaction(r.channelID, messageID, url.PathEscape(emoji))
-	resp, err := r.client.doReq(http.MethodPut, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodPut, e, nil)
 	if err != nil {
 		return err
 	}
@@ -425,9 +426,9 @@ func (r *ChannelResource) AddReaction(messageID, emoji string) error {
 }
 
 // RemoveReaction removes a reaction the current user has made for the message.
-func (r *ChannelResource) RemoveReaction(messageID, emoji string) error {
+func (r *ChannelResource) RemoveReaction(ctx context.Context, messageID, emoji string) error {
 	e := endpoint.DeleteOwnReaction(r.channelID, messageID, url.PathEscape(emoji))
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}
@@ -441,9 +442,9 @@ func (r *ChannelResource) RemoveReaction(messageID, emoji string) error {
 
 // RemoveUserReaction removes another user's reaction. This endpoint requires the
 // 'MANAGE_MESSAGES' permission to be present on the current user.
-func (r *ChannelResource) RemoveUserReaction(messageID, userID, emoji string) error {
+func (r *ChannelResource) RemoveUserReaction(ctx context.Context, messageID, userID, emoji string) error {
 	e := endpoint.DeleteUserReaction(r.channelID, messageID, userID, url.PathEscape(emoji))
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}
@@ -457,9 +458,9 @@ func (r *ChannelResource) RemoveUserReaction(messageID, userID, emoji string) er
 
 // RemoveAllReactions removes all reactions on a message. This endpoint requires the
 // 'MANAGE_MESSAGES' permission to be present on the current user.
-func (r *ChannelResource) RemoveAllReactions(messageID string) error {
+func (r *ChannelResource) RemoveAllReactions(ctx context.Context, messageID string) error {
 	e := endpoint.DeleteAllReactions(r.channelID, messageID)
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}
@@ -472,9 +473,9 @@ func (r *ChannelResource) RemoveAllReactions(messageID string) error {
 }
 
 // Pins returns all pinned messages in the channel as an array of messages.
-func (r *ChannelResource) Pins() ([]Message, error) {
+func (r *ChannelResource) Pins(ctx context.Context) ([]Message, error) {
 	e := endpoint.GetPinnedMessages(r.channelID)
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -492,9 +493,9 @@ func (r *ChannelResource) Pins() ([]Message, error) {
 }
 
 // PinMessage pins a message in the channel. Requires the 'MANAGE_MESSAGES' permission.
-func (r *ChannelResource) PinMessage(id string) error {
+func (r *ChannelResource) PinMessage(ctx context.Context, id string) error {
 	e := endpoint.AddPinnedChannelMessage(r.channelID, id)
-	resp, err := r.client.doReq(http.MethodPut, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodPut, e, nil)
 	if err != nil {
 		return err
 	}
@@ -508,9 +509,9 @@ func (r *ChannelResource) PinMessage(id string) error {
 
 // UnpinMessage deletes a pinned message in the channel. Requires the
 // 'MANAGE_MESSAGES' permission.
-func (r *ChannelResource) UnpinMessage(id string) error {
+func (r *ChannelResource) UnpinMessage(ctx context.Context, id string) error {
 	e := endpoint.DeletePinnedChannelMessage(r.channelID, id)
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}

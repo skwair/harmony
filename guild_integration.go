@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"time"
@@ -31,9 +32,9 @@ type IntegrationAccount struct {
 
 // Integrations returns the list of integrations for the guild.
 // Requires the 'MANAGE_GUILD' permission.
-func (r *GuildResource) Integrations() ([]Integration, error) {
+func (r *GuildResource) Integrations(ctx context.Context) ([]Integration, error) {
 	e := endpoint.GetGuildIntegrations(r.guildID)
-	resp, err := r.client.doReq(http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -53,7 +54,7 @@ func (r *GuildResource) Integrations() ([]Integration, error) {
 // AddIntegration attaches an integration from the current user to the guild.
 // Requires the 'MANAGE_GUILD' permission. Fires a Guild Integrations Update
 // Gateway event.
-func (r *GuildResource) AddIntegration(id, typ string) error {
+func (r *GuildResource) AddIntegration(ctx context.Context, id, typ string) error {
 	st := struct {
 		ID   string `json:"id"`
 		Type string `json:"type"`
@@ -67,7 +68,7 @@ func (r *GuildResource) AddIntegration(id, typ string) error {
 	}
 
 	e := endpoint.AddGuildIntegration(r.guildID)
-	resp, err := r.client.doReq(http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
 	if err != nil {
 		return err
 	}
@@ -81,14 +82,14 @@ func (r *GuildResource) AddIntegration(id, typ string) error {
 
 // ModifyIntegration modifies the behavior and settings of a guild integration.
 // Requires the 'MANAGE_GUILD' permission. Fires a Guild Integrations Update Gateway event.
-func (r *GuildResource) ModifyIntegration(id string, settings *integration.Settings) error {
+func (r *GuildResource) ModifyIntegration(ctx context.Context, id string, settings *integration.Settings) error {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return err
 	}
 
 	e := endpoint.ModifyGuildIntegration(r.guildID, id)
-	resp, err := r.client.doReq(http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
 	if err != nil {
 		return err
 	}
@@ -102,9 +103,9 @@ func (r *GuildResource) ModifyIntegration(id string, settings *integration.Setti
 
 // RemoveIntegration removes the attached integration for the guild.
 // Requires the 'MANAGE_GUILD' permission. Fires a Guild Integrations Update Gateway event.
-func (r *GuildResource) RemoveIntegration(id string) error {
+func (r *GuildResource) RemoveIntegration(ctx context.Context, id string) error {
 	e := endpoint.DeleteGuildIntegration(r.guildID, id)
-	resp, err := r.client.doReq(http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
 	if err != nil {
 		return err
 	}
@@ -118,9 +119,9 @@ func (r *GuildResource) RemoveIntegration(id string) error {
 
 // SyncIntegration syncs a guild integration. Requires the 'MANAGE_GUILD'
 // permission.
-func (r *GuildResource) SyncIntegration(id string) error {
+func (r *GuildResource) SyncIntegration(ctx context.Context, id string) error {
 	e := endpoint.SyncGuildIntegration(r.guildID, id)
-	resp, err := r.client.doReq(http.MethodPost, e, nil)
+	resp, err := r.client.doReq(ctx, http.MethodPost, e, nil)
 	if err != nil {
 		return err
 	}
