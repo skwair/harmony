@@ -8,6 +8,7 @@ import (
 
 	"github.com/skwair/harmony/channel"
 	"github.com/skwair/harmony/internal/endpoint"
+	"github.com/skwair/harmony/invite"
 	"github.com/skwair/harmony/permission"
 )
 
@@ -192,27 +193,10 @@ func (r *ChannelResource) Invites(ctx context.Context) ([]Invite, error) {
 	return invites, nil
 }
 
-// createChannelInvite allows to specify Invite settings when creating one.
-type createChannelInvite struct {
-	MaxAge  int `json:"max_age,omitempty"`
-	MaxUses int `json:"max_uses,omitempty"`
-	// Whether this invite only grants temporary membership.
-	Temporary bool `json:"temporary,omitempty"`
-	// If true, don't try to reuse a similar invite
-	// (useful for creating many unique one time use invites).
-	Unique bool `json:"unique,omitempty"`
-}
-
 // NewInvite creates a new invite for the channel. Only usable for guild channels.
 // Requires the CREATE_INSTANT_INVITE permission.
-func (r *ChannelResource) NewInvite(ctx context.Context, maxAge, maxUses int, temporary, unique bool) (*Invite, error) {
-	i := createChannelInvite{
-		MaxAge:    maxAge,
-		MaxUses:   maxUses,
-		Temporary: temporary,
-		Unique:    unique,
-	}
-	b, err := json.Marshal(i)
+func (r *ChannelResource) NewInvite(ctx context.Context, settings *invite.Settings) (*Invite, error) {
+	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
@@ -224,15 +208,15 @@ func (r *ChannelResource) NewInvite(ctx context.Context, maxAge, maxUses int, te
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
+	if resp.StatusCode != http.StatusOK {
 		return nil, apiError(resp)
 	}
 
-	var invite Invite
-	if err = json.NewDecoder(resp.Body).Decode(&invite); err != nil {
+	var i Invite
+	if err = json.NewDecoder(resp.Body).Decode(&i); err != nil {
 		return nil, err
 	}
-	return &invite, nil
+	return &i, nil
 }
 
 // AddRecipient adds a recipient to the existing Group DM or to a

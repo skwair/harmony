@@ -35,14 +35,14 @@ func WithName(name string) Setting {
 // WithPermissions sets the permissions of guild a role.
 func WithPermissions(perm int) Setting {
 	return func(s *Settings) {
-		s.Permissions = optional.NewInt(int(perm))
+		s.Permissions = optional.NewInt(perm)
 	}
 }
 
 // WithColor sets the color of guild a role. It accepts hexadecimal value.
 func WithColor(hexCode int) Setting {
 	return func(s *Settings) {
-		s.Color = optional.NewInt(int(hexCode))
+		s.Color = optional.NewInt(hexCode)
 	}
 }
 
