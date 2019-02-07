@@ -319,15 +319,17 @@ func (r *GuildResource) PruneCount(ctx context.Context, days int) (int, error) {
 }
 
 // BeginPrune begins a prune operation. Requires the 'KICK_MEMBERS' permission.
-// Returns the number of members that were removed in the prune operation.
+// Returns the number of members that were removed in the prune operation if
+// computePruneCount is set to true (not recommended for large guilds).
 // Fires multiple Guild Member Remove Gateway events.
-func (r *GuildResource) BeginPrune(ctx context.Context, days int) (int, error) {
+func (r *GuildResource) BeginPrune(ctx context.Context, days int, computePruneCount bool) (pruneCount int, err error) {
 	if days < 1 {
 		days = 1
 	}
 
 	q := url.Values{}
 	q.Set("days", strconv.Itoa(days))
+	q.Set("compute_prune_count", strconv.FormatBool(computePruneCount))
 	e := endpoint.BeginGuildPrune(r.guildID, q.Encode())
 	resp, err := r.client.doReq(ctx, http.MethodPost, e, nil)
 	if err != nil {
@@ -339,13 +341,18 @@ func (r *GuildResource) BeginPrune(ctx context.Context, days int) (int, error) {
 		return 0, apiError(resp)
 	}
 
-	st := struct {
-		Pruned int `json:"pruned"`
-	}{100}
+	var st struct {
+		Pruned *int `json:"pruned"`
+	}
 	if err = json.NewDecoder(resp.Body).Decode(&st); err != nil {
 		return 0, err
 	}
-	return st.Pruned, nil
+
+	if st.Pruned != nil {
+		pruneCount = *st.Pruned
+	}
+
+	return pruneCount, nil
 }
 
 // VoiceRegions returns a list of available voice regions for the guild.
