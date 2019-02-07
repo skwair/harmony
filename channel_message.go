@@ -247,6 +247,10 @@ func (r *ChannelResource) Send(ctx context.Context, opts ...MessageOption) (*Mes
 		opt(&msg)
 	}
 
+	if msg.Content == "" && msg.Embed == nil && len(msg.files) == 0 {
+		return nil, ErrInvalidSend
+	}
+
 	return r.client.sendMessage(ctx, r.channelID, &msg)
 }
 

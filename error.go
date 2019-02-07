@@ -13,8 +13,8 @@ import (
 var (
 	// ErrGatewayNotConnected is returned when the client is not connected to the Gateway.
 	ErrGatewayNotConnected = errors.New("gateway is not connected")
-	// ErrNoFileProvided is returned by SendFiles when no files are provided.
-	ErrNoFileProvided = errors.New("no file provided")
+	// ErrInvalidSend is returned by Send when no files are provided.
+	ErrInvalidSend = errors.New("no content, embed nor file provided")
 )
 
 // APIError is a generic error returned by the Discord HTTP API.
