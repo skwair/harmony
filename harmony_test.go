@@ -8,6 +8,7 @@ import (
 
 	"github.com/skwair/harmony"
 	"github.com/skwair/harmony/channel"
+	"github.com/skwair/harmony/invite"
 	"github.com/skwair/harmony/permission"
 	"github.com/skwair/harmony/role"
 )
@@ -66,6 +67,21 @@ func TestHarmony(t *testing.T) {
 		txtCh, err = client.Guild(guildID).NewChannel(context.TODO(), settings)
 		if err != nil {
 			t.Fatalf("could not create text channel: %v", err)
+		}
+	})
+
+	t.Run("create a channel invite", func(t *testing.T) {
+		settings := invite.NewSettings(
+			invite.WithMaxUses(1),
+		)
+
+		i, err := client.Channel(txtCh.ID).NewInvite(context.TODO(), settings)
+		if err != nil {
+			t.Fatalf("could not create new invitation: %v", err)
+		}
+
+		if i.MaxUses != 1 {
+			t.Fatalf("expected to new invite to have %d max uses; got %d", 1, i.MaxUses)
 		}
 	})
 
