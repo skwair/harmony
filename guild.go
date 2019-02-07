@@ -92,7 +92,7 @@ func (c *Client) CreateGuild(ctx context.Context, name string) (*Guild, error) {
 	}
 
 	e := endpoint.CreateGuild()
-	resp, err := c.doReq(ctx, http.MethodPost, e, b)
+	resp, err := c.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (c *Client) Guild(id string) *GuildResource {
 // Get returns the guild.
 func (r *GuildResource) Get(ctx context.Context) (*Guild, error) {
 	e := endpoint.GetGuild(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -150,7 +150,7 @@ func (r *GuildResource) Modify(ctx context.Context, settings *guild.Settings) (*
 	}
 
 	e := endpoint.ModifyGuild(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func (r *GuildResource) Modify(ctx context.Context, settings *guild.Settings) (*
 // Fires a Guild Delete Gateway event.
 func (r *GuildResource) Delete(ctx context.Context) error {
 	e := endpoint.DeleteGuild(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -186,7 +186,7 @@ func (r *GuildResource) Delete(ctx context.Context) error {
 // Channels returns the list of channels in the guild.
 func (r *GuildResource) Channels(ctx context.Context) ([]Channel, error) {
 	e := endpoint.GetGuildChannels(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -211,7 +211,7 @@ func (r *GuildResource) NewChannel(ctx context.Context, settings *channel.Settin
 	}
 
 	e := endpoint.CreateGuildChannel(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +246,7 @@ func (r *GuildResource) ModifyChannelPosition(ctx context.Context, pos []Channel
 	}
 
 	e := endpoint.ModifyChannelPositions(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return err
 	}
@@ -273,7 +273,7 @@ func (r *GuildResource) ChangeNick(ctx context.Context, name string) (string, er
 	}
 
 	e := endpoint.ModifyCurrentUserNick(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return "", err
 	}
@@ -299,7 +299,7 @@ func (r *GuildResource) PruneCount(ctx context.Context, days int) (int, error) {
 	q := url.Values{}
 	q.Set("days", strconv.Itoa(days))
 	e := endpoint.GetGuildPruneCount(r.guildID, q.Encode())
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -331,7 +331,7 @@ func (r *GuildResource) BeginPrune(ctx context.Context, days int, computePruneCo
 	q.Set("days", strconv.Itoa(days))
 	q.Set("compute_prune_count", strconv.FormatBool(computePruneCount))
 	e := endpoint.BeginGuildPrune(r.guildID, q.Encode())
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return 0, err
 	}
@@ -360,7 +360,7 @@ func (r *GuildResource) BeginPrune(ctx context.Context, days int, computePruneCo
 // servers when the guild is VIP-enabled.
 func (r *GuildResource) VoiceRegions(ctx context.Context) ([]VoiceRegion, error) {
 	e := endpoint.GetGuildVoiceRegions(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -381,7 +381,7 @@ func (r *GuildResource) VoiceRegions(ctx context.Context) ([]VoiceRegion, error)
 // Requires the 'MANAGE_GUILD' permission.
 func (r *GuildResource) Invites(ctx context.Context) ([]Invite, error) {
 	e := endpoint.GetGuildInvites(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -401,7 +401,7 @@ func (r *GuildResource) Invites(ctx context.Context) ([]Invite, error) {
 // Embed returns the guild's embed. Requires the 'MANAGE_GUILD' permission.
 func (r *GuildResource) Embed(ctx context.Context) (*guild.Embed, error) {
 	e := endpoint.GetGuildEmbed(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -427,7 +427,7 @@ func (r *GuildResource) ModifyEmbed(ctx context.Context, embed *guild.Embed) (*g
 	}
 
 	e := endpoint.ModifyGuildEmbed(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -447,7 +447,7 @@ func (r *GuildResource) ModifyEmbed(ctx context.Context, embed *guild.Embed) (*g
 // enabled. Requires the 'MANAGE_GUILD' permission.
 func (r *GuildResource) VanityURL(ctx context.Context) (*Invite, error) {
 	e := endpoint.GetGuildVanityURL(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}

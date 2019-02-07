@@ -20,7 +20,7 @@ type Ban struct {
 // Requires the 'BAN_MEMBERS' permission.
 func (r *GuildResource) Bans(ctx context.Context) ([]Ban, error) {
 	e := endpoint.GetGuildBans(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (r *GuildResource) BanWithReason(ctx context.Context, userID string, delMsg
 	}
 
 	e := endpoint.CreateGuildBan(r.guildID, userID, q.Encode())
-	resp, err := r.client.doReq(ctx, http.MethodPut, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -74,7 +74,7 @@ func (r *GuildResource) BanWithReason(ctx context.Context, userID string, delMsg
 // Fires a Guild Ban Remove Gateway event.
 func (r *GuildResource) Unban(ctx context.Context, userID string) error {
 	e := endpoint.RemoveGuildBan(r.guildID, userID)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}

@@ -34,7 +34,7 @@ type IntegrationAccount struct {
 // Requires the 'MANAGE_GUILD' permission.
 func (r *GuildResource) Integrations(ctx context.Context) ([]Integration, error) {
 	e := endpoint.GetGuildIntegrations(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +68,7 @@ func (r *GuildResource) AddIntegration(ctx context.Context, id, typ string) erro
 	}
 
 	e := endpoint.AddGuildIntegration(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (r *GuildResource) ModifyIntegration(ctx context.Context, id string, settin
 	}
 
 	e := endpoint.ModifyGuildIntegration(r.guildID, id)
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func (r *GuildResource) ModifyIntegration(ctx context.Context, id string, settin
 // Requires the 'MANAGE_GUILD' permission. Fires a Guild Integrations Update Gateway event.
 func (r *GuildResource) RemoveIntegration(ctx context.Context, id string) error {
 	e := endpoint.DeleteGuildIntegration(r.guildID, id)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -121,7 +121,7 @@ func (r *GuildResource) RemoveIntegration(ctx context.Context, id string) error 
 // permission.
 func (r *GuildResource) SyncIntegration(ctx context.Context, id string) error {
 	e := endpoint.SyncGuildIntegration(r.guildID, id)
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}

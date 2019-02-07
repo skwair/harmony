@@ -43,7 +43,7 @@ func (m *GuildMember) HasRole(id string) bool {
 // Member returns a single guild member given its user ID.
 func (r *GuildResource) Member(ctx context.Context, userID string) (*GuildMember, error) {
 	e := endpoint.GetGuildMember(r.guildID, userID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (r *GuildResource) Members(ctx context.Context, limit int, after string) ([
 	}
 
 	e := endpoint.ListGuildMembers(r.guildID, q.Encode())
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (r *GuildResource) AddMember(ctx context.Context, userID, token string, set
 	}
 
 	e := endpoint.AddGuildMember(r.guildID, userID)
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +134,7 @@ func (r *GuildResource) AddMember(ctx context.Context, userID, token string, set
 // permission. Fires a Guild Member Remove Gateway event.
 func (r *GuildResource) RemoveMember(ctx context.Context, userID string) error {
 	e := endpoint.RemoveGuildMember(r.guildID, userID)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (r *GuildResource) ModifyMember(ctx context.Context, userID string, setting
 	}
 
 	e := endpoint.ModifyGuildMember(r.guildID, userID)
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return err
 	}

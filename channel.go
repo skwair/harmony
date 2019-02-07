@@ -53,7 +53,7 @@ func (c *Client) Channel(id string) *ChannelResource {
 // Get returns the channel.
 func (r *ChannelResource) Get(ctx context.Context) (*Channel, error) {
 	e := endpoint.GetChannel(r.channelID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +81,7 @@ func (r *ChannelResource) Modify(ctx context.Context, settings *channel.Settings
 	}
 
 	e := endpoint.ModifyChannel(r.channelID)
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +104,7 @@ func (r *ChannelResource) Modify(ctx context.Context, settings *channel.Settings
 // Returns the deleted channel on success. Fires a Channel Delete Gateway event.
 func (r *ChannelResource) Delete(ctx context.Context) (*Channel, error) {
 	e := endpoint.DeleteChannel(r.channelID)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +144,7 @@ func (r *ChannelResource) UpdatePermissions(ctx context.Context, targetID string
 	}
 
 	e := endpoint.EditChannelPermissions(r.channelID, targetID)
-	resp, err := r.client.doReq(ctx, http.MethodPut, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return err
 	}
@@ -160,7 +160,7 @@ func (r *ChannelResource) UpdatePermissions(ctx context.Context, targetID string
 // channel. Only usable for guild channels. Requires the 'MANAGE_ROLES' permission.
 func (r *ChannelResource) DeletePermission(ctx context.Context, channelID, targetID string) error {
 	e := endpoint.DeleteChannelPermission(channelID, targetID)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -176,7 +176,7 @@ func (r *ChannelResource) DeletePermission(ctx context.Context, channelID, targe
 // Only usable for guild channels. Requires the 'MANAGE_CHANNELS' permission.
 func (r *ChannelResource) Invites(ctx context.Context) ([]Invite, error) {
 	e := endpoint.GetChannelInvites(r.channelID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ func (r *ChannelResource) NewInvite(ctx context.Context, settings *invite.Settin
 	}
 
 	e := endpoint.CreateChannelInvite(r.channelID)
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +224,7 @@ func (r *ChannelResource) NewInvite(ctx context.Context, settings *invite.Settin
 // Groups have a limit of 10 recipients, including the current user.
 func (r *ChannelResource) AddRecipient(ctx context.Context, channelID, recipientID string) error {
 	e := endpoint.GroupDMAddRecipient(channelID, recipientID)
-	resp, err := r.client.doReq(ctx, http.MethodPut, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -239,7 +239,7 @@ func (r *ChannelResource) AddRecipient(ctx context.Context, channelID, recipient
 // RemoveRecipient removes a recipient from the Group DM.
 func (r *ChannelResource) RemoveRecipient(ctx context.Context, recipientID string) error {
 	e := endpoint.GroupDMRemoveRecipient(r.channelID, recipientID)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -258,7 +258,7 @@ func (r *ChannelResource) RemoveRecipient(ctx context.Context, recipientID strin
 // bot is processing their message. Fires a Typing Start Gateway event.
 func (r *ChannelResource) TriggerTyping(ctx context.Context) error {
 	e := endpoint.TriggerTypingIndicator(r.channelID)
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -295,7 +295,7 @@ func (r *ChannelResource) NewWebhook(ctx context.Context, name, avatar string) (
 	}
 
 	e := endpoint.CreateWebhook(r.channelID)
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
