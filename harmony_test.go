@@ -24,7 +24,7 @@ func TestHarmony(t *testing.T) {
 		t.Fatal("environment variable HARMONY_TEST_GUILD_ID not set")
 	}
 
-	client, err := harmony.NewClient(harmony.WithBotToken(token))
+	client, err := harmony.NewClient(token)
 	if err != nil {
 		t.Fatalf("could not create harmony client: %v", err)
 	}
