@@ -17,8 +17,8 @@ type multipartPayload interface {
 // It returns the raw generated body along a header with the proper Content-Type value set.
 func multipartFromFiles(payload multipartPayload, files ...File) ([]byte, http.Header, error) {
 	// Underlying buffer the multipart body will be written to.
-	var b bytes.Buffer
-	w := multipart.NewWriter(&b)
+	var buf bytes.Buffer
+	w := multipart.NewWriter(&buf)
 
 	// Send the endpoint parameters as JSON in a the "payload_json" part.
 	h := textproto.MIMEHeader{}
@@ -29,17 +29,17 @@ func multipartFromFiles(payload multipartPayload, files ...File) ([]byte, http.H
 		return nil, nil, err
 	}
 
-	bytes, err := payload.json()
+	b, err := payload.json()
 	if err != nil {
 		return nil, nil, err
 	}
-	if _, err = pw.Write(bytes); err != nil {
+	if _, err = pw.Write(b); err != nil {
 		return nil, nil, err
 	}
 
 	// Create a new part for each file.
 	for i, f := range files {
-		cd := fmt.Sprintf(`form-data; name="file%d"; filename="%s"`, i, f.Name)
+		cd := fmt.Sprintf(`form-data; name="file%d"; filename="%s"`, i, f.name)
 
 		h = textproto.MIMEHeader{}
 		h.Set("Content-Disposition", cd)
@@ -50,7 +50,11 @@ func multipartFromFiles(payload multipartPayload, files ...File) ([]byte, http.H
 			return nil, nil, err
 		}
 
-		if _, err = io.Copy(pw, f.Reader); err != nil {
+		if _, err = io.Copy(pw, f.reader); err != nil {
+			return nil, nil, err
+		}
+
+		if err = f.reader.Close(); err != nil {
 			return nil, nil, err
 		}
 	}
@@ -61,5 +65,5 @@ func multipartFromFiles(payload multipartPayload, files ...File) ([]byte, http.H
 
 	header := http.Header{}
 	header.Set("Content-Type", w.FormDataContentType())
-	return b.Bytes(), header, nil
+	return buf.Bytes(), header, nil
 }

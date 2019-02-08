@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -219,9 +218,11 @@ func WithEmbed(e *embed.Embed) MessageOption {
 }
 
 // WithFiles attach files to a message.
-func WithFiles(files ...File) MessageOption {
+func WithFiles(files ...*File) MessageOption {
 	return MessageOption(func(m *createMessage) {
-		m.files = files
+		for _, f := range files {
+			m.files = append(m.files, *f)
+		}
 	})
 }
 
@@ -279,13 +280,6 @@ type createMessage struct {
 // a payload with the multipartFromFiles method.
 func (cm *createMessage) json() ([]byte, error) {
 	return json.Marshal(cm)
-}
-
-// File is a file along with its name. It is used to send files
-// to channels with SendFiles.
-type File struct {
-	Name   string
-	Reader io.Reader
 }
 
 func (c *Client) sendMessage(ctx context.Context, channelID string, msg *createMessage) (*Message, error) {

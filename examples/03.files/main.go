@@ -49,20 +49,15 @@ func main() {
 
 func (b *bot) onNewMessage(m *harmony.Message) {
 	if m.Content == "!file" {
-		f, err := os.Open("discord-gopher.png")
+		// Here, we demonstrate the FileFromDisk function to send a file present
+		// on the local filesystem. If the resource you want to send is a URL,
+		// use FileFromURL instead.
+		// If you already have your own reader, then FileFromReadCloser is the
+		// function you want to use.
+		file, err := harmony.FileFromDisk("discord-gopher.png", "zob")
 		if err != nil {
 			log.Println(err)
 			return
-		}
-
-		file := harmony.File{
-			// Setting a valid extension type here,
-			// such as "png", will allow Discord
-			// applications to display the files
-			// inline, instead of asking users
-			// to download them.
-			Name:   "discord-gopher.png",
-			Reader: f,
 		}
 
 		if _, err = b.client.Channel(m.ChannelID).Send(context.Background(), harmony.WithFiles(file)); err != nil {
