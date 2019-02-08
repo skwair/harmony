@@ -174,7 +174,7 @@ func GetGuildIntegrations(guildID string) *Endpoint {
 	}
 }
 
-func AddGuildIntegration(guildID string) *Endpoint {
+func CreateGuildIntegration(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPost,
 		URL:    "/guilds/" + guildID + "/integrations",

@@ -67,7 +67,7 @@ func (r *GuildResource) AddIntegration(ctx context.Context, id, typ string) erro
 		return err
 	}
 
-	e := endpoint.AddGuildIntegration(r.guildID)
+	e := endpoint.CreateGuildIntegration(r.guildID)
 	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return err
