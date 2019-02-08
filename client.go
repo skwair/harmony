@@ -117,7 +117,7 @@ type Client struct {
 func NewClient(token string, opts ...ClientOption) (*Client, error) {
 	c := &Client{
 		name:              "Harmony",
-		token:             token,
+		token:             "Bot " + token,
 		baseURL:           defaultBaseURL,
 		client:            http.DefaultClient,
 		largeThreshold:    defaultLargeThreshold,
