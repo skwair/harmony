@@ -26,6 +26,7 @@ const (
 	DeafenMembers      = 0x00800000 // Allows for deafening of members in a voice channel.
 	MoveMembers        = 0x01000000 // Allows for moving of members between voice channels.
 	UseVAD             = 0x02000000 // Allows for using voice-activity-detection in a voice channel.
+	PRIORITY_SPEAKER   = 0x00000100 // Allows for using priority speaker in a voice channel.
 	ChangeNickname     = 0x04000000 // Allows for modification of own nickname.
 	ManageNicknames    = 0x08000000 // Allows for modification of other users nicknames.
 	ManageRoles        = 0x10000000 // Allows management and editing of roles.
