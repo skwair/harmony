@@ -11,7 +11,8 @@ import (
 	"github.com/skwair/harmony/internal/endpoint"
 )
 
-// doReq calls doReqWithHeader with the Content-Type to "application/json" if the body is not nil.
+// doReq calls doReqWithHeader with the Content-Type header set to "application/json"
+// if the provided body is not nil.
 // If you need more control over headers you send, use doReqWithHeader directly.
 func (c *Client) doReq(ctx context.Context, e *endpoint.Endpoint, body []byte) (*http.Response, error) {
 	h := http.Header{}
@@ -22,10 +23,10 @@ func (c *Client) doReq(ctx context.Context, e *endpoint.Endpoint, body []byte) (
 	return c.doReqWithHeader(ctx, e, body, h)
 }
 
-// doReqWithHeader sends an HTTP request and returns the response given
-// an endpoint an optional body that can be set to nil and some headers. It adds the
-// required Authorization and User-Agent header.
-// It also takes care of rate limiting, using the client's built in rate limiter.
+// doReqWithHeader sends an HTTP request and returns the response given an endpoint
+// an optional body and some headers. It adds the required Authorization header and
+// also sets the User-Agent.
+// It takes care of rate limiting, using the client's built in rate limiter.
 func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, body []byte, h http.Header) (*http.Response, error) {
 	req, err := http.NewRequest(e.Method, c.baseURL+e.URL, bytes.NewBuffer(body))
 	if err != nil {
@@ -42,9 +43,7 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, body
 		}
 	}
 	req.Header.Set("Authorization", c.token)
-	// NOTE: maybe allow the "Harmony" to be configurable when creating a client.
-	// If we allow it, how would doReqNoAuthWithHeader get it ?
-	ua := fmt.Sprintf("%s (github.com/skwair/harmony, %s)", "Harmony", version)
+	ua := fmt.Sprintf("%s (github.com/skwair/harmony, %s)", c.name, version)
 	req.Header.Set("User-Agent", ua)
 
 	c.limiter.Wait(e.Key)
