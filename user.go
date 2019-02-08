@@ -41,7 +41,7 @@ func (u *User) AvatarURL() string {
 // about the connected user. For every other IDs, this endpoint can only be used by bots.
 func (c *Client) GetUser(ctx context.Context, id string) (*User, error) {
 	e := endpoint.GetUser(id)
-	resp, err := c.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := c.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +74,7 @@ func (c *Client) CurrentUser() *CurrentUserResource {
 // Get returns the current user.
 func (r *CurrentUserResource) Get(ctx context.Context) (*User, error) {
 	e := endpoint.GetUser("@me")
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +113,7 @@ func (r *CurrentUserResource) Modify(ctx context.Context, username, avatar strin
 	}
 
 	e := endpoint.ModifyCurrentUser()
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (r *CurrentUserResource) Modify(ctx context.Context, username, avatar strin
 // to get a list of users' guilds.
 func (r *CurrentUserResource) Guilds(ctx context.Context) ([]PartialGuild, error) {
 	e := endpoint.GetCurrentUserGuilds()
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (r *CurrentUserResource) Guilds(ctx context.Context) ([]PartialGuild, error
 // LeaveGuild make the current user leave a guild given its ID.
 func (r *CurrentUserResource) LeaveGuild(ctx context.Context, id string) error {
 	e := endpoint.LeaveGuild(id)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -170,7 +170,7 @@ func (r *CurrentUserResource) LeaveGuild(ctx context.Context, id string) error {
 // an empty list of channels.
 func (r *CurrentUserResource) DMs(ctx context.Context) ([]Channel, error) {
 	e := endpoint.GetUserDMs()
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ func (r *CurrentUserResource) NewDM(ctx context.Context, recipientID string) (*C
 	}
 
 	e := endpoint.CreateDM()
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -222,7 +222,7 @@ func (r *CurrentUserResource) NewDM(ctx context.Context, recipientID string) (*C
 // Connections returns a list of connections for the connected user.
 func (r *CurrentUserResource) Connections(ctx context.Context) ([]Connection, error) {
 	e := endpoint.GetUserConnections()
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -23,7 +23,7 @@ type Emoji struct {
 // Requires the MANAGE_EMOJIS permission.
 func (r *GuildResource) Emojis(ctx context.Context) ([]Emoji, error) {
 	e := endpoint.ListGuildEmojis(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -43,7 +43,7 @@ func (r *GuildResource) Emojis(ctx context.Context) ([]Emoji, error) {
 // Emoji returns an emoji from the guild.
 func (r *GuildResource) Emoji(ctx context.Context, emojiID string) (*Emoji, error) {
 	e := endpoint.GetGuildEmoji(r.guildID, emojiID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (r *GuildResource) NewEmoji(ctx context.Context, name, image string, roles 
 	}
 
 	e := endpoint.CreateGuildEmoji(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func (r *GuildResource) ModifyEmoji(ctx context.Context, emojiID, name string, r
 	}
 
 	e := endpoint.ModifyGuildEmoji(r.guildID, emojiID)
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +133,7 @@ func (r *GuildResource) ModifyEmoji(ctx context.Context, emojiID, name string, r
 // Fires a Guild Emojis Update Gateway event.
 func (r *GuildResource) DeleteEmoji(ctx context.Context, emojiID string) error {
 	e := endpoint.DeleteGuildEmoji(r.guildID, emojiID)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -29,8 +28,8 @@ type Webhook struct {
 // GetWebhookWithToken is like GetWebhook except this call does not require
 // authentication and returns no user in the webhook.
 func GetWebhookWithToken(ctx context.Context, id, token string) (*Webhook, error) {
-	url := fmt.Sprintf("/webhooks/%s/%s", id, token)
-	resp, err := doReqNoAuth(ctx, http.MethodGet, url, nil)
+	e := endpoint.GetWebhookWithToken(id, token)
+	resp, err := doReqNoAuth(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -56,8 +55,8 @@ func ModifyWebhookWithToken(ctx context.Context, id, token string, s *webhook.Se
 		return nil, err
 	}
 
-	url := fmt.Sprintf("/webhooks/%s/%s", id, token)
-	resp, err := doReqNoAuth(ctx, http.MethodPatch, url, b)
+	e := endpoint.ModifyWebhookWithToken(id, token)
+	resp, err := doReqNoAuth(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +75,8 @@ func ModifyWebhookWithToken(ctx context.Context, id, token string, s *webhook.Se
 
 // DeleteWebhookWithToken is like DeleteWebhook except it does not require authentication.
 func DeleteWebhookWithToken(ctx context.Context, id, token string) error {
-	url := fmt.Sprintf("/webhooks/%s/%s", id, token)
-	resp, err := doReqNoAuth(ctx, http.MethodDelete, url, nil)
+	e := endpoint.DeleteWebhookWithToken(id, token)
+	resp, err := doReqNoAuth(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -136,8 +135,8 @@ func ExecuteWebhook(ctx context.Context, id, token string, p *WebhookParameters,
 
 	q := url.Values{}
 	q.Set("wait", strconv.FormatBool(wait))
-	url := fmt.Sprintf("/webhooks/%s/%s?%s", id, token, q.Encode())
-	resp, err := doReqNoAuthWithHeader(ctx, http.MethodPost, url, b, h)
+	e := endpoint.ExecuteWebhook(id, token, q.Encode())
+	resp, err := doReqNoAuthWithHeader(ctx, e, b, h)
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +161,7 @@ func ExecuteWebhook(ctx context.Context, id, token string, p *WebhookParameters,
 }
 
 func (c *Client) getWebhooks(ctx context.Context, e *endpoint.Endpoint) ([]Webhook, error) {
-	resp, err := c.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := c.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -194,7 +193,7 @@ func (c *Client) Webhook(id string) *WebhookResource {
 // Get returns the webhook.
 func (r *WebhookResource) Get(ctx context.Context) (*Webhook, error) {
 	e := endpoint.GetWebhook(r.webhookID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +218,7 @@ func (r *WebhookResource) Modify(ctx context.Context, settings *webhook.Settings
 	}
 
 	e := endpoint.ModifyWebhook(r.webhookID)
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +238,7 @@ func (r *WebhookResource) Modify(ctx context.Context, settings *webhook.Settings
 // Delete deletes the webhook.
 func (r *WebhookResource) Delete(ctx context.Context) error {
 	e := endpoint.DeleteWebhook(r.webhookID)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}

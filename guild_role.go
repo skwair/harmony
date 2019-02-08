@@ -29,7 +29,7 @@ type Role struct {
 // permission.
 func (r *GuildResource) Roles(ctx context.Context) ([]Role, error) {
 	e := endpoint.GetGuildRoles(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -55,7 +55,7 @@ func (r *GuildResource) NewRole(ctx context.Context, settings *role.Settings) (*
 	}
 
 	e := endpoint.CreateGuildRole(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (r *GuildResource) ModifyRolePositions(ctx context.Context, pos []RolePosit
 	}
 
 	e := endpoint.ModifyGuildRolePositions(r.guildID)
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (r *GuildResource) ModifyRole(ctx context.Context, id string, settings *rol
 	}
 
 	e := endpoint.ModifyGuildRole(r.guildID, id)
-	resp, err := r.client.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +135,7 @@ func (r *GuildResource) ModifyRole(ctx context.Context, id string, settings *rol
 // Fires a Guild Role Delete Gateway event.
 func (r *GuildResource) DeleteRole(ctx context.Context, id string) error {
 	e := endpoint.DeleteGuildRole(r.guildID, id)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -151,7 +151,7 @@ func (r *GuildResource) DeleteRole(ctx context.Context, id string) error {
 // permission. Fires a Guild Member Update Gateway event.
 func (r *GuildResource) AddMemberRole(ctx context.Context, userID, roleID string) error {
 	e := endpoint.AddGuildMemberRole(r.guildID, userID, roleID)
-	resp, err := r.client.doReq(ctx, http.MethodPut, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -167,7 +167,7 @@ func (r *GuildResource) AddMemberRole(ctx context.Context, userID, roleID string
 // 'MANAGE_ROLES' permission. Fires a Guild Member Update Gateway event.
 func (r *GuildResource) RemoveMemberRole(ctx context.Context, userID, roleID string) error {
 	e := endpoint.RemoveGuildMemberRole(r.guildID, userID, roleID)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}

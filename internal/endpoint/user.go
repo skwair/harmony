@@ -1,50 +1,59 @@
 package endpoint
 
+import "net/http"
+
 func GetUser(userID string) *Endpoint {
 	return &Endpoint{
-		URL: "/users/" + userID,
-		Key: "/users",
+		Method: http.MethodGet,
+		URL:    "/users/" + userID,
+		Key:    "/users",
 	}
 }
 
 func ModifyCurrentUser() *Endpoint {
 	return &Endpoint{
-		URL: "/users/@me",
-		Key: "/users/@me",
+		Method: http.MethodPatch,
+		URL:    "/users/@me",
+		Key:    "/users/@me",
 	}
 }
 
 func GetCurrentUserGuilds() *Endpoint {
 	return &Endpoint{
-		URL: "/users/@me/guilds",
-		Key: "/users/@me/guilds",
+		Method: http.MethodGet,
+		URL:    "/users/@me/guilds",
+		Key:    "/users/@me/guilds",
 	}
 }
 
 func LeaveGuild(guildID string) *Endpoint {
 	return &Endpoint{
-		URL: "/users/@me/guilds/" + guildID,
-		Key: "/users/@me/guilds",
+		Method: http.MethodDelete,
+		URL:    "/users/@me/guilds/" + guildID,
+		Key:    "/users/@me/guilds",
 	}
 }
 
 func GetUserDMs() *Endpoint {
 	return &Endpoint{
-		URL: "/users/@me/channels",
-		Key: "/users/@me/channels",
+		Method: http.MethodGet,
+		URL:    "/users/@me/channels",
+		Key:    "/users/@me/channels",
 	}
 }
 
 func CreateDM() *Endpoint {
 	return &Endpoint{
-		URL: "/users/@me/channels",
-		Key: "/users/@me/channels",
+		Method: http.MethodPost,
+		URL:    "/users/@me/channels",
+		Key:    "/users/@me/channels",
 	}
 }
 
 func GetUserConnections() *Endpoint {
 	return &Endpoint{
-		URL: "/users/@me/connections",
-		Key: "/users/@me/connections",
+		Method: http.MethodGet,
+		URL:    "/users/@me/connections",
+		Key:    "/users/@me/connections",
 	}
 }

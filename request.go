@@ -13,21 +13,21 @@ import (
 
 // doReq calls doReqWithHeader with the Content-Type to "application/json" if the body is not nil.
 // If you need more control over headers you send, use doReqWithHeader directly.
-func (c *Client) doReq(ctx context.Context, method string, e *endpoint.Endpoint, body []byte) (*http.Response, error) {
+func (c *Client) doReq(ctx context.Context, e *endpoint.Endpoint, body []byte) (*http.Response, error) {
 	h := http.Header{}
 	if body != nil {
 		h.Set("Content-Type", "application/json")
 	}
 
-	return c.doReqWithHeader(ctx, method, e, body, h)
+	return c.doReqWithHeader(ctx, e, body, h)
 }
 
-// doReqWithHeader sends an HTTP request and returns the response given a method,
+// doReqWithHeader sends an HTTP request and returns the response given
 // an endpoint an optional body that can be set to nil and some headers. It adds the
 // required Authorization and User-Agent header.
 // It also takes care of rate limiting, using the client's built in rate limiter.
-func (c *Client) doReqWithHeader(ctx context.Context, method string, e *endpoint.Endpoint, body []byte, h http.Header) (*http.Response, error) {
-	req, err := http.NewRequest(method, c.baseURL+e.URL, bytes.NewBuffer(body))
+func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, body []byte, h http.Header) (*http.Response, error) {
+	req, err := http.NewRequest(e.Method, c.baseURL+e.URL, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +60,7 @@ func (c *Client) doReqWithHeader(ctx context.Context, method string, e *endpoint
 	// and will wait before sending future requests, but we must
 	// try and resend this one since it was rejected.
 	if resp.StatusCode == http.StatusTooManyRequests {
-		return c.doReqWithHeader(ctx, method, e, body, h)
+		return c.doReqWithHeader(ctx, e, body, h)
 	}
 
 	return resp, nil
@@ -76,20 +76,20 @@ type rateLimit struct {
 // doReqNoAuth is used to request endpoints that do not need authentication. It sets
 // the Content-Type to "application/json" if the body is not nil.
 // If you need more control over headers you send, use doReqNoAuthWithHeader directly.
-func doReqNoAuth(ctx context.Context, method, url string, body []byte) (*http.Response, error) {
+func doReqNoAuth(ctx context.Context, e *endpoint.Endpoint, body []byte) (*http.Response, error) {
 	h := http.Header{}
 	if body != nil {
 		h.Set("Content-Type", "application/json")
 	}
 
-	return doReqNoAuthWithHeader(ctx, method, url, body, h)
+	return doReqNoAuthWithHeader(ctx, e, body, h)
 }
 
 // doReqNoAuth is used to request endpoints that do not need authentication. It is
 // like doReqWithHeader otherwise, except for rate limiting where it is more likely
 // to result in 429's if abused.
-func doReqNoAuthWithHeader(ctx context.Context, method, url string, body []byte, h http.Header) (*http.Response, error) {
-	req, err := http.NewRequest(method, defaultBaseURL+url, bytes.NewBuffer(body))
+func doReqNoAuthWithHeader(ctx context.Context, e *endpoint.Endpoint, body []byte, h http.Header) (*http.Response, error) {
+	req, err := http.NewRequest(e.Method, defaultBaseURL+e.URL, bytes.NewBuffer(body))
 	if err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func doReqNoAuthWithHeader(ctx context.Context, method, url string, body []byte,
 			return nil, err
 		}
 		time.Sleep(time.Millisecond * time.Duration(r.RetryAfter))
-		return doReqNoAuth(ctx, method, url, body)
+		return doReqNoAuth(ctx, e, body)
 	}
 
 	return resp, nil

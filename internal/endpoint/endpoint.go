@@ -1,7 +1,9 @@
 package endpoint
 
-// Endpoint is a Discord's HTTP endpoint along with its key, used for rate limiting.
+// Endpoint represent a single REST endpoint exposed by Discord's API. It
+// consists of an HTTP method, a URL as well as a key, used for rate limiting.
 type Endpoint struct {
-	URL string
-	Key string
+	Method string
+	URL    string
+	Key    string
 }

@@ -115,7 +115,7 @@ func (r *ChannelResource) Messages(ctx context.Context, query string, limit int)
 	}
 
 	e := endpoint.GetChannelMessages(r.channelID, q.Encode())
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ func (r *ChannelResource) Messages(ctx context.Context, query string, limit int)
 // this endpoints requires the 'READ_MESSAGE_HISTORY' permission to be present on the current user.
 func (r *ChannelResource) Message(ctx context.Context, id string) (*Message, error) {
 	e := endpoint.GetChannelMessage(r.channelID, id)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +158,7 @@ func (r *ChannelResource) Message(ctx context.Context, id string) (*Message, err
 // permission. Fires a Message Delete Gateway event.
 func (r *ChannelResource) DeleteMessage(ctx context.Context, messageID string) error {
 	e := endpoint.DeleteMessage(r.channelID, messageID)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -188,7 +188,7 @@ func (r *ChannelResource) DeleteMessageBulk(ctx context.Context, messageIDs []st
 	}
 
 	e := endpoint.BulkDeleteMessage(r.channelID)
-	resp, err := r.client.doReq(ctx, http.MethodPost, e, b)
+	resp, err := r.client.doReq(ctx, e, b)
 	if err != nil {
 		return err
 	}
@@ -310,7 +310,7 @@ func (c *Client) sendMessage(ctx context.Context, channelID string, msg *createM
 	}
 
 	e := endpoint.CreateMessage(channelID)
-	resp, err := c.doReqWithHeader(ctx, http.MethodPost, e, b, h)
+	resp, err := c.doReqWithHeader(ctx, e, b, h)
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +351,7 @@ func (c *Client) editMessage(ctx context.Context, channelID, messageID string, e
 	}
 
 	e := endpoint.EditMessage(channelID, messageID)
-	resp, err := c.doReq(ctx, http.MethodPatch, e, b)
+	resp, err := c.doReq(ctx, e, b)
 	if err != nil {
 		return nil, err
 	}
@@ -392,7 +392,7 @@ func (r *ChannelResource) GetReactions(ctx context.Context, messageID, emoji str
 	}
 
 	e := endpoint.GetReactions(r.channelID, messageID, url.PathEscape(emoji), q.Encode())
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -415,7 +415,7 @@ func (r *ChannelResource) GetReactions(ctx context.Context, messageID, emoji str
 // the'ADD_REACTIONS' permission to be present on the current user.
 func (r *ChannelResource) AddReaction(ctx context.Context, messageID, emoji string) error {
 	e := endpoint.CreateReaction(r.channelID, messageID, url.PathEscape(emoji))
-	resp, err := r.client.doReq(ctx, http.MethodPut, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -430,7 +430,7 @@ func (r *ChannelResource) AddReaction(ctx context.Context, messageID, emoji stri
 // RemoveReaction removes a reaction the current user has made for the message.
 func (r *ChannelResource) RemoveReaction(ctx context.Context, messageID, emoji string) error {
 	e := endpoint.DeleteOwnReaction(r.channelID, messageID, url.PathEscape(emoji))
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -446,7 +446,7 @@ func (r *ChannelResource) RemoveReaction(ctx context.Context, messageID, emoji s
 // 'MANAGE_MESSAGES' permission to be present on the current user.
 func (r *ChannelResource) RemoveUserReaction(ctx context.Context, messageID, userID, emoji string) error {
 	e := endpoint.DeleteUserReaction(r.channelID, messageID, userID, url.PathEscape(emoji))
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -462,7 +462,7 @@ func (r *ChannelResource) RemoveUserReaction(ctx context.Context, messageID, use
 // 'MANAGE_MESSAGES' permission to be present on the current user.
 func (r *ChannelResource) RemoveAllReactions(ctx context.Context, messageID string) error {
 	e := endpoint.DeleteAllReactions(r.channelID, messageID)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -477,7 +477,7 @@ func (r *ChannelResource) RemoveAllReactions(ctx context.Context, messageID stri
 // Pins returns all pinned messages in the channel as an array of messages.
 func (r *ChannelResource) Pins(ctx context.Context) ([]Message, error) {
 	e := endpoint.GetPinnedMessages(r.channelID)
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -497,7 +497,7 @@ func (r *ChannelResource) Pins(ctx context.Context) ([]Message, error) {
 // PinMessage pins a message in the channel. Requires the 'MANAGE_MESSAGES' permission.
 func (r *ChannelResource) PinMessage(ctx context.Context, id string) error {
 	e := endpoint.AddPinnedChannelMessage(r.channelID, id)
-	resp, err := r.client.doReq(ctx, http.MethodPut, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}
@@ -513,7 +513,7 @@ func (r *ChannelResource) PinMessage(ctx context.Context, id string) error {
 // 'MANAGE_MESSAGES' permission.
 func (r *ChannelResource) UnpinMessage(ctx context.Context, id string) error {
 	e := endpoint.DeletePinnedChannelMessage(r.channelID, id)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return err
 	}

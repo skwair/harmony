@@ -52,7 +52,7 @@ func (r *InviteResource) Get(ctx context.Context, withCounts bool) (*Invite, err
 	q.Set("with_counts", strconv.FormatBool(withCounts))
 
 	e := endpoint.GetInvite(r.code, q.Encode())
-	resp, err := r.client.doReq(ctx, http.MethodGet, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (r *InviteResource) Get(ctx context.Context, withCounts bool) (*Invite, err
 // Returns the deleted invite on success.
 func (r *InviteResource) Delete(ctx context.Context) (*Invite, error) {
 	e := endpoint.DeleteInvite(r.code)
-	resp, err := r.client.doReq(ctx, http.MethodDelete, e, nil)
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}
