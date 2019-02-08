@@ -23,8 +23,8 @@ type bot struct {
 
 func main() {
 	// Fetch the bot token from env.
-	botToken := os.Getenv("BOT_TOKEN")
-	if botToken == "" {
+	token := os.Getenv("BOT_TOKEN")
+	if token == "" {
 		// Not using log.Fatal() or anything that calls os.Exit()
 		// because defers are not run, thus we won't disconnect
 		// properly from the Gateway.
@@ -33,9 +33,9 @@ func main() {
 	}
 
 	// Create a harmony client with a bot token.
-	// Using WithBotToken will automatically prepend your bot token
-	// with "Bot ", which is a requirement by Discord for bot users.
-	c, err := harmony.NewClient(harmony.WithBotToken(botToken))
+	// NewClient automatically prepends your bot token with "Bot ",
+	// which is a requirement by Discord for bot users.
+	c, err := harmony.NewClient(token)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return

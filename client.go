@@ -1,7 +1,6 @@
 package harmony
 
 import (
-	"errors"
 	"log"
 	"net/http"
 	"sync"
@@ -18,9 +17,6 @@ const (
 )
 
 var (
-	// ErrNoTokenProvided is returned by NewClient when neither a user token nor a bot token is provided.
-	ErrNoTokenProvided = errors.New("no token provided, use WithToken or WithBotToken when creating a new client")
-
 	// DefaultErrorHandler is the default handle that is called when an error occurs when connected to the Gateway.
 	DefaultErrorHandler = func(err error) { log.Println("gateway client error:", err) }
 
@@ -47,11 +43,6 @@ type Client struct {
 	name string
 
 	token string
-	// Whether this is a regular user or a bot user.
-	// This is set depending on which of WithToken
-	// or WithBotToken client option is used when
-	// creating the client.
-	bot bool
 
 	gatewayURL string
 	baseURL    string // Base URL of the Discord API.
@@ -120,9 +111,13 @@ type Client struct {
 
 // NewClient creates a new client to work with Discord's API.
 // It is meant to be long lived and shared across your application.
-func NewClient(opts ...ClientOption) (*Client, error) {
+// The token is automatically prefixed with "Bot ", which is a requirement
+// by Discord for bot users. Automated normal user accounts (generally called
+// "self-bots"), are not supported.
+func NewClient(token string, opts ...ClientOption) (*Client, error) {
 	c := &Client{
 		name:              "Harmony",
+		token:             token,
 		baseURL:           defaultBaseURL,
 		client:            http.DefaultClient,
 		largeThreshold:    defaultLargeThreshold,
@@ -135,10 +130,6 @@ func NewClient(opts ...ClientOption) (*Client, error) {
 
 	for _, opt := range opts {
 		opt(c)
-	}
-
-	if c.token == "" {
-		return nil, ErrNoTokenProvided
 	}
 
 	if c.withStateTracking {
