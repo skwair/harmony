@@ -21,8 +21,8 @@ var (
 	// ErrNoTokenProvided is returned by NewClient when neither a user token nor a bot token is provided.
 	ErrNoTokenProvided = errors.New("no token provided, use WithToken or WithBotToken when creating a new client")
 
-	// defaultErrorHandler is the default handle that is called when an error occurs when connected to the Gateway.
-	defaultErrorHandler = func(err error) { log.Println("gateway client error:", err) }
+	// DefaultErrorHandler is the default handle that is called when an error occurs when connected to the Gateway.
+	DefaultErrorHandler = func(err error) { log.Println("gateway client error:", err) }
 
 	// defaultBackoff is the backoff strategy used by default when trying to reconnect to the Gateway.
 	defaultBackoff = backoff{
@@ -40,6 +40,11 @@ type Client struct {
 	// General lock for long operations that should
 	// not happen concurrently like Connect or Disconnect.
 	mu sync.Mutex
+
+	// This is the name of the bot, used to set the
+	// User-Agent when sending HTTP request.
+	// It defaults to "Harmony".
+	name string
 
 	token string
 	// Whether this is a regular user or a bot user.
@@ -117,10 +122,11 @@ type Client struct {
 // It is meant to be long lived and shared across your application.
 func NewClient(opts ...ClientOption) (*Client, error) {
 	c := &Client{
+		name:              "Harmony",
 		baseURL:           defaultBaseURL,
 		client:            http.DefaultClient,
 		largeThreshold:    defaultLargeThreshold,
-		errorHandler:      defaultErrorHandler,
+		errorHandler:      DefaultErrorHandler,
 		handlers:          make(map[string]handler),
 		limiter:           rate.NewLimiter(),
 		backoff:           defaultBackoff,
