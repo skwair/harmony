@@ -18,25 +18,6 @@ func WithName(n string) ClientOption {
 	}
 }
 
-// WithToken sets the token for a user client. Every call to
-// NewClient must include this option or the WithBotToken
-// option if the client is a bot instead of a regular user.
-func WithToken(token string) ClientOption {
-	return func(c *Client) {
-		c.token = token
-	}
-}
-
-// WithBotToken sets the token for a bot client. Every call to
-// NewClient must include this option or the WithToken option
-// if the client is a regular user instead of a bot.
-func WithBotToken(token string) ClientOption {
-	return func(c *Client) {
-		c.token = "Bot " + token
-		c.bot = true
-	}
-}
-
 // WithHTTPClient can be used to specify the http.Client to use when making
 // HTTP requests to the Discord HTTP API.
 // Defaults to http.DefaultClient.

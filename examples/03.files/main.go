@@ -18,13 +18,13 @@ type bot struct {
 }
 
 func main() {
-	botToken := os.Getenv("BOT_TOKEN")
-	if botToken == "" {
+	token := os.Getenv("BOT_TOKEN")
+	if token == "" {
 		fmt.Fprint(os.Stderr, "Environment variable BOT_TOKEN must be set.")
 		return
 	}
 
-	c, err := harmony.NewClient(harmony.WithBotToken(botToken))
+	c, err := harmony.NewClient(token)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "%v", err)
 		return
