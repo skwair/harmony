@@ -2,7 +2,7 @@ package invite
 
 import "github.com/skwair/harmony/optional"
 
-// Settings describes how to modify a guild role. All fields are optional.
+// Settings describes how to create a channel invite. All fields are optional.
 type Settings struct {
 	MaxAge    *optional.Int  `json:"max_age,omitempty"`
 	MaxUses   *optional.Int  `json:"max_uses,omitempty"`

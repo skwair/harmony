@@ -45,7 +45,7 @@ import (
 )
 
 func main() {
-    c, err := harmony.NewClient(harmony.WithBotToken("your.bot.token"))
+    c, err := harmony.NewClient("your.bot.token")
     if err != nil {
         log.Fatal(err)
     }
@@ -91,7 +91,7 @@ go test -v -race ./...
 
 # How does it compare to [DiscordGo](https://github.com/bwmarrin/discordgo)?
 
-DiscordGo offers some additional features right now, such as a way to create and manage your [Discord applications](https://discordapp.com/developers/applications/me). The majority of features though, such a receiving events, sending messages, receiving and sending voice data, etc. are also implemented in this library.
+DiscordGo offers some additional features right now, such as a way to create and manage your [Discord applications](https://discordapp.com/developers/applications/me). The majority of features though, such a receiving events, sending messages, receiving and sending voice data, etc. are also implemented in this library. Another thing that this library does not support is self bot, as they are a violation of Discord's TOS.
 
 The main difference resides in the Gateway (websocket) real time API implementation. This library takes a different approach (using more synchronisation mechanisms) to avoid having to rely on hacks like [this](https://github.com/bwmarrin/discordgo/blob/8325a6bf6dd6c91ed4040a1617b07287b8fb0eba/wsapi.go#L868) or [this](https://github.com/bwmarrin/discordgo/blob/8325a6bf6dd6c91ed4040a1617b07287b8fb0eba/wsapi.go#L822), hopefully providing a more robust implementation as well as a better user experience.
 
