@@ -4,33 +4,33 @@ Package harmony provides an interface to the Discord API
 
 Getting started
 
-The first thing you do is to create a Client. For a normal user,
-you can get one like this:
+The first thing you do is to create a Client. NewClient returns a new Client
+configured with sain defaults which should work just fine in most cases.
+However, should you need a more specific configuration, you can always
+tweak it with optional `ClientOption`s. See the documentation of NewClient
+and the ClientOption type for more information on how to do so.
 
-	c := harmony.NewClient(harmony.WithToken("userToken"))
+	client := harmony.NewClient("your.bot.token")
 
-If you want to create a client for a bot, use WithBotToken instead
-of WithToken, without prefixing the token with "Bot :":
+Once you have a Client, you can start interacting with the Discord API,
+but some methods (such as event handlers) won't be available until you
+connect to Discord's Gateway (link). You can do so by simply calling
+the Connect method of the Client:
 
-	c := harmony.NewClient(harmony.WithBotToken("botToken"))
-
-You can pass more configuration parameters to NewClient. Review the
-documentation of NewClient for more information.
-
-With this client, you can start interacting with the Discord API, but
-some methods (such as event handlers) won't be available until you
-connect to the Gateway:
-
-	if err = c.Connect(); err != nil {
+	if err = client.Connect(); err != nil {
 		// Handle error
 	}
-	defer c.Disconnect() // Gracefully disconnect
+	defer client.Disconnect() // Gracefully disconnect
 
-Once connected to the Gateway, you have full access to the Discord API.
+It is only when successfully connected to the Gateway that your bot will
+appear as online and your Client will be able to receive events and send
+messages.
 
 Using the HTTP API
 
-Harmony's HTTP API is organized by resource:
+Harmony's HTTP API is organized by resource. A resource maps to a core
+concept in the Discord world, such as a User or a Channel. Here is the
+list of resources you can interact with:
 
 	- Guild
 	- Channel
@@ -38,10 +38,11 @@ Harmony's HTTP API is organized by resource:
 	- Webhook
 	- Invite
 
-Each resource has its own method on the Client to interact with. For example,
-to send a message to a channel:
+Every interaction you can have with a resource can be accessed via
+methods attached to it. For example, if you wish to send a message
+to a channel:
 
-	msg, err := c.Channel("channel-id").SendMessage("content of the message")
+	msg, err := client.Channel("channel-id").SendMessage("content of the message")
 	if err != nil {
 		// Handle error
 	}
@@ -53,11 +54,14 @@ To receive messages, use the OnMessageCreate method and give it your
 handler. It will be called each time a message is sent to a channel your
 bot is in with the message as a parameter.
 
-	c.OnMessageCreate(func(msg *harmony.Message) {
+	client.OnMessageCreate(func(msg *harmony.Message) {
 		fmt.Println(msg.Content)
 	})
 
 To register handlers for other types of events, see Client.On* methods.
+
+Note that your handlers are called in their own goroutine, meaning
+whatever you do inside of them won't block future events.
 
 Using the state
 
@@ -68,7 +72,7 @@ is constantly updated so it always have the newest data available.
 This session state acts as a cache to avoid making requests over the HTTP API
 each time. If you need to get information about the current user:
 
-	user := c.State.CurrentUser()
+	user := client.State.CurrentUser()
 
 Because this state might become memory hungry for bots that are in a very
 large number of servers, it can be disabled with the WithStateTracking option
