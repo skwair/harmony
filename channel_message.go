@@ -152,12 +152,18 @@ func (r *ChannelResource) Message(ctx context.Context, id string) (*Message, err
 	return &msg, nil
 }
 
+// DeleteMessage is like DeleteMessageWithReason but with no particular reason.
+func (r *ChannelResource) DeleteMessage(ctx context.Context, messageID string) error {
+	return r.DeleteMessageWithReason(ctx, messageID, "")
+}
+
 // DeleteMessage deletes a message. If operating on a guild channel and trying to delete a
 // message that was not sent by the current user, this endpoint requires the 'MANAGE_MESSAGES'
 // permission. Fires a Message Delete Gateway event.
-func (r *ChannelResource) DeleteMessage(ctx context.Context, messageID string) error {
+// The given reason will be set in the audit log entry for this action.
+func (r *ChannelResource) DeleteMessageWithReason(ctx context.Context, messageID, reason string) error {
 	e := endpoint.DeleteMessage(r.channelID, messageID)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return err
 	}

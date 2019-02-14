@@ -70,18 +70,24 @@ func (r *ChannelResource) Get(ctx context.Context) (*Channel, error) {
 	return &ch, nil
 }
 
-// Modify updates the channel's settings. Requires the 'MANAGE_CHANNELS'
+// Modify is like ModifyWithReason but with no particular reason.
+func (r *ChannelResource) Modify(ctx context.Context, settings *channel.Settings) (*Channel, error) {
+	return r.ModifyWithReason(ctx, settings, "")
+}
+
+// ModifyWithReason updates the channel's settings. Requires the 'MANAGE_CHANNELS'
 // permission for the guild. Fires a Channel Update Gateway event. If modifying
 // category, individual Channel Update events will fire for each child channel
 // that also changes.
-func (r *ChannelResource) Modify(ctx context.Context, settings *channel.Settings) (*Channel, error) {
+// The given reason will be set in the audit log entry for this action.
+func (r *ChannelResource) ModifyWithReason(ctx context.Context, settings *channel.Settings, reason string) (*Channel, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.ModifyChannel(r.channelID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -96,15 +102,21 @@ func (r *ChannelResource) Modify(ctx context.Context, settings *channel.Settings
 		return nil, err
 	}
 	return &ch, nil
+}
+
+// Delete is like DeleteWithReason but with no particular reason.
+func (r *ChannelResource) Delete(ctx context.Context) (*Channel, error) {
+	return r.DeleteWithReason(ctx, "")
 }
 
 // Delete deletes the channel, or closes the private message. Requires the 'MANAGE_CHANNELS'
 // permission for the guild. Deleting a category does not delete its child channels; they will
 // have their parent_id removed and a Channel Update Gateway event will fire for each of them.
 // Returns the deleted channel on success. Fires a Channel Delete Gateway event.
-func (r *ChannelResource) Delete(ctx context.Context) (*Channel, error) {
+// The given reason will be set in the audit log entry for this action.
+func (r *ChannelResource) DeleteWithReason(ctx context.Context, reason string) (*Channel, error) {
 	e := endpoint.DeleteChannel(r.channelID)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -121,11 +133,17 @@ func (r *ChannelResource) Delete(ctx context.Context) (*Channel, error) {
 	return &ch, nil
 }
 
+// UpdatePermissions is like UpdatePermissionsWithReason but with no particular reason.
+func (r *ChannelResource) UpdatePermissions(ctx context.Context, targetID string, allow, deny int, typ string) error {
+	return r.UpdatePermissionsWithReason(ctx, targetID, allow, deny, typ, "")
+}
+
 // UpdatePermissions updates the channel permission overwrites for a user or role in the channel.
 // typ is "member" if targetID is a user or "role" if it is a role.
 // If the channel permission overwrites do not not exist, they are created.
 // Only usable for guild channels. Requires the 'MANAGE_ROLES' permission.
-func (r *ChannelResource) UpdatePermissions(ctx context.Context, targetID string, allow, deny int, typ string) error {
+// The given reason will be set in the audit log entry for this action.
+func (r *ChannelResource) UpdatePermissionsWithReason(ctx context.Context, targetID string, allow, deny int, typ, reason string) error {
 	st := struct {
 		ID    string `json:"id,omitempty"`
 		Allow int    `json:"allow,omitempty"`
@@ -144,7 +162,7 @@ func (r *ChannelResource) UpdatePermissions(ctx context.Context, targetID string
 	}
 
 	e := endpoint.EditChannelPermissions(r.channelID, targetID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
 	if err != nil {
 		return err
 	}
@@ -156,11 +174,17 @@ func (r *ChannelResource) UpdatePermissions(ctx context.Context, targetID string
 	return nil
 }
 
+// DeletePermission is like DeletePermissionWithReason but with no particular reason.
+func (r *ChannelResource) DeletePermission(ctx context.Context, channelID, targetID string) error {
+	return r.DeletePermissionWithReason(ctx, channelID, targetID, "")
+}
+
 // DeletePermission deletes the channel permission overwrite for a user or role in a
 // channel. Only usable for guild channels. Requires the 'MANAGE_ROLES' permission.
-func (r *ChannelResource) DeletePermission(ctx context.Context, channelID, targetID string) error {
+// The given reason will be set in the audit log entry for this action.
+func (r *ChannelResource) DeletePermissionWithReason(ctx context.Context, channelID, targetID, reason string) error {
 	e := endpoint.DeleteChannelPermission(channelID, targetID)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return err
 	}
@@ -193,16 +217,22 @@ func (r *ChannelResource) Invites(ctx context.Context) ([]Invite, error) {
 	return invites, nil
 }
 
+// NewInvite is like NewInviteWithReason but with no particular reason.
+func (r *ChannelResource) NewInvite(ctx context.Context, settings *invite.Settings) (*Invite, error) {
+	return r.NewInviteWithReason(ctx, settings, "")
+}
+
 // NewInvite creates a new invite for the channel. Only usable for guild channels.
 // Requires the CREATE_INSTANT_INVITE permission.
-func (r *ChannelResource) NewInvite(ctx context.Context, settings *invite.Settings) (*Invite, error) {
+// The given reason will be set in the audit log entry for this action.
+func (r *ChannelResource) NewInviteWithReason(ctx context.Context, settings *invite.Settings, reason string) (*Invite, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.CreateChannelInvite(r.channelID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -276,12 +306,18 @@ func (r *ChannelResource) Webhooks(ctx context.Context) ([]Webhook, error) {
 	return r.client.getWebhooks(ctx, e)
 }
 
+// NewWebhook is like NewWebhookWithReason but with no particular reason.
+func (r *ChannelResource) NewWebhook(ctx context.Context, name, avatar string) (*Webhook, error) {
+	return r.NewWebhookWithReason(ctx, name, avatar, "")
+}
+
 // NewWebhook creates a new webhook for the channel. Requires the 'MANAGE_WEBHOOKS'
 // permission.
 // name must contain between 2 and 32 characters. avatar is an avatar data string,
 // see https://discordapp.com/developers/docs/resources/user#avatar-data for more info.
 // It can be left empty to have the default avatar.
-func (r *ChannelResource) NewWebhook(ctx context.Context, name, avatar string) (*Webhook, error) {
+// The given reason will be set in the audit log entry for this action.
+func (r *ChannelResource) NewWebhookWithReason(ctx context.Context, name, avatar, reason string) (*Webhook, error) {
 	st := struct {
 		Name   string `json:"name,omitempty"`
 		Avatar string `json:"avatar,omitempty"`
@@ -295,7 +331,7 @@ func (r *ChannelResource) NewWebhook(ctx context.Context, name, avatar string) (
 	}
 
 	e := endpoint.CreateWebhook(r.channelID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}

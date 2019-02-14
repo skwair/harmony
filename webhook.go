@@ -210,15 +210,21 @@ func (r *WebhookResource) Get(ctx context.Context) (*Webhook, error) {
 	return &w, nil
 }
 
-// Modify modifies the webhook. Requires the 'MANAGE_WEBHOOKS' permission.
+// Modify is like ModifyWithReason but with no particular reason.
 func (r *WebhookResource) Modify(ctx context.Context, settings *webhook.Settings) (*Webhook, error) {
+	return r.ModifyWithReason(ctx, settings, "")
+}
+
+// Modify modifies the webhook. Requires the 'MANAGE_WEBHOOKS' permission.
+// The given reason will be set in the audit log entry for this action.
+func (r *WebhookResource) ModifyWithReason(ctx context.Context, settings *webhook.Settings, reason string) (*Webhook, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.ModifyWebhook(r.webhookID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -235,10 +241,16 @@ func (r *WebhookResource) Modify(ctx context.Context, settings *webhook.Settings
 	return &w, nil
 }
 
-// Delete deletes the webhook.
+// Delete is like DeleteWithReason but with no particular reason.
 func (r *WebhookResource) Delete(ctx context.Context) error {
+	return r.DeleteWithReason(ctx, "")
+}
+
+// Delete deletes the webhook.
+// The given reason will be set in the audit log entry for this action.
+func (r *WebhookResource) DeleteWithReason(ctx context.Context, reason string) error {
 	e := endpoint.DeleteWebhook(r.webhookID)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return err
 	}

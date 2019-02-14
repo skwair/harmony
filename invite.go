@@ -69,11 +69,17 @@ func (r *InviteResource) Get(ctx context.Context, withCounts bool) (*Invite, err
 	return &invite, nil
 }
 
+// Delete is like DeleteWithReason but with no particular reason.
+func (r *InviteResource) Delete(ctx context.Context, reason string) (*Invite, error) {
+	return r.DeleteWithReason(ctx, "")
+}
+
 // Delete deletes the invite. Requires the MANAGE_CHANNELS permission.
 // Returns the deleted invite on success.
-func (r *InviteResource) Delete(ctx context.Context) (*Invite, error) {
+// The given reason will be set in the audit log entry for this action.
+func (r *InviteResource) DeleteWithReason(ctx context.Context, reason string) (*Invite, error) {
 	e := endpoint.DeleteInvite(r.code)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}

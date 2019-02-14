@@ -73,9 +73,32 @@ func (b *bot) onNewMessage(m *harmony.Message) {
 	// If the new message's content is "ping",
 	// Reply with "pong", logging any error
 	// that occurs.
-	if m.Content == "ping" {
-		if _, err := b.client.Channel(m.ChannelID).SendMessage(context.Background(), "pong"); err != nil {
+	msg := withReplier(m, b.client)
+
+	if msg.Content == "ping" {
+		if _, err := msg.Reply(context.Background(), harmony.WithContent("pong")); err != nil {
 			log.Println(err)
 		}
+		// if _, err := b.client.Channel(msg.ChannelID).SendMessage(context.Background(), "pong"); err != nil {
+		// 	log.Println(err)
+		// }
 	}
+}
+
+type message struct {
+	*harmony.Message
+	replyer
+}
+
+type replyer struct {
+	client    *harmony.Client
+	channelID string
+}
+
+func withReplier(msg *harmony.Message, client *harmony.Client) *message {
+	return &message{msg, replyer{client: client, channelID: msg.ChannelID}}
+}
+
+func (r *replyer) Reply(ctx context.Context, opts ...harmony.MessageOption) (*harmony.Message, error) {
+	return r.client.Channel(r.channelID).Send(ctx, opts...)
 }

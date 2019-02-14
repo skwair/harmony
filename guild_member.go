@@ -130,11 +130,17 @@ func (r *GuildResource) AddMember(ctx context.Context, userID, token string, set
 	return &member, nil
 }
 
+// RemoveMember is like RemoveMemberWithReason but with no particular reason.
+func (r *GuildResource) RemoveMember(ctx context.Context, userID string) error {
+	return r.RemoveMemberWithReason(ctx, userID, "")
+}
+
 // RemoveMember removes the given user from the guild. Requires 'KICK_MEMBERS'
 // permission. Fires a Guild Member Remove Gateway event.
-func (r *GuildResource) RemoveMember(ctx context.Context, userID string) error {
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) RemoveMemberWithReason(ctx context.Context, userID, reason string) error {
 	e := endpoint.RemoveGuildMember(r.guildID, userID)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return err
 	}
@@ -146,16 +152,22 @@ func (r *GuildResource) RemoveMember(ctx context.Context, userID string) error {
 	return nil
 }
 
+// ModifyMember is like ModifyMemberWithReason but with no particular reason.
+func (r *GuildResource) ModifyMember(ctx context.Context, userID string, settings *guild.MemberSettings) error {
+	return r.ModifyMemberWithReason(ctx, userID, settings, "")
+}
+
 // ModifyMember modifies attributes of a guild member. Fires a Guild Member
 // Update Gateway event.
-func (r *GuildResource) ModifyMember(ctx context.Context, userID string, settings *guild.MemberSettings) error {
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) ModifyMemberWithReason(ctx context.Context, userID string, settings *guild.MemberSettings, reason string) error {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return err
 	}
 
 	e := endpoint.ModifyGuildMember(r.guildID, userID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
 	if err != nil {
 		return err
 	}
