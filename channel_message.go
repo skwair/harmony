@@ -157,7 +157,7 @@ func (r *ChannelResource) DeleteMessage(ctx context.Context, messageID string) e
 	return r.DeleteMessageWithReason(ctx, messageID, "")
 }
 
-// DeleteMessage deletes a message. If operating on a guild channel and trying to delete a
+// DeleteMessageWithReason deletes a message. If operating on a guild channel and trying to delete a
 // message that was not sent by the current user, this endpoint requires the 'MANAGE_MESSAGES'
 // permission. Fires a Message Delete Gateway event.
 // The given reason will be set in the audit log entry for this action.

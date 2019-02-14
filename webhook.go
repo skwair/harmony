@@ -215,7 +215,7 @@ func (r *WebhookResource) Modify(ctx context.Context, settings *webhook.Settings
 	return r.ModifyWithReason(ctx, settings, "")
 }
 
-// Modify modifies the webhook. Requires the 'MANAGE_WEBHOOKS' permission.
+// ModifyWithReason modifies the webhook. Requires the 'MANAGE_WEBHOOKS' permission.
 // The given reason will be set in the audit log entry for this action.
 func (r *WebhookResource) ModifyWithReason(ctx context.Context, settings *webhook.Settings, reason string) (*Webhook, error) {
 	b, err := json.Marshal(settings)
@@ -246,7 +246,7 @@ func (r *WebhookResource) Delete(ctx context.Context) error {
 	return r.DeleteWithReason(ctx, "")
 }
 
-// Delete deletes the webhook.
+// DeleteWithReason deletes the webhook.
 // The given reason will be set in the audit log entry for this action.
 func (r *WebhookResource) DeleteWithReason(ctx context.Context, reason string) error {
 	e := endpoint.DeleteWebhook(r.webhookID)

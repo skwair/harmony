@@ -109,7 +109,7 @@ func (r *ChannelResource) Delete(ctx context.Context) (*Channel, error) {
 	return r.DeleteWithReason(ctx, "")
 }
 
-// Delete deletes the channel, or closes the private message. Requires the 'MANAGE_CHANNELS'
+// DeleteWithReason deletes the channel, or closes the private message. Requires the 'MANAGE_CHANNELS'
 // permission for the guild. Deleting a category does not delete its child channels; they will
 // have their parent_id removed and a Channel Update Gateway event will fire for each of them.
 // Returns the deleted channel on success. Fires a Channel Delete Gateway event.
@@ -138,8 +138,8 @@ func (r *ChannelResource) UpdatePermissions(ctx context.Context, targetID string
 	return r.UpdatePermissionsWithReason(ctx, targetID, allow, deny, typ, "")
 }
 
-// UpdatePermissions updates the channel permission overwrites for a user or role in the channel.
-// typ is "member" if targetID is a user or "role" if it is a role.
+// UpdatePermissionsWithReason updates the channel permission overwrites for a user or
+// role in the channel. typ is "member" if targetID is a user or "role" if it is a role.
 // If the channel permission overwrites do not not exist, they are created.
 // Only usable for guild channels. Requires the 'MANAGE_ROLES' permission.
 // The given reason will be set in the audit log entry for this action.
@@ -179,8 +179,9 @@ func (r *ChannelResource) DeletePermission(ctx context.Context, channelID, targe
 	return r.DeletePermissionWithReason(ctx, channelID, targetID, "")
 }
 
-// DeletePermission deletes the channel permission overwrite for a user or role in a
-// channel. Only usable for guild channels. Requires the 'MANAGE_ROLES' permission.
+// DeletePermissionWithReason deletes the channel permission overwrite for a user or
+// role in a channel. Only usable for guild channels. Requires the 'MANAGE_ROLES'
+// permission.
 // The given reason will be set in the audit log entry for this action.
 func (r *ChannelResource) DeletePermissionWithReason(ctx context.Context, channelID, targetID, reason string) error {
 	e := endpoint.DeleteChannelPermission(channelID, targetID)
@@ -222,8 +223,8 @@ func (r *ChannelResource) NewInvite(ctx context.Context, settings *invite.Settin
 	return r.NewInviteWithReason(ctx, settings, "")
 }
 
-// NewInvite creates a new invite for the channel. Only usable for guild channels.
-// Requires the CREATE_INSTANT_INVITE permission.
+// NewInviteWithReason creates a new invite for the channel. Only usable
+// for guild channels. Requires the CREATE_INSTANT_INVITE permission.
 // The given reason will be set in the audit log entry for this action.
 func (r *ChannelResource) NewInviteWithReason(ctx context.Context, settings *invite.Settings, reason string) (*Invite, error) {
 	b, err := json.Marshal(settings)
@@ -311,7 +312,7 @@ func (r *ChannelResource) NewWebhook(ctx context.Context, name, avatar string) (
 	return r.NewWebhookWithReason(ctx, name, avatar, "")
 }
 
-// NewWebhook creates a new webhook for the channel. Requires the 'MANAGE_WEBHOOKS'
+// NewWebhookWithReason creates a new webhook for the channel. Requires the 'MANAGE_WEBHOOKS'
 // permission.
 // name must contain between 2 and 32 characters. avatar is an avatar data string,
 // see https://discordapp.com/developers/docs/resources/user#avatar-data for more info.

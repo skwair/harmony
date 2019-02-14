@@ -65,7 +65,7 @@ func (r *GuildResource) NewEmoji(ctx context.Context, name, image string, roles 
 	return r.NewEmojiWithReason(ctx, name, image, roles, "")
 }
 
-// NewEmoji creates a new emoji for the guild. image is the base64 encoded data of a
+// NewEmojiWithReason creates a new emoji for the guild. image is the base64 encoded data of a
 // 128*128 image. Requires the 'MANAGE_EMOJIS' permission. Fires a Guild Emojis Update
 // Gateway event.
 // The given reason will be set in the audit log entry for this action.
@@ -107,8 +107,8 @@ func (r *GuildResource) ModifyEmoji(ctx context.Context, emojiID, name string, r
 	return r.ModifyEmojiWithReason(ctx, emojiID, name, roles, "")
 }
 
-// ModifyEmoji modifies the given emoji for the guild. Requires the 'MANAGE_EMOJIS'
-// permission. Fires a Guild Emojis Update Gateway event.
+// ModifyEmojiWithReason modifies the given emoji for the guild. Requires
+// the 'MANAGE_EMOJIS' permission. Fires a Guild Emojis Update Gateway event.
 // The given reason will be set in the audit log entry for this action.
 func (r *GuildResource) ModifyEmojiWithReason(ctx context.Context, emojiID, name string, roles []string, reason string) (*Emoji, error) {
 	st := struct {
@@ -146,8 +146,8 @@ func (r *GuildResource) DeleteEmoji(ctx context.Context, emojiID string) error {
 	return r.DeleteEmojiWithReason(ctx, emojiID, "")
 }
 
-// DeleteEmoji deletes the given emoji. Requires the 'MANAGE_EMOJIS' permission.
-// Fires a Guild Emojis Update Gateway event.
+// DeleteEmojiWithReason deletes the given emoji. Requires the 'MANAGE_EMOJIS'
+// permission. Fires a Guild Emojis Update Gateway event.
 // The given reason will be set in the audit log entry for this action.
 func (r *GuildResource) DeleteEmojiWithReason(ctx context.Context, emojiID, reason string) error {
 	e := endpoint.DeleteGuildEmoji(r.guildID, emojiID)

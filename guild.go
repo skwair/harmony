@@ -336,7 +336,7 @@ func (r *GuildResource) BeginPrune(ctx context.Context, days int, computePruneCo
 	return r.BeginPruneWithReason(ctx, days, computePruneCount, "")
 }
 
-// BeginPrune begins a prune operation. Requires the 'KICK_MEMBERS' permission.
+// BeginPruneWithReason begins a prune operation. Requires the 'KICK_MEMBERS' permission.
 // Returns the number of members that were removed in the prune operation if
 // computePruneCount is set to true (not recommended for large guilds).
 // Fires multiple Guild Member Remove Gateway events.

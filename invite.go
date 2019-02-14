@@ -74,7 +74,7 @@ func (r *InviteResource) Delete(ctx context.Context, reason string) (*Invite, er
 	return r.DeleteWithReason(ctx, "")
 }
 
-// Delete deletes the invite. Requires the MANAGE_CHANNELS permission.
+// DeleteWithReason deletes the invite. Requires the MANAGE_CHANNELS permission.
 // Returns the deleted invite on success.
 // The given reason will be set in the audit log entry for this action.
 func (r *InviteResource) DeleteWithReason(ctx context.Context, reason string) (*Invite, error) {
