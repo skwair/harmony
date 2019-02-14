@@ -68,7 +68,7 @@ func (r *GuildResource) AddIntegration(ctx context.Context, id, typ string) erro
 	}
 
 	e := endpoint.CreateGuildIntegration(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return err
 	}
@@ -89,7 +89,7 @@ func (r *GuildResource) ModifyIntegration(ctx context.Context, id string, settin
 	}
 
 	e := endpoint.ModifyGuildIntegration(r.guildID, id)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return err
 	}

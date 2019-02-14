@@ -85,7 +85,7 @@ func (r *GuildResource) NewEmojiWithReason(ctx context.Context, name, image stri
 	}
 
 	e := endpoint.CreateGuildEmoji(r.guildID)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +124,7 @@ func (r *GuildResource) ModifyEmojiWithReason(ctx context.Context, emojiID, name
 	}
 
 	e := endpoint.ModifyGuildEmoji(r.guildID, emojiID)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}

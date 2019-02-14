@@ -92,7 +92,7 @@ func (c *Client) CreateGuild(ctx context.Context, name string) (*Guild, error) {
 	}
 
 	e := endpoint.CreateGuild()
-	resp, err := c.doReq(ctx, e, b)
+	resp, err := c.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func (r *GuildResource) ModifyWithReason(ctx context.Context, settings *guild.Se
 	}
 
 	e := endpoint.ModifyGuild(r.guildID)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +224,7 @@ func (r *GuildResource) NewChannelWithReason(ctx context.Context, settings *chan
 	}
 
 	e := endpoint.CreateGuildChannel(r.guildID)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -259,7 +259,7 @@ func (r *GuildResource) ModifyChannelPosition(ctx context.Context, pos []Channel
 	}
 
 	e := endpoint.ModifyChannelPositions(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return err
 	}
@@ -286,7 +286,7 @@ func (r *GuildResource) ChangeNick(ctx context.Context, name string) (string, er
 	}
 
 	e := endpoint.ModifyCurrentUserNick(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return "", err
 	}
@@ -446,7 +446,7 @@ func (r *GuildResource) ModifyEmbed(ctx context.Context, embed *guild.Embed) (*g
 	}
 
 	e := endpoint.ModifyGuildEmbed(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}

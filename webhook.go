@@ -56,7 +56,7 @@ func ModifyWebhookWithToken(ctx context.Context, id, token string, s *webhook.Se
 	}
 
 	e := endpoint.ModifyWebhookWithToken(id, token)
-	resp, err := doReqNoAuth(ctx, e, b)
+	resp, err := doReqNoAuth(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}
@@ -114,29 +114,25 @@ func ExecuteWebhook(ctx context.Context, id, token string, p *WebhookParameters,
 		return nil, errors.New("p is nil")
 	}
 
-	var (
-		b   []byte
-		h   http.Header
-		err error
-	)
+	var payload *requestPayload
 	if len(p.Files) > 0 {
-		b, h, err = multipartFromFiles(p, p.Files...)
+		b, contentType, err := multipartFromFiles(p, p.Files...)
 		if err != nil {
 			return nil, err
 		}
+		payload = customPayload(b, contentType)
 	} else {
-		b, err = json.Marshal(p)
+		b, err := json.Marshal(p)
 		if err != nil {
 			return nil, err
 		}
-		h = http.Header{}
-		h.Set("Content-Type", "application/json")
+		payload = jsonPayload(b)
 	}
 
 	q := url.Values{}
 	q.Set("wait", strconv.FormatBool(wait))
 	e := endpoint.ExecuteWebhook(id, token, q.Encode())
-	resp, err := doReqNoAuthWithHeader(ctx, e, b, h)
+	resp, err := doReqNoAuth(ctx, e, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -224,7 +220,7 @@ func (r *WebhookResource) ModifyWithReason(ctx context.Context, settings *webhoo
 	}
 
 	e := endpoint.ModifyWebhook(r.webhookID)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}

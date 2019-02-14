@@ -193,7 +193,7 @@ func (r *ChannelResource) DeleteMessageBulk(ctx context.Context, messageIDs []st
 	}
 
 	e := endpoint.BulkDeleteMessage(r.channelID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return err
 	}
@@ -293,24 +293,23 @@ func (c *Client) sendMessage(ctx context.Context, channelID string, msg *createM
 		msg.Embed.Type = "rich"
 	}
 
-	var (
-		b   []byte
-		h   http.Header
-		err error
-	)
+	var payload *requestPayload
 	if len(msg.files) > 0 {
-		b, h, err = multipartFromFiles(msg, msg.files...)
+		b, contentType, err := multipartFromFiles(msg, msg.files...)
+		if err != nil {
+			return nil, err
+		}
+		payload = customPayload(b, contentType)
 	} else {
-		h = http.Header{}
-		h.Set("Content-Type", "application/json")
-		b, err = json.Marshal(msg)
-	}
-	if err != nil {
-		return nil, err
+		b, err := json.Marshal(msg)
+		if err != nil {
+			return nil, err
+		}
+		payload = jsonPayload(b)
 	}
 
 	e := endpoint.CreateMessage(channelID)
-	resp, err := c.doReqWithHeader(ctx, e, b, h)
+	resp, err := c.doReq(ctx, e, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -351,7 +350,7 @@ func (c *Client) editMessage(ctx context.Context, channelID, messageID string, e
 	}
 
 	e := endpoint.EditMessage(channelID, messageID)
-	resp, err := c.doReq(ctx, e, b)
+	resp, err := c.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}

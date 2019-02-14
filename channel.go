@@ -87,7 +87,7 @@ func (r *ChannelResource) ModifyWithReason(ctx context.Context, settings *channe
 	}
 
 	e := endpoint.ModifyChannel(r.channelID)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func (r *ChannelResource) UpdatePermissionsWithReason(ctx context.Context, targe
 	}
 
 	e := endpoint.EditChannelPermissions(r.channelID, targetID)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return err
 	}
@@ -233,7 +233,7 @@ func (r *ChannelResource) NewInviteWithReason(ctx context.Context, settings *inv
 	}
 
 	e := endpoint.CreateChannelInvite(r.channelID)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -332,7 +332,7 @@ func (r *ChannelResource) NewWebhookWithReason(ctx context.Context, name, avatar
 	}
 
 	e := endpoint.CreateWebhook(r.channelID)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}

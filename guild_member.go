@@ -113,7 +113,7 @@ func (r *GuildResource) AddMember(ctx context.Context, userID, token string, set
 	}
 
 	e := endpoint.AddGuildMember(r.guildID, userID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}
@@ -167,7 +167,7 @@ func (r *GuildResource) ModifyMemberWithReason(ctx context.Context, userID strin
 	}
 
 	e := endpoint.ModifyGuildMember(r.guildID, userID)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return err
 	}

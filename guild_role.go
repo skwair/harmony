@@ -61,7 +61,7 @@ func (r *GuildResource) NewRoleWithReason(ctx context.Context, settings *role.Se
 	}
 
 	e := endpoint.CreateGuildRole(r.guildID)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (r *GuildResource) ModifyRolePositions(ctx context.Context, pos []RolePosit
 	}
 
 	e := endpoint.ModifyGuildRolePositions(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +126,7 @@ func (r *GuildResource) ModifyRoleWithReason(ctx context.Context, id string, set
 	}
 
 	e := endpoint.ModifyGuildRole(r.guildID, id)
-	resp, err := r.client.doReqWithHeader(ctx, e, b, reasonHeader(reason))
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}

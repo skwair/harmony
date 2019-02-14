@@ -11,38 +11,68 @@ import (
 	"github.com/skwair/harmony/internal/endpoint"
 )
 
-// doReq calls doReqWithHeader with the Content-Type header set to "application/json"
-// if the provided body is not nil.
-// If you need more control over headers you send, use doReqWithHeader directly.
-func (c *Client) doReq(ctx context.Context, e *endpoint.Endpoint, body []byte) (*http.Response, error) {
-	h := http.Header{}
-	if body != nil {
-		h.Set("Content-Type", "application/json")
-	}
+// requestPayload is a payload that is sent to Discord's REST API.
+type requestPayload struct {
+	body        []byte
+	contentType string
+}
 
-	return c.doReqWithHeader(ctx, e, body, h)
+// jsonPayload creates a new requestPayload from some raw JSON data.
+func jsonPayload(p json.RawMessage) *requestPayload {
+	return &requestPayload{
+		body:        p,
+		contentType: "application/json",
+	}
+}
+
+// customPayload creates a new custom payload from raw bytes and a given content type.
+func customPayload(p []byte, contentType string) *requestPayload {
+	return &requestPayload{
+		body:        p,
+		contentType: contentType,
+	}
+}
+
+// doReq is used to request Discord's HTTP endpoints.
+// If you need more control over headers you send, use doReqWithHeader directly.
+func (c *Client) doReq(ctx context.Context, e *endpoint.Endpoint, p *requestPayload) (*http.Response, error) {
+	return c.doReqWithHeader(ctx, e, p, nil)
 }
 
 // doReqWithHeader sends an HTTP request and returns the response given an endpoint
-// an optional body and some headers. It adds the required Authorization header and
-// also sets the User-Agent.
+// an optional body and some headers. It adds the required Authorization header,
+// Content-Type based on the given request payload and also sets the User-Agent.
 // It takes care of rate limiting, using the client's built in rate limiter.
-func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, body []byte, h http.Header) (*http.Response, error) {
-	req, err := http.NewRequest(e.Method, c.baseURL+e.URL, bytes.NewBuffer(body))
+func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *requestPayload, h http.Header) (*http.Response, error) {
+	var (
+		err error
+		req *http.Request
+	)
+	if p != nil && p.body != nil {
+		req, err = http.NewRequest(e.Method, c.baseURL+e.URL, bytes.NewReader(p.body))
+
+	} else {
+		req, err = http.NewRequest(e.Method, c.baseURL+e.URL, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
 
 	req = req.WithContext(ctx)
 
-	// Merge h into req.Header, then set the Authorization
-	// and User-Agent header.
+	// Merge h into req.Header.
 	for k, vs := range h {
 		for _, v := range vs {
 			req.Header.Add(k, v)
 		}
 	}
+	// Add the Content-Type header accordingly to the body, if any.
+	if p != nil && p.body != nil {
+		req.Header.Set("Content-Type", p.contentType)
+	}
+	// Add the Authorization header.
 	req.Header.Set("Authorization", c.token)
+	// Finally, set the User-Agent header.
 	ua := fmt.Sprintf("%s (github.com/skwair/harmony, %s)", c.name, version)
 	req.Header.Set("User-Agent", ua)
 
@@ -59,7 +89,7 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, body
 	// and will wait before sending future requests, but we must
 	// try and resend this one since it was rejected.
 	if resp.StatusCode == http.StatusTooManyRequests {
-		return c.doReqWithHeader(ctx, e, body, h)
+		return c.doReqWithHeader(ctx, e, p, h)
 	}
 
 	return resp, nil
@@ -72,23 +102,26 @@ type rateLimit struct {
 	Global     bool   `json:"global"`
 }
 
-// doReqNoAuth is used to request endpoints that do not need authentication. It sets
-// the Content-Type to "application/json" if the body is not nil.
+// doReqNoAuth is used to request endpoints that do not need authentication.
 // If you need more control over headers you send, use doReqNoAuthWithHeader directly.
-func doReqNoAuth(ctx context.Context, e *endpoint.Endpoint, body []byte) (*http.Response, error) {
-	h := http.Header{}
-	if body != nil {
-		h.Set("Content-Type", "application/json")
-	}
-
-	return doReqNoAuthWithHeader(ctx, e, body, h)
+func doReqNoAuth(ctx context.Context, e *endpoint.Endpoint, p *requestPayload) (*http.Response, error) {
+	return doReqNoAuthWithHeader(ctx, e, p, nil)
 }
 
 // doReqNoAuth is used to request endpoints that do not need authentication. It is
 // like doReqWithHeader otherwise, except for rate limiting where it is more likely
 // to result in 429's if abused.
-func doReqNoAuthWithHeader(ctx context.Context, e *endpoint.Endpoint, body []byte, h http.Header) (*http.Response, error) {
-	req, err := http.NewRequest(e.Method, defaultBaseURL+e.URL, bytes.NewBuffer(body))
+func doReqNoAuthWithHeader(ctx context.Context, e *endpoint.Endpoint, p *requestPayload, h http.Header) (*http.Response, error) {
+	var (
+		err error
+		req *http.Request
+	)
+	if p != nil && p.body != nil {
+		req, err = http.NewRequest(e.Method, defaultBaseURL+e.URL, bytes.NewReader(p.body))
+
+	} else {
+		req, err = http.NewRequest(e.Method, defaultBaseURL+e.URL, nil)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -99,6 +132,9 @@ func doReqNoAuthWithHeader(ctx context.Context, e *endpoint.Endpoint, body []byt
 		for _, v := range vs {
 			req.Header.Add(k, v)
 		}
+	}
+	if p != nil && p.body != nil {
+		h.Set("Content-Type", p.contentType)
 	}
 	ua := fmt.Sprintf("%s (github.com/skwair/harmony, %s", "Harmony", version)
 	req.Header.Set("User-Agent", ua)
@@ -117,7 +153,7 @@ func doReqNoAuthWithHeader(ctx context.Context, e *endpoint.Endpoint, body []byt
 			return nil, err
 		}
 		time.Sleep(time.Millisecond * time.Duration(r.RetryAfter))
-		return doReqNoAuth(ctx, e, body)
+		return doReqNoAuthWithHeader(ctx, e, p, h)
 	}
 
 	return resp, nil
