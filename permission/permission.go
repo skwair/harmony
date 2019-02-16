@@ -38,10 +38,10 @@ const (
 // Overwrite describes a specific permission that overwrites
 // server-wide permissions.
 type Overwrite struct {
-	ID    string
-	Type  string // Either "role" or "member".
-	Allow int
-	Deny  int
+	Type  string `json:"type"` // Either "role" or "member".
+	ID    string `json:"id"`   // ID of the role or member, depending on Type.
+	Allow int    `json:"allow"`
+	Deny  int    `json:"deny"`
 }
 
 // Clone returns a clone of this Overwrite.
