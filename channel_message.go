@@ -152,12 +152,18 @@ func (r *ChannelResource) Message(ctx context.Context, id string) (*Message, err
 	return &msg, nil
 }
 
-// DeleteMessage deletes a message. If operating on a guild channel and trying to delete a
+// DeleteMessage is like DeleteMessageWithReason but with no particular reason.
+func (r *ChannelResource) DeleteMessage(ctx context.Context, messageID string) error {
+	return r.DeleteMessageWithReason(ctx, messageID, "")
+}
+
+// DeleteMessageWithReason deletes a message. If operating on a guild channel and trying to delete a
 // message that was not sent by the current user, this endpoint requires the 'MANAGE_MESSAGES'
 // permission. Fires a Message Delete Gateway event.
-func (r *ChannelResource) DeleteMessage(ctx context.Context, messageID string) error {
+// The given reason will be set in the audit log entry for this action.
+func (r *ChannelResource) DeleteMessageWithReason(ctx context.Context, messageID, reason string) error {
 	e := endpoint.DeleteMessage(r.channelID, messageID)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return err
 	}
@@ -187,7 +193,7 @@ func (r *ChannelResource) DeleteMessageBulk(ctx context.Context, messageIDs []st
 	}
 
 	e := endpoint.BulkDeleteMessage(r.channelID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return err
 	}
@@ -287,24 +293,23 @@ func (c *Client) sendMessage(ctx context.Context, channelID string, msg *createM
 		msg.Embed.Type = "rich"
 	}
 
-	var (
-		b   []byte
-		h   http.Header
-		err error
-	)
+	var payload *requestPayload
 	if len(msg.files) > 0 {
-		b, h, err = multipartFromFiles(msg, msg.files...)
+		b, contentType, err := multipartFromFiles(msg, msg.files...)
+		if err != nil {
+			return nil, err
+		}
+		payload = customPayload(b, contentType)
 	} else {
-		h = http.Header{}
-		h.Set("Content-Type", "application/json")
-		b, err = json.Marshal(msg)
-	}
-	if err != nil {
-		return nil, err
+		b, err := json.Marshal(msg)
+		if err != nil {
+			return nil, err
+		}
+		payload = jsonPayload(b)
 	}
 
 	e := endpoint.CreateMessage(channelID)
-	resp, err := c.doReqWithHeader(ctx, e, b, h)
+	resp, err := c.doReq(ctx, e, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -345,7 +350,7 @@ func (c *Client) editMessage(ctx context.Context, channelID, messageID string, e
 	}
 
 	e := endpoint.EditMessage(channelID, messageID)
-	resp, err := c.doReq(ctx, e, b)
+	resp, err := c.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}

@@ -113,7 +113,7 @@ func (r *CurrentUserResource) Modify(ctx context.Context, username, avatar strin
 	}
 
 	e := endpoint.ModifyCurrentUser()
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}
@@ -202,7 +202,7 @@ func (r *CurrentUserResource) NewDM(ctx context.Context, recipientID string) (*C
 	}
 
 	e := endpoint.CreateDM()
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}

@@ -92,7 +92,7 @@ func (c *Client) CreateGuild(ctx context.Context, name string) (*Guild, error) {
 	}
 
 	e := endpoint.CreateGuild()
-	resp, err := c.doReq(ctx, e, b)
+	resp, err := c.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}
@@ -141,16 +141,22 @@ func (r *GuildResource) Get(ctx context.Context) (*Guild, error) {
 	return &g, nil
 }
 
-// Modify modifies the guild's settings. Requires the 'MANAGE_GUILD' permission.
-// Returns the updated guild on success. Fires a Guild Update Gateway event.
+// Modify is like ModifyWithReason but with no particular reason.
 func (r *GuildResource) Modify(ctx context.Context, settings *guild.Settings) (*Guild, error) {
+	return r.ModifyWithReason(ctx, settings, "")
+}
+
+// ModifyWithReason modifies the guild's settings. Requires the 'MANAGE_GUILD' permission.
+// Returns the updated guild on success. Fires a Guild Update Gateway event.
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) ModifyWithReason(ctx context.Context, settings *guild.Settings, reason string) (*Guild, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.ModifyGuild(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -203,15 +209,22 @@ func (r *GuildResource) Channels(ctx context.Context) ([]Channel, error) {
 	return channels, nil
 }
 
-// NewChannel creates a new channel in the guild.
+// NewChannel is like NewChannelWithReason but with no particular reason.
 func (r *GuildResource) NewChannel(ctx context.Context, settings *channel.Settings) (*Channel, error) {
+	return r.NewChannelWithReason(ctx, settings, "")
+}
+
+// NewChannelWithReason creates a new channel in the guild. Requires the MANAGE_CHANNELS permission.
+// Fires a Channel Create Gateway event.
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) NewChannelWithReason(ctx context.Context, settings *channel.Settings, reason string) (*Channel, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.CreateGuildChannel(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +259,7 @@ func (r *GuildResource) ModifyChannelPosition(ctx context.Context, pos []Channel
 	}
 
 	e := endpoint.ModifyChannelPositions(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return err
 	}
@@ -273,7 +286,7 @@ func (r *GuildResource) ChangeNick(ctx context.Context, name string) (string, er
 	}
 
 	e := endpoint.ModifyCurrentUserNick(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return "", err
 	}
@@ -318,11 +331,17 @@ func (r *GuildResource) PruneCount(ctx context.Context, days int) (int, error) {
 	return st.Pruned, nil
 }
 
-// BeginPrune begins a prune operation. Requires the 'KICK_MEMBERS' permission.
+// BeginPrune is like BeginPruneWithReason but with no particular reason.
+func (r *GuildResource) BeginPrune(ctx context.Context, days int, computePruneCount bool) (pruneCount int, err error) {
+	return r.BeginPruneWithReason(ctx, days, computePruneCount, "")
+}
+
+// BeginPruneWithReason begins a prune operation. Requires the 'KICK_MEMBERS' permission.
 // Returns the number of members that were removed in the prune operation if
 // computePruneCount is set to true (not recommended for large guilds).
 // Fires multiple Guild Member Remove Gateway events.
-func (r *GuildResource) BeginPrune(ctx context.Context, days int, computePruneCount bool) (pruneCount int, err error) {
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) BeginPruneWithReason(ctx context.Context, days int, computePruneCount bool, reason string) (pruneCount int, err error) {
 	if days < 1 {
 		days = 1
 	}
@@ -331,7 +350,7 @@ func (r *GuildResource) BeginPrune(ctx context.Context, days int, computePruneCo
 	q.Set("days", strconv.Itoa(days))
 	q.Set("compute_prune_count", strconv.FormatBool(computePruneCount))
 	e := endpoint.BeginGuildPrune(r.guildID, q.Encode())
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return 0, err
 	}
@@ -427,7 +446,7 @@ func (r *GuildResource) ModifyEmbed(ctx context.Context, embed *guild.Embed) (*g
 	}
 
 	e := endpoint.ModifyGuildEmbed(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}

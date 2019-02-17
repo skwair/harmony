@@ -70,11 +70,17 @@ func (r *GuildResource) BanWithReason(ctx context.Context, userID string, delMsg
 	return nil
 }
 
+// Unban is like UnbanWithReason but with no particular reason.
+func (r *GuildResource) Unban(ctx context.Context, userID string) error {
+	return r.UnbanWithReason(ctx, userID, "")
+}
+
 // Unban removes the ban for a user. Requires the 'BAN_MEMBERS' permissions.
 // Fires a Guild Ban Remove Gateway event.
-func (r *GuildResource) Unban(ctx context.Context, userID string) error {
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) UnbanWithReason(ctx context.Context, userID, reason string) error {
 	e := endpoint.RemoveGuildBan(r.guildID, userID)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return err
 	}

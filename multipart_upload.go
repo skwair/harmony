@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
-	"net/http"
 	"net/textproto"
 )
 
@@ -14,8 +13,8 @@ type multipartPayload interface {
 }
 
 // multipartFromFiles generate a multipart body given a payload and some files.
-// It returns the raw generated body along a header with the proper Content-Type value set.
-func multipartFromFiles(payload multipartPayload, files ...File) ([]byte, http.Header, error) {
+// It returns the raw generated body along the content type of this body.
+func multipartFromFiles(payload multipartPayload, files ...File) ([]byte, string, error) {
 	// Underlying buffer the multipart body will be written to.
 	var buf bytes.Buffer
 	w := multipart.NewWriter(&buf)
@@ -26,15 +25,15 @@ func multipartFromFiles(payload multipartPayload, files ...File) ([]byte, http.H
 	h.Set("Content-Type", "application/json")
 	pw, err := w.CreatePart(h)
 	if err != nil {
-		return nil, nil, err
+		return nil, "", err
 	}
 
 	b, err := payload.json()
 	if err != nil {
-		return nil, nil, err
+		return nil, "", err
 	}
 	if _, err = pw.Write(b); err != nil {
-		return nil, nil, err
+		return nil, "", err
 	}
 
 	// Create a new part for each file.
@@ -47,23 +46,21 @@ func multipartFromFiles(payload multipartPayload, files ...File) ([]byte, http.H
 
 		pw, err = w.CreatePart(h)
 		if err != nil {
-			return nil, nil, err
+			return nil, "", err
 		}
 
 		if _, err = io.Copy(pw, f.reader); err != nil {
-			return nil, nil, err
+			return nil, "", err
 		}
 
 		if err = f.reader.Close(); err != nil {
-			return nil, nil, err
+			return nil, "", err
 		}
 	}
 
 	if err = w.Close(); err != nil {
-		return nil, nil, err
+		return nil, "", err
 	}
 
-	header := http.Header{}
-	header.Set("Content-Type", w.FormDataContentType())
-	return buf.Bytes(), header, nil
+	return buf.Bytes(), w.FormDataContentType(), nil
 }

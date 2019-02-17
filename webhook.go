@@ -56,7 +56,7 @@ func ModifyWebhookWithToken(ctx context.Context, id, token string, s *webhook.Se
 	}
 
 	e := endpoint.ModifyWebhookWithToken(id, token)
-	resp, err := doReqNoAuth(ctx, e, b)
+	resp, err := doReqNoAuth(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}
@@ -114,29 +114,25 @@ func ExecuteWebhook(ctx context.Context, id, token string, p *WebhookParameters,
 		return nil, errors.New("p is nil")
 	}
 
-	var (
-		b   []byte
-		h   http.Header
-		err error
-	)
+	var payload *requestPayload
 	if len(p.Files) > 0 {
-		b, h, err = multipartFromFiles(p, p.Files...)
+		b, contentType, err := multipartFromFiles(p, p.Files...)
 		if err != nil {
 			return nil, err
 		}
+		payload = customPayload(b, contentType)
 	} else {
-		b, err = json.Marshal(p)
+		b, err := json.Marshal(p)
 		if err != nil {
 			return nil, err
 		}
-		h = http.Header{}
-		h.Set("Content-Type", "application/json")
+		payload = jsonPayload(b)
 	}
 
 	q := url.Values{}
 	q.Set("wait", strconv.FormatBool(wait))
 	e := endpoint.ExecuteWebhook(id, token, q.Encode())
-	resp, err := doReqNoAuthWithHeader(ctx, e, b, h)
+	resp, err := doReqNoAuth(ctx, e, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -210,15 +206,21 @@ func (r *WebhookResource) Get(ctx context.Context) (*Webhook, error) {
 	return &w, nil
 }
 
-// Modify modifies the webhook. Requires the 'MANAGE_WEBHOOKS' permission.
+// Modify is like ModifyWithReason but with no particular reason.
 func (r *WebhookResource) Modify(ctx context.Context, settings *webhook.Settings) (*Webhook, error) {
+	return r.ModifyWithReason(ctx, settings, "")
+}
+
+// ModifyWithReason modifies the webhook. Requires the 'MANAGE_WEBHOOKS' permission.
+// The given reason will be set in the audit log entry for this action.
+func (r *WebhookResource) ModifyWithReason(ctx context.Context, settings *webhook.Settings, reason string) (*Webhook, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.ModifyWebhook(r.webhookID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -235,10 +237,16 @@ func (r *WebhookResource) Modify(ctx context.Context, settings *webhook.Settings
 	return &w, nil
 }
 
-// Delete deletes the webhook.
+// Delete is like DeleteWithReason but with no particular reason.
 func (r *WebhookResource) Delete(ctx context.Context) error {
+	return r.DeleteWithReason(ctx, "")
+}
+
+// DeleteWithReason deletes the webhook.
+// The given reason will be set in the audit log entry for this action.
+func (r *WebhookResource) DeleteWithReason(ctx context.Context, reason string) error {
 	e := endpoint.DeleteWebhook(r.webhookID)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return err
 	}

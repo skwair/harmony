@@ -60,10 +60,16 @@ func (r *GuildResource) Emoji(ctx context.Context, emojiID string) (*Emoji, erro
 	return &emoji, nil
 }
 
-// NewEmoji creates a new emoji for the guild. image is the base64 encoded data of a
+// NewEmoji is like NewEmojiWithReason but with no particular reason.
+func (r *GuildResource) NewEmoji(ctx context.Context, name, image string, roles []string) (*Emoji, error) {
+	return r.NewEmojiWithReason(ctx, name, image, roles, "")
+}
+
+// NewEmojiWithReason creates a new emoji for the guild. image is the base64 encoded data of a
 // 128*128 image. Requires the 'MANAGE_EMOJIS' permission. Fires a Guild Emojis Update
 // Gateway event.
-func (r *GuildResource) NewEmoji(ctx context.Context, name, image string, roles []string) (*Emoji, error) {
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) NewEmojiWithReason(ctx context.Context, name, image string, roles []string, reason string) (*Emoji, error) {
 	st := struct {
 		Name  string   `json:"name"`
 		Image string   `json:"image"`
@@ -79,7 +85,7 @@ func (r *GuildResource) NewEmoji(ctx context.Context, name, image string, roles 
 	}
 
 	e := endpoint.CreateGuildEmoji(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -96,9 +102,15 @@ func (r *GuildResource) NewEmoji(ctx context.Context, name, image string, roles 
 	return &emoji, nil
 }
 
-// ModifyEmoji modifies the given emoji for the guild. Requires the 'MANAGE_EMOJIS'
-// permission. Fires a Guild Emojis Update Gateway event.
+// ModifyEmoji is like ModifyEmojiWithReason but with no particular reason.
 func (r *GuildResource) ModifyEmoji(ctx context.Context, emojiID, name string, roles []string) (*Emoji, error) {
+	return r.ModifyEmojiWithReason(ctx, emojiID, name, roles, "")
+}
+
+// ModifyEmojiWithReason modifies the given emoji for the guild. Requires
+// the 'MANAGE_EMOJIS' permission. Fires a Guild Emojis Update Gateway event.
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) ModifyEmojiWithReason(ctx context.Context, emojiID, name string, roles []string, reason string) (*Emoji, error) {
 	st := struct {
 		Name  string   `json:"name"`
 		Roles []string `json:"roles"`
@@ -112,7 +124,7 @@ func (r *GuildResource) ModifyEmoji(ctx context.Context, emojiID, name string, r
 	}
 
 	e := endpoint.ModifyGuildEmoji(r.guildID, emojiID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -129,11 +141,17 @@ func (r *GuildResource) ModifyEmoji(ctx context.Context, emojiID, name string, r
 	return &emoji, nil
 }
 
-// DeleteEmoji deletes the given emoji. Requires the 'MANAGE_EMOJIS' permission.
-// Fires a Guild Emojis Update Gateway event.
+// DeleteEmoji is like DeleteEmojiWithReason but with no particular reason.
 func (r *GuildResource) DeleteEmoji(ctx context.Context, emojiID string) error {
+	return r.DeleteEmojiWithReason(ctx, emojiID, "")
+}
+
+// DeleteEmojiWithReason deletes the given emoji. Requires the 'MANAGE_EMOJIS'
+// permission. Fires a Guild Emojis Update Gateway event.
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) DeleteEmojiWithReason(ctx context.Context, emojiID, reason string) error {
 	e := endpoint.DeleteGuildEmoji(r.guildID, emojiID)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return err
 	}

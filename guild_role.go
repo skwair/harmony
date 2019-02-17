@@ -46,16 +46,22 @@ func (r *GuildResource) Roles(ctx context.Context) ([]Role, error) {
 	return roles, nil
 }
 
+// NewRole is like NewRoleWithReason but with no particular reason.
+func (r *GuildResource) NewRole(ctx context.Context, settings *role.Settings) (*Role, error) {
+	return r.NewRoleWithReason(ctx, settings, "")
+}
+
 // NewRole creates a new role for the guild. Requires the 'MANAGE_ROLES'
 // permission. Fires a Guild Role Create Gateway event.
-func (r *GuildResource) NewRole(ctx context.Context, settings *role.Settings) (*Role, error) {
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) NewRoleWithReason(ctx context.Context, settings *role.Settings, reason string) (*Role, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.CreateGuildRole(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +94,7 @@ func (r *GuildResource) ModifyRolePositions(ctx context.Context, pos []RolePosit
 	}
 
 	e := endpoint.ModifyGuildRolePositions(r.guildID)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReq(ctx, e, jsonPayload(b))
 	if err != nil {
 		return nil, err
 	}
@@ -105,16 +111,22 @@ func (r *GuildResource) ModifyRolePositions(ctx context.Context, pos []RolePosit
 	return roles, nil
 }
 
+// ModifyRole is like ModifyRoleWithReason but with no particular reason.
+func (r *GuildResource) ModifyRole(ctx context.Context, id string, settings *role.Settings) (*Role, error) {
+	return r.ModifyRoleWithReason(ctx, id, settings, "")
+}
+
 // ModifyRole modifies a guild role. Requires the 'MANAGE_ROLES' permission.
 // Fires a Guild Role Update Gateway event.
-func (r *GuildResource) ModifyRole(ctx context.Context, id string, settings *role.Settings) (*Role, error) {
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) ModifyRoleWithReason(ctx context.Context, id string, settings *role.Settings, reason string) (*Role, error) {
 	b, err := json.Marshal(settings)
 	if err != nil {
 		return nil, err
 	}
 
 	e := endpoint.ModifyGuildRole(r.guildID, id)
-	resp, err := r.client.doReq(ctx, e, b)
+	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return nil, err
 	}
@@ -131,11 +143,17 @@ func (r *GuildResource) ModifyRole(ctx context.Context, id string, settings *rol
 	return &role, nil
 }
 
+// DeleteRole is like DeleteRoleWithReason but with no particular reason.
+func (r *GuildResource) DeleteRole(ctx context.Context, id string) error {
+	return r.DeleteRoleWithReason(ctx, id, "")
+}
+
 // DeleteRole deletes a guild role. Requires the 'MANAGE_ROLES' permission.
 // Fires a Guild Role Delete Gateway event.
-func (r *GuildResource) DeleteRole(ctx context.Context, id string) error {
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) DeleteRoleWithReason(ctx context.Context, id, reason string) error {
 	e := endpoint.DeleteGuildRole(r.guildID, id)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return err
 	}
@@ -147,11 +165,17 @@ func (r *GuildResource) DeleteRole(ctx context.Context, id string) error {
 	return nil
 }
 
+// AddMemberRole is like AddMemberRoleWithReason but with no particular reason.
+func (r *GuildResource) AddMemberRole(ctx context.Context, userID, roleID string) error {
+	return r.AddMemberRoleWithReason(ctx, userID, roleID, "")
+}
+
 // AddMemberRole adds a role to a guild member. Requires the 'MANAGE_ROLES'
 // permission. Fires a Guild Member Update Gateway event.
-func (r *GuildResource) AddMemberRole(ctx context.Context, userID, roleID string) error {
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) AddMemberRoleWithReason(ctx context.Context, userID, roleID, reason string) error {
 	e := endpoint.AddGuildMemberRole(r.guildID, userID, roleID)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return err
 	}
