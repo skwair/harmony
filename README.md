@@ -38,6 +38,7 @@ go get -u github.com/skwair/harmony
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -51,7 +52,7 @@ func main() {
     }
 
     // Get information about the current user.
-    u, err := c.CurrentUser().Get()
+    u, err := c.CurrentUser().Get(context.Background())
     if err != nil {
         log.Fatal(err)
     }
