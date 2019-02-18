@@ -32,6 +32,7 @@ const (
 	changeKeyPermissions changeKey = "permissions"
 	changeKeyColor       changeKey = "color"
 	changeKeyHoist       changeKey = "hoist"
+	changeKeyMentionable changeKey = "mentionable"
 	changeKeyAllow       changeKey = "allow"
 	changeKeyDeny        changeKey = "deny"
 

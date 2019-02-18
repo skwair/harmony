@@ -137,6 +137,15 @@ func extractAuditLog(log *auditLog) (*audit.Log, error) {
 
 		case audit.EntryTypeMemberRoleUpdate:
 			entry, err = memberRoleUpdateFromEntry(&e)
+
+		case audit.EntryTypeRoleCreate:
+			entry, err = roleCreateFromEntry(&e)
+
+		case audit.EntryTypeRoleUpdate:
+			entry, err = roleUpdateFromEntry(&e)
+
+		case audit.EntryTypeRoleDelete:
+			entry, err = roleDeleteFromEntry(&e)
 		}
 
 		if err != nil {

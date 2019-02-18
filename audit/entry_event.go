@@ -190,3 +190,50 @@ type MemberRoleUpdate struct {
 
 // EntryType implements the LogEntry interface.
 func (MemberRoleUpdate) EntryType() EntryType { return EntryTypeMemberRoleUpdate }
+
+// RoleCreate is the log entry that describes a role creation.
+// It contains the settings the role was created with.
+type RoleCreate struct {
+	BaseEntry
+
+	Name        string
+	Permissions int
+	Color       int
+	Mentionable bool
+	Hoist       bool
+}
+
+// EntryType implements the LogEntry interface.
+func (RoleCreate) EntryType() EntryType { return EntryTypeRoleCreate }
+
+// RoleUpdate is the log entry that describes how a Role was updated.
+// It contains a list of settings that can be updated on a Role.
+// Settings that are not nil are those which were modified. They contain both
+// their old value as well as the new one.
+type RoleUpdate struct {
+	BaseEntry
+
+	Name        *StringValues
+	Permissions *IntValues
+	Color       *IntValues
+	Mentionable *BoolValues
+	Hoist       *BoolValues
+}
+
+// EntryType implements the LogEntry interface.
+func (RoleUpdate) EntryType() EntryType { return EntryTypeRoleUpdate }
+
+// RoleDelete is the log entry that describes a role deletion.
+// It contains settings this role had before being deleted.
+type RoleDelete struct {
+	BaseEntry
+
+	Name        string
+	Permissions int
+	Color       int
+	Mentionable bool
+	Hoist       bool
+}
+
+// EntryType implements the LogEntry interface.
+func (RoleDelete) EntryType() EntryType { return EntryTypeRoleDelete }
