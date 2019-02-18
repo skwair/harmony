@@ -290,3 +290,44 @@ type InviteDelete struct {
 
 // EntryType implements the LogEntry interface.
 func (InviteDelete) EntryType() EntryType { return EntryTypeInviteDelete }
+
+// InviteDelete is the log entry that describes a webhook creation.
+// It contains the settings the webhook was created with.
+type WebhookCreate struct {
+	BaseEntry
+
+	Name      string
+	Type      int
+	ChannelID string
+}
+
+// EntryType implements the LogEntry interface.
+func (WebhookCreate) EntryType() EntryType { return EntryTypeWebhookCreate }
+
+// WebhookUpdate is the log entry that describes how a webhook was updated.
+// It contains a list of settings that can be updated on a webhook.
+// Settings that are not nil are those which were modified. They contain both
+// their old value as well as the new one.
+type WebhookUpdate struct {
+	BaseEntry
+
+	Name       *StringValues
+	ChannelID  *StringValues
+	AvatarHash *StringValues
+}
+
+// EntryType implements the LogEntry interface.
+func (WebhookUpdate) EntryType() EntryType { return EntryTypeWebhookUpdate }
+
+// WebhookDelete is the log entry that describes a webhook deletion.
+// It contains settings this webhook had before being deleted.
+type WebhookDelete struct {
+	BaseEntry
+
+	Name      string
+	Type      int
+	ChannelID string
+}
+
+// EntryType implements the LogEntry interface.
+func (WebhookDelete) EntryType() EntryType { return EntryTypeWebhookDelete }

@@ -155,6 +155,15 @@ func extractAuditLog(log *auditLog) (*audit.Log, error) {
 
 		case audit.EntryTypeInviteDelete:
 			entry, err = inviteDeleteFromEntry(&e)
+
+		case audit.EntryTypeWebhookCreate:
+			entry, err = webhookCreateFromEntry(&e)
+
+		case audit.EntryTypeWebhookUpdate:
+			entry, err = webhookUpdateFromEntry(&e)
+
+		case audit.EntryTypeWebhookDelete:
+			entry, err = webhookDeleteFromEntry(&e)
 		}
 
 		if err != nil {
