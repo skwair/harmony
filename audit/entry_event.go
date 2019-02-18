@@ -237,3 +237,56 @@ type RoleDelete struct {
 
 // EntryType implements the LogEntry interface.
 func (RoleDelete) EntryType() EntryType { return EntryTypeRoleDelete }
+
+// InviteCreate is the log entry that describes a channel invite creation.
+// It contains the settings the invite was created with.
+type InviteCreate struct {
+	BaseEntry
+
+	Code      string
+	ChannelID string
+	InviterID string
+	MaxUses   int
+	Uses      int
+	MaxAge    int
+	Temporary bool
+}
+
+// EntryType implements the LogEntry interface.
+func (InviteCreate) EntryType() EntryType { return EntryTypeInviteCreate }
+
+// InviteUpdate is the log entry that describes how a channel invite was updated.
+// It contains a list of settings that can be updated on an invite.
+// Settings that are not nil are those which were modified. They contain both
+// their old value as well as the new one.
+type InviteUpdate struct {
+	BaseEntry
+
+	Code      *StringValues
+	ChannelID *StringValues
+	InviterID *StringValues
+	MaxUses   *IntValues
+	Uses      *IntValues
+	MaxAge    *IntValues
+	Temporary *BoolValues
+}
+
+// EntryType implements the LogEntry interface.
+func (InviteUpdate) EntryType() EntryType { return EntryTypeInviteUpdate }
+
+// InviteDelete is the log entry that describes a channel invite deletion.
+// It contains settings this invite had before being deleted.
+type InviteDelete struct {
+	BaseEntry
+
+	Code      string
+	ChannelID string
+	InviterID string
+	MaxUses   int
+	Uses      int
+	MaxAge    int
+	Temporary bool
+}
+
+// EntryType implements the LogEntry interface.
+func (InviteDelete) EntryType() EntryType { return EntryTypeInviteDelete }
