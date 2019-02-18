@@ -131,3 +131,62 @@ type ChannelOverwriteDelete struct {
 
 // EntryType implements the LogEntry interface.
 func (ChannelOverwriteDelete) EntryType() EntryType { return EntryTypeChannelOverwriteDelete }
+
+// MemberKick is the log entry that describes a member kick.
+type MemberKick struct {
+	BaseEntry
+}
+
+// EntryType implements the LogEntry interface.
+func (MemberKick) EntryType() EntryType { return EntryTypeMemberKick }
+
+// MemberKick is the log entry that describes a member prune.
+type MemberPrune struct {
+	BaseEntry
+
+	DeleteMemberDays int
+	MembersRemoved   int
+}
+
+// EntryType implements the LogEntry interface.
+func (MemberPrune) EntryType() EntryType { return EntryTypeMemberPrune }
+
+// MemberBanAdd is the log entry that describes a member ban creation.
+type MemberBanAdd struct {
+	BaseEntry
+}
+
+// EntryType implements the LogEntry interface.
+func (MemberBanAdd) EntryType() EntryType { return EntryTypeMemberBanAdd }
+
+// MemberBanRemove is the log entry that describes a member ban deletion.
+type MemberBanRemove struct {
+	BaseEntry
+}
+
+// EntryType implements the LogEntry interface.
+func (MemberBanRemove) EntryType() EntryType { return EntryTypeMemberBanRemove }
+
+// MemberUpdate is the log entry that describes a member update.
+type MemberUpdate struct {
+	BaseEntry
+
+	Nick *StringValues
+	Deaf *BoolValues
+	Mute *BoolValues
+}
+
+// EntryType implements the LogEntry interface.
+func (MemberUpdate) EntryType() EntryType { return EntryTypeMemberUpdate }
+
+// MemberRoleUpdate is the log entry that describes a member's roles update.
+// It contains roles that were added as well as roles that were removed.
+type MemberRoleUpdate struct {
+	BaseEntry
+
+	Added   []permission.Overwrite
+	Removed []permission.Overwrite
+}
+
+// EntryType implements the LogEntry interface.
+func (MemberRoleUpdate) EntryType() EntryType { return EntryTypeMemberRoleUpdate }

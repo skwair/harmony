@@ -15,8 +15,8 @@ const (
 	changeKeyExplicitContentFilter      changeKey = "explicit_content_filter"
 	changeKeyDefaultMessageNotification changeKey = "default_message_notifications"
 	changeKeyVanityURLCode              changeKey = "vanity_url_code"
-	changeKeyAddRole                    changeKey = "$add"    // This event does not seem to be used.
-	changeKeyRemoveRole                 changeKey = "$remove" // This event does not seem to be used.
+	changeKeyAddRole                    changeKey = "$add"
+	changeKeyRemoveRole                 changeKey = "$remove"
 	changeKeyPruneDeleteDays            changeKey = "prune_delete_days"
 	changeKeyWidgetEnabled              changeKey = "widget_enabled"
 	changeKeyWidgetChannelID            changeKey = "widget_channel_id"

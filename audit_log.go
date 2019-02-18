@@ -119,6 +119,24 @@ func extractAuditLog(log *auditLog) (*audit.Log, error) {
 
 		case audit.EntryTypeChannelOverwriteDelete:
 			entry, err = channelOverwriteDeleteFromEntry(&e)
+
+		case audit.EntryTypeMemberKick:
+			entry, err = memberKickFromEntry(&e)
+
+		case audit.EntryTypeMemberPrune:
+			entry, err = memberPruneFromEntry(&e)
+
+		case audit.EntryTypeMemberBanAdd:
+			entry, err = memberBanAddFromEntry(&e)
+
+		case audit.EntryTypeMemberBanRemove:
+			entry, err = memberBanRemoveFromEntry(&e)
+
+		case audit.EntryTypeMemberUpdate:
+			entry, err = memberUpdateFromEntry(&e)
+
+		case audit.EntryTypeMemberRoleUpdate:
+			entry, err = memberRoleUpdateFromEntry(&e)
 		}
 
 		if err != nil {
