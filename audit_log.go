@@ -102,6 +102,9 @@ func extractAuditLog(log *auditLog) (*audit.Log, error) {
 		)
 
 		switch audit.EntryType(e.ActionType) {
+		case audit.EntryTypeGuildUpdate:
+			entry, err = guildUpdateFromEntry(&e)
+
 		case audit.EntryTypeChannelCreate:
 			entry, err = channelCreateFromEntry(&e)
 

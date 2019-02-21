@@ -108,6 +108,12 @@ func channelUpdateFromEntry(e *entry) (*audit.ChannelUpdate, error) {
 			}
 			chUpdate.ApplicationID = &audit.StringValues{Old: oldValue, New: newValue}
 
+		case changeKeyPosition:
+			oldValue, newValue, err := intValues(ch.Old, ch.New)
+			if err != nil {
+				return nil, err
+			}
+			chUpdate.Position = &audit.IntValues{Old: oldValue, New: newValue}
 		}
 	}
 

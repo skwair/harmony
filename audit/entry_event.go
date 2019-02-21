@@ -34,6 +34,33 @@ const (
 	EntryTypeMessageDelete          EntryType = 72
 )
 
+// GuildUpdate is the log entry that describes how a guild was updated.
+// It contains a list of settings that can be updated on a guild.
+// Settings that are not nil are those which were modified. They contain both
+// their old value as well as the new one.
+type GuildUpdate struct {
+	BaseEntry
+
+	Name                       *StringValues
+	IconHash                   *StringValues
+	SplashHash                 *StringValues
+	OwnerID                    *StringValues
+	Region                     *StringValues
+	AFKChannelID               *StringValues
+	AFKTimeout                 *IntValues
+	MFALevel                   *IntValues
+	VerificationLevel          *IntValues
+	ExplicitContentFilter      *IntValues
+	DefaultMessageNotification *IntValues
+	VanityURLCode              *StringValues
+	PruneDeleteDays            *IntValues
+	WidgetEnabled              *BoolValues
+	WidgetChannelID            *StringValues
+}
+
+// EntryType implements the LogEntry interface.
+func (GuildUpdate) EntryType() EntryType { return EntryTypeGuildUpdate }
+
 // ChannelUpdate is the log entry that describes a Channel creation.
 // It contains settings this Channel was created with.
 type ChannelCreate struct {
@@ -62,6 +89,7 @@ type ChannelUpdate struct {
 	RateLimitPerUser *IntValues
 	NSFW             *BoolValues
 	ApplicationID    *StringValues // Application ID of the added or removed webhook or bot.
+	Position         *IntValues
 }
 
 // EntryType implements the LogEntry interface.
