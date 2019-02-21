@@ -164,6 +164,15 @@ func extractAuditLog(log *auditLog) (*audit.Log, error) {
 
 		case audit.EntryTypeWebhookDelete:
 			entry, err = webhookDeleteFromEntry(&e)
+
+		case audit.EntryTypeEmojiCreate:
+			entry, err = emojiCreateFromEntry(&e)
+
+		case audit.EntryTypeEmojiUpdate:
+			entry, err = emojiUpdateFromEntry(&e)
+
+		case audit.EntryTypeEmojiDelete:
+			entry, err = emojiDeleteFromEntry(&e)
 		}
 
 		if err != nil {

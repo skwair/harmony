@@ -331,3 +331,38 @@ type WebhookDelete struct {
 
 // EntryType implements the LogEntry interface.
 func (WebhookDelete) EntryType() EntryType { return EntryTypeWebhookDelete }
+
+// EmojiCreate is the log entry that describes an emoji creation.
+// It contains the settings the emoji was created with.
+type EmojiCreate struct {
+	BaseEntry
+
+	Name string
+}
+
+// EntryType implements the LogEntry interface.
+func (EmojiCreate) EntryType() EntryType { return EntryTypeEmojiCreate }
+
+// EmojiUpdate is the log entry that describes how an emoji was updated.
+// It contains a list of settings that can be updated on an emoji.
+// Settings that are not nil are those which were modified. They contain both
+// their old value as well as the new one.
+type EmojiUpdate struct {
+	BaseEntry
+
+	Name *StringValues
+}
+
+// EntryType implements the LogEntry interface.
+func (EmojiUpdate) EntryType() EntryType { return EntryTypeEmojiUpdate }
+
+// EmojiCreate is the log entry that describes an emoji delete.
+// It contains settings this emoji had before being deleted.
+type EmojiDelete struct {
+	BaseEntry
+
+	Name string
+}
+
+// EntryType implements the LogEntry interface.
+func (EmojiDelete) EntryType() EntryType { return EntryTypeEmojiDelete }
