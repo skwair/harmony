@@ -1,14 +1,12 @@
-package harmony
+package audit
 
 import (
 	"strconv"
-
-	"github.com/skwair/harmony/audit"
 )
 
-func channelCreateFromEntry(e *entry) (*audit.ChannelCreate, error) {
-	chCreate := &audit.ChannelCreate{
-		BaseEntry: audit.BaseEntry{
+func channelCreateFromEntry(e *rawEntry) (*ChannelCreate, error) {
+	chCreate := &ChannelCreate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -54,9 +52,9 @@ func channelCreateFromEntry(e *entry) (*audit.ChannelCreate, error) {
 	return chCreate, nil
 }
 
-func channelUpdateFromEntry(e *entry) (*audit.ChannelUpdate, error) {
-	chUpdate := &audit.ChannelUpdate{
-		BaseEntry: audit.BaseEntry{
+func channelUpdateFromEntry(e *rawEntry) (*ChannelUpdate, error) {
+	chUpdate := &ChannelUpdate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -71,58 +69,58 @@ func channelUpdateFromEntry(e *entry) (*audit.ChannelUpdate, error) {
 			if err != nil {
 				return nil, err
 			}
-			chUpdate.Name = &audit.StringValues{Old: oldValue, New: newValue}
+			chUpdate.Name = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyTopic:
 			oldValue, newValue, err := stringValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			chUpdate.Topic = &audit.StringValues{Old: oldValue, New: newValue}
+			chUpdate.Topic = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyBitrate:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			chUpdate.Bitrate = &audit.IntValues{Old: oldValue, New: newValue}
+			chUpdate.Bitrate = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyRateLimitPerUser:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			chUpdate.RateLimitPerUser = &audit.IntValues{Old: oldValue, New: newValue}
+			chUpdate.RateLimitPerUser = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyNFSW:
 			oldValue, newValue, err := boolValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			chUpdate.NSFW = &audit.BoolValues{Old: oldValue, New: newValue}
+			chUpdate.NSFW = &BoolValues{Old: oldValue, New: newValue}
 
 		case changeKeyApplicationID:
 			oldValue, newValue, err := stringValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			chUpdate.ApplicationID = &audit.StringValues{Old: oldValue, New: newValue}
+			chUpdate.ApplicationID = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyPosition:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			chUpdate.Position = &audit.IntValues{Old: oldValue, New: newValue}
+			chUpdate.Position = &IntValues{Old: oldValue, New: newValue}
 		}
 	}
 
 	return chUpdate, nil
 }
 
-func channelDeleteFromEntry(e *entry) (*audit.ChannelDelete, error) {
-	chDelete := &audit.ChannelDelete{
-		BaseEntry: audit.BaseEntry{
+func channelDeleteFromEntry(e *rawEntry) (*ChannelDelete, error) {
+	chDelete := &ChannelDelete{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -168,9 +166,9 @@ func channelDeleteFromEntry(e *entry) (*audit.ChannelDelete, error) {
 	return chDelete, nil
 }
 
-func channelOverwriteCreateFromEntry(e *entry) (*audit.ChannelOverwriteCreate, error) {
-	overwrite := &audit.ChannelOverwriteCreate{
-		BaseEntry: audit.BaseEntry{
+func channelOverwriteCreateFromEntry(e *rawEntry) (*ChannelOverwriteCreate, error) {
+	overwrite := &ChannelOverwriteCreate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -211,9 +209,9 @@ func channelOverwriteCreateFromEntry(e *entry) (*audit.ChannelOverwriteCreate, e
 	return overwrite, nil
 }
 
-func channelOverwriteUpdateFromEntry(e *entry) (*audit.ChannelOverwriteUpdate, error) {
-	overwrite := &audit.ChannelOverwriteUpdate{
-		BaseEntry: audit.BaseEntry{
+func channelOverwriteUpdateFromEntry(e *rawEntry) (*ChannelOverwriteUpdate, error) {
+	overwrite := &ChannelOverwriteUpdate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -231,23 +229,23 @@ func channelOverwriteUpdateFromEntry(e *entry) (*audit.ChannelOverwriteUpdate, e
 			if err != nil {
 				return nil, err
 			}
-			overwrite.Allow = &audit.IntValues{Old: oldValue, New: newValue}
+			overwrite.Allow = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyDeny:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			overwrite.Deny = &audit.IntValues{Old: oldValue, New: newValue}
+			overwrite.Deny = &IntValues{Old: oldValue, New: newValue}
 		}
 	}
 
 	return overwrite, nil
 }
 
-func channelOverwriteDeleteFromEntry(e *entry) (*audit.ChannelOverwriteDelete, error) {
-	overwrite := &audit.ChannelOverwriteDelete{
-		BaseEntry: audit.BaseEntry{
+func channelOverwriteDeleteFromEntry(e *rawEntry) (*ChannelOverwriteDelete, error) {
+	overwrite := &ChannelOverwriteDelete{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -288,9 +286,9 @@ func channelOverwriteDeleteFromEntry(e *entry) (*audit.ChannelOverwriteDelete, e
 	return overwrite, nil
 }
 
-func messageDeleteFromEntry(e *entry) (*audit.MessageDelete, error) {
-	message := &audit.MessageDelete{
-		BaseEntry: audit.BaseEntry{
+func messageDeleteFromEntry(e *rawEntry) (*MessageDelete, error) {
+	message := &MessageDelete{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,

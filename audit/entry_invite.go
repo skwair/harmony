@@ -1,10 +1,8 @@
-package harmony
+package audit
 
-import "github.com/skwair/harmony/audit"
-
-func inviteCreateFromEntry(e *entry) (*audit.InviteCreate, error) {
-	invite := &audit.InviteCreate{
-		BaseEntry: audit.BaseEntry{
+func inviteCreateFromEntry(e *rawEntry) (*InviteCreate, error) {
+	invite := &InviteCreate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -62,9 +60,9 @@ func inviteCreateFromEntry(e *entry) (*audit.InviteCreate, error) {
 	return invite, nil
 }
 
-func inviteUpdateFromEntry(e *entry) (*audit.InviteUpdate, error) {
-	invite := &audit.InviteUpdate{
-		BaseEntry: audit.BaseEntry{
+func inviteUpdateFromEntry(e *rawEntry) (*InviteUpdate, error) {
+	invite := &InviteUpdate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -79,58 +77,58 @@ func inviteUpdateFromEntry(e *entry) (*audit.InviteUpdate, error) {
 			if err != nil {
 				return nil, err
 			}
-			invite.Code = &audit.StringValues{Old: oldValue, New: newValue}
+			invite.Code = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyChannelID:
 			oldValue, newValue, err := stringValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			invite.ChannelID = &audit.StringValues{Old: oldValue, New: newValue}
+			invite.ChannelID = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyInviterID:
 			oldValue, newValue, err := stringValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			invite.InviterID = &audit.StringValues{Old: oldValue, New: newValue}
+			invite.InviterID = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyMaxUses:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			invite.MaxUses = &audit.IntValues{Old: oldValue, New: newValue}
+			invite.MaxUses = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyUses:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			invite.Uses = &audit.IntValues{Old: oldValue, New: newValue}
+			invite.Uses = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyMaxAge:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			invite.MaxAge = &audit.IntValues{Old: oldValue, New: newValue}
+			invite.MaxAge = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyTemporary:
 			oldValue, newValue, err := boolValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			invite.Temporary = &audit.BoolValues{Old: oldValue, New: newValue}
+			invite.Temporary = &BoolValues{Old: oldValue, New: newValue}
 		}
 	}
 
 	return invite, nil
 }
 
-func inviteDeleteFromEntry(e *entry) (*audit.InviteCreate, error) {
-	invite := &audit.InviteCreate{
-		BaseEntry: audit.BaseEntry{
+func inviteDeleteFromEntry(e *rawEntry) (*InviteCreate, error) {
+	invite := &InviteCreate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,

@@ -1,10 +1,8 @@
-package harmony
+package audit
 
-import "github.com/skwair/harmony/audit"
-
-func emojiCreateFromEntry(e *entry) (*audit.EmojiCreate, error) {
-	emoji := &audit.EmojiCreate{
-		BaseEntry: audit.BaseEntry{
+func emojiCreateFromEntry(e *rawEntry) (*EmojiCreate, error) {
+	emoji := &EmojiCreate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -26,9 +24,9 @@ func emojiCreateFromEntry(e *entry) (*audit.EmojiCreate, error) {
 	return emoji, nil
 }
 
-func emojiUpdateFromEntry(e *entry) (*audit.EmojiUpdate, error) {
-	emoji := &audit.EmojiUpdate{
-		BaseEntry: audit.BaseEntry{
+func emojiUpdateFromEntry(e *rawEntry) (*EmojiUpdate, error) {
+	emoji := &EmojiUpdate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -43,16 +41,16 @@ func emojiUpdateFromEntry(e *entry) (*audit.EmojiUpdate, error) {
 			if err != nil {
 				return nil, err
 			}
-			emoji.Name = &audit.StringValues{Old: oldValue, New: newValue}
+			emoji.Name = &StringValues{Old: oldValue, New: newValue}
 		}
 	}
 
 	return emoji, nil
 }
 
-func emojiDeleteFromEntry(e *entry) (*audit.EmojiDelete, error) {
-	emoji := &audit.EmojiDelete{
-		BaseEntry: audit.BaseEntry{
+func emojiDeleteFromEntry(e *rawEntry) (*EmojiDelete, error) {
+	emoji := &EmojiDelete{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,

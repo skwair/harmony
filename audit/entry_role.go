@@ -1,10 +1,8 @@
-package harmony
+package audit
 
-import "github.com/skwair/harmony/audit"
-
-func roleCreateFromEntry(e *entry) (*audit.RoleCreate, error) {
-	role := &audit.RoleCreate{
-		BaseEntry: audit.BaseEntry{
+func roleCreateFromEntry(e *rawEntry) (*RoleCreate, error) {
+	role := &RoleCreate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -50,9 +48,9 @@ func roleCreateFromEntry(e *entry) (*audit.RoleCreate, error) {
 	return role, nil
 }
 
-func roleUpdateFromEntry(e *entry) (*audit.RoleUpdate, error) {
-	role := &audit.RoleUpdate{
-		BaseEntry: audit.BaseEntry{
+func roleUpdateFromEntry(e *rawEntry) (*RoleUpdate, error) {
+	role := &RoleUpdate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -67,44 +65,44 @@ func roleUpdateFromEntry(e *entry) (*audit.RoleUpdate, error) {
 			if err != nil {
 				return nil, err
 			}
-			role.Name = &audit.StringValues{Old: oldValue, New: newValue}
+			role.Name = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyPermissions:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			role.Permissions = &audit.IntValues{Old: oldValue, New: newValue}
+			role.Permissions = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyColor:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			role.Color = &audit.IntValues{Old: oldValue, New: newValue}
+			role.Color = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyHoist:
 			oldValue, newValue, err := boolValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			role.Hoist = &audit.BoolValues{Old: oldValue, New: newValue}
+			role.Hoist = &BoolValues{Old: oldValue, New: newValue}
 
 		case changeKeyMentionable:
 			oldValue, newValue, err := boolValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			role.Mentionable = &audit.BoolValues{Old: oldValue, New: newValue}
+			role.Mentionable = &BoolValues{Old: oldValue, New: newValue}
 		}
 	}
 
 	return role, nil
 }
 
-func roleDeleteFromEntry(e *entry) (*audit.RoleDelete, error) {
-	role := &audit.RoleDelete{
-		BaseEntry: audit.BaseEntry{
+func roleDeleteFromEntry(e *rawEntry) (*RoleDelete, error) {
+	role := &RoleDelete{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,

@@ -1,10 +1,8 @@
-package harmony
+package audit
 
-import "github.com/skwair/harmony/audit"
-
-func webhookCreateFromEntry(e *entry) (*audit.WebhookCreate, error) {
-	webhook := &audit.WebhookCreate{
-		BaseEntry: audit.BaseEntry{
+func webhookCreateFromEntry(e *rawEntry) (*WebhookCreate, error) {
+	webhook := &WebhookCreate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -38,9 +36,9 @@ func webhookCreateFromEntry(e *entry) (*audit.WebhookCreate, error) {
 	return webhook, nil
 }
 
-func webhookUpdateFromEntry(e *entry) (*audit.WebhookUpdate, error) {
-	webhook := &audit.WebhookUpdate{
-		BaseEntry: audit.BaseEntry{
+func webhookUpdateFromEntry(e *rawEntry) (*WebhookUpdate, error) {
+	webhook := &WebhookUpdate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -55,30 +53,30 @@ func webhookUpdateFromEntry(e *entry) (*audit.WebhookUpdate, error) {
 			if err != nil {
 				return nil, err
 			}
-			webhook.Name = &audit.StringValues{Old: oldValue, New: newValue}
+			webhook.Name = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyChannelID:
 			oldValue, newValue, err := stringValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			webhook.ChannelID = &audit.StringValues{Old: oldValue, New: newValue}
+			webhook.ChannelID = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyAvatarHash:
 			oldValue, newValue, err := stringValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			webhook.AvatarHash = &audit.StringValues{Old: oldValue, New: newValue}
+			webhook.AvatarHash = &StringValues{Old: oldValue, New: newValue}
 		}
 	}
 
 	return webhook, nil
 }
 
-func webhookDeleteFromEntry(e *entry) (*audit.WebhookDelete, error) {
-	webhook := &audit.WebhookDelete{
-		BaseEntry: audit.BaseEntry{
+func webhookDeleteFromEntry(e *rawEntry) (*WebhookDelete, error) {
+	webhook := &WebhookDelete{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,

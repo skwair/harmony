@@ -2,7 +2,7 @@ package audit
 
 import "github.com/skwair/harmony/permission"
 
-// EntryType defines the type of event an entry describes.
+// EntryType defines the type of event an audit log entry describes.
 type EntryType int
 
 const (
@@ -34,7 +34,7 @@ const (
 	EntryTypeMessageDelete          EntryType = 72
 )
 
-// GuildUpdate is the log entry that describes how a guild was updated.
+// GuildUpdate is the audit log entry that describes how a guild was updated.
 // It contains a list of settings that can be updated on a guild.
 // Settings that are not nil are those which were modified. They contain both
 // their old value as well as the new one.
@@ -61,7 +61,7 @@ type GuildUpdate struct {
 // EntryType implements the LogEntry interface.
 func (GuildUpdate) EntryType() EntryType { return EntryTypeGuildUpdate }
 
-// ChannelUpdate is the log entry that describes a Channel creation.
+// ChannelUpdate is the audit log entry that describes a channel creation.
 // It contains settings this Channel was created with.
 type ChannelCreate struct {
 	BaseEntry
@@ -76,8 +76,8 @@ type ChannelCreate struct {
 // EntryType implements the LogEntry interface.
 func (ChannelCreate) EntryType() EntryType { return EntryTypeChannelCreate }
 
-// ChannelUpdate is the log entry that describes how a Channel was updated.
-// It contains a list of settings that can be updated on a Channel.
+// ChannelUpdate is the audit log entry that describes how a channel was updated.
+// It contains a list of settings that can be updated on a channel.
 // Settings that are not nil are those which were modified. They contain both
 // their old value as well as the new one.
 type ChannelUpdate struct {
@@ -95,8 +95,8 @@ type ChannelUpdate struct {
 // EntryType implements the LogEntry interface.
 func (ChannelUpdate) EntryType() EntryType { return EntryTypeChannelUpdate }
 
-// ChannelUpdate is the log entry that describes a Channel deletion.
-// It contains settings this Channel had before being deleted.
+// ChannelUpdate is the audit log entry that describes a channel deletion.
+// It contains settings this channel had before being deleted.
 type ChannelDelete struct {
 	BaseEntry
 
@@ -110,7 +110,7 @@ type ChannelDelete struct {
 // EntryType implements the LogEntry interface.
 func (ChannelDelete) EntryType() EntryType { return EntryTypeChannelDelete }
 
-// ChannelOverwriteCreate is the log entry that describes a Channel PermissionOverwrite creation.
+// ChannelOverwriteCreate is the audit log entry that describes a channel permission overwrite creation.
 // It contains settings this overwrite was created with.
 type ChannelOverwriteCreate struct {
 	BaseEntry
@@ -126,8 +126,8 @@ type ChannelOverwriteCreate struct {
 // EntryType implements the LogEntry interface.
 func (ChannelOverwriteCreate) EntryType() EntryType { return EntryTypeChannelOverwriteCreate }
 
-// ChannelOverwriteCreate is the log entry that describes how a Channel PermissionOverwrite was updated.
-// It contains a list of settings that can be updated on a Channel PermissionOverwrite.
+// ChannelOverwriteCreate is the audit log entry that describes how a channel permission overwrite was updated.
+// It contains a list of settings that can be updated on a channel permission overwrite.
 // Settings that are not nil are those which were modified. They contain both
 // their old value as well as the new one.
 type ChannelOverwriteUpdate struct {
@@ -144,7 +144,7 @@ type ChannelOverwriteUpdate struct {
 // EntryType implements the LogEntry interface.
 func (ChannelOverwriteUpdate) EntryType() EntryType { return EntryTypeChannelOverwriteUpdate }
 
-// ChannelOverwriteDelete is the log entry that describes a Channel PermissionOverwrite deletion.
+// ChannelOverwriteDelete is the audit log entry that describes a channel permission overwrite deletion.
 // It contains settings this overwrite had before being deleted.
 type ChannelOverwriteDelete struct {
 	BaseEntry
@@ -160,7 +160,7 @@ type ChannelOverwriteDelete struct {
 // EntryType implements the LogEntry interface.
 func (ChannelOverwriteDelete) EntryType() EntryType { return EntryTypeChannelOverwriteDelete }
 
-// MemberKick is the log entry that describes a member kick.
+// MemberKick is the audit log entry that describes a guild member kick.
 type MemberKick struct {
 	BaseEntry
 }
@@ -168,7 +168,7 @@ type MemberKick struct {
 // EntryType implements the LogEntry interface.
 func (MemberKick) EntryType() EntryType { return EntryTypeMemberKick }
 
-// MemberKick is the log entry that describes a member prune.
+// MemberKick is the audit log entry that describes a guild member prune.
 type MemberPrune struct {
 	BaseEntry
 
@@ -179,7 +179,7 @@ type MemberPrune struct {
 // EntryType implements the LogEntry interface.
 func (MemberPrune) EntryType() EntryType { return EntryTypeMemberPrune }
 
-// MemberBanAdd is the log entry that describes a member ban creation.
+// MemberBanAdd is the audit log entry that describes a guild member ban creation.
 type MemberBanAdd struct {
 	BaseEntry
 }
@@ -187,7 +187,7 @@ type MemberBanAdd struct {
 // EntryType implements the LogEntry interface.
 func (MemberBanAdd) EntryType() EntryType { return EntryTypeMemberBanAdd }
 
-// MemberBanRemove is the log entry that describes a member ban deletion.
+// MemberBanRemove is the audit log entry that describes a guild member ban deletion.
 type MemberBanRemove struct {
 	BaseEntry
 }
@@ -195,7 +195,10 @@ type MemberBanRemove struct {
 // EntryType implements the LogEntry interface.
 func (MemberBanRemove) EntryType() EntryType { return EntryTypeMemberBanRemove }
 
-// MemberUpdate is the log entry that describes a member update.
+// MemberUpdate is the audit log entry that describes a guild member update.
+// It contains a list of settings that can be updated on a guild member.
+// Settings that are not nil are those which were modified. They contain both
+// their old value as well as the new one.
 type MemberUpdate struct {
 	BaseEntry
 
@@ -207,7 +210,7 @@ type MemberUpdate struct {
 // EntryType implements the LogEntry interface.
 func (MemberUpdate) EntryType() EntryType { return EntryTypeMemberUpdate }
 
-// MemberRoleUpdate is the log entry that describes a member's roles update.
+// MemberRoleUpdate is the audit log entry that describes a guild member's roles update.
 // It contains roles that were added as well as roles that were removed.
 type MemberRoleUpdate struct {
 	BaseEntry
@@ -219,7 +222,7 @@ type MemberRoleUpdate struct {
 // EntryType implements the LogEntry interface.
 func (MemberRoleUpdate) EntryType() EntryType { return EntryTypeMemberRoleUpdate }
 
-// RoleCreate is the log entry that describes a role creation.
+// RoleCreate is the audit log entry that describes a role creation.
 // It contains the settings the role was created with.
 type RoleCreate struct {
 	BaseEntry
@@ -234,8 +237,8 @@ type RoleCreate struct {
 // EntryType implements the LogEntry interface.
 func (RoleCreate) EntryType() EntryType { return EntryTypeRoleCreate }
 
-// RoleUpdate is the log entry that describes how a Role was updated.
-// It contains a list of settings that can be updated on a Role.
+// RoleUpdate is the audit log entry that describes how a role was updated.
+// It contains a list of settings that can be updated on a role.
 // Settings that are not nil are those which were modified. They contain both
 // their old value as well as the new one.
 type RoleUpdate struct {
@@ -251,7 +254,7 @@ type RoleUpdate struct {
 // EntryType implements the LogEntry interface.
 func (RoleUpdate) EntryType() EntryType { return EntryTypeRoleUpdate }
 
-// RoleDelete is the log entry that describes a role deletion.
+// RoleDelete is the audit log entry that describes a role deletion.
 // It contains settings this role had before being deleted.
 type RoleDelete struct {
 	BaseEntry
@@ -266,7 +269,7 @@ type RoleDelete struct {
 // EntryType implements the LogEntry interface.
 func (RoleDelete) EntryType() EntryType { return EntryTypeRoleDelete }
 
-// InviteCreate is the log entry that describes a channel invite creation.
+// InviteCreate is the audit log entry that describes a channel invite creation.
 // It contains the settings the invite was created with.
 type InviteCreate struct {
 	BaseEntry
@@ -283,7 +286,7 @@ type InviteCreate struct {
 // EntryType implements the LogEntry interface.
 func (InviteCreate) EntryType() EntryType { return EntryTypeInviteCreate }
 
-// InviteUpdate is the log entry that describes how a channel invite was updated.
+// InviteUpdate is the audit log entry that describes how a channel invite was updated.
 // It contains a list of settings that can be updated on an invite.
 // Settings that are not nil are those which were modified. They contain both
 // their old value as well as the new one.
@@ -302,7 +305,7 @@ type InviteUpdate struct {
 // EntryType implements the LogEntry interface.
 func (InviteUpdate) EntryType() EntryType { return EntryTypeInviteUpdate }
 
-// InviteDelete is the log entry that describes a channel invite deletion.
+// InviteDelete is the audit log entry that describes a channel invite deletion.
 // It contains settings this invite had before being deleted.
 type InviteDelete struct {
 	BaseEntry
@@ -319,7 +322,7 @@ type InviteDelete struct {
 // EntryType implements the LogEntry interface.
 func (InviteDelete) EntryType() EntryType { return EntryTypeInviteDelete }
 
-// InviteDelete is the log entry that describes a webhook creation.
+// InviteDelete is the audit log entry that describes a webhook creation.
 // It contains the settings the webhook was created with.
 type WebhookCreate struct {
 	BaseEntry
@@ -332,7 +335,7 @@ type WebhookCreate struct {
 // EntryType implements the LogEntry interface.
 func (WebhookCreate) EntryType() EntryType { return EntryTypeWebhookCreate }
 
-// WebhookUpdate is the log entry that describes how a webhook was updated.
+// WebhookUpdate is the audit log entry that describes how a webhook was updated.
 // It contains a list of settings that can be updated on a webhook.
 // Settings that are not nil are those which were modified. They contain both
 // their old value as well as the new one.
@@ -347,7 +350,7 @@ type WebhookUpdate struct {
 // EntryType implements the LogEntry interface.
 func (WebhookUpdate) EntryType() EntryType { return EntryTypeWebhookUpdate }
 
-// WebhookDelete is the log entry that describes a webhook deletion.
+// WebhookDelete is the audit log entry that describes a webhook deletion.
 // It contains settings this webhook had before being deleted.
 type WebhookDelete struct {
 	BaseEntry
@@ -360,7 +363,7 @@ type WebhookDelete struct {
 // EntryType implements the LogEntry interface.
 func (WebhookDelete) EntryType() EntryType { return EntryTypeWebhookDelete }
 
-// EmojiCreate is the log entry that describes an emoji creation.
+// EmojiCreate is the audit log entry that describes an emoji creation.
 // It contains the settings the emoji was created with.
 type EmojiCreate struct {
 	BaseEntry
@@ -371,7 +374,7 @@ type EmojiCreate struct {
 // EntryType implements the LogEntry interface.
 func (EmojiCreate) EntryType() EntryType { return EntryTypeEmojiCreate }
 
-// EmojiUpdate is the log entry that describes how an emoji was updated.
+// EmojiUpdate is the audit log entry that describes how an emoji was updated.
 // It contains a list of settings that can be updated on an emoji.
 // Settings that are not nil are those which were modified. They contain both
 // their old value as well as the new one.
@@ -384,7 +387,7 @@ type EmojiUpdate struct {
 // EntryType implements the LogEntry interface.
 func (EmojiUpdate) EntryType() EntryType { return EntryTypeEmojiUpdate }
 
-// EmojiCreate is the log entry that describes an emoji delete.
+// EmojiCreate is the audit log entry that describes an emoji delete.
 // It contains settings this emoji had before being deleted.
 type EmojiDelete struct {
 	BaseEntry
@@ -395,7 +398,7 @@ type EmojiDelete struct {
 // EntryType implements the LogEntry interface.
 func (EmojiDelete) EntryType() EntryType { return EntryTypeEmojiDelete }
 
-// EmojiCreate is the log entry that describes the deletion of messages.
+// EmojiCreate is the audit log entry that describes the deletion of messages.
 type MessageDelete struct {
 	BaseEntry
 

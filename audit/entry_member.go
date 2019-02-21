@@ -1,14 +1,12 @@
-package harmony
+package audit
 
 import (
 	"strconv"
-
-	"github.com/skwair/harmony/audit"
 )
 
-func memberKickFromEntry(e *entry) (*audit.MemberKick, error) {
-	kick := &audit.MemberKick{
-		BaseEntry: audit.BaseEntry{
+func memberKickFromEntry(e *rawEntry) (*MemberKick, error) {
+	kick := &MemberKick{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -19,9 +17,9 @@ func memberKickFromEntry(e *entry) (*audit.MemberKick, error) {
 	return kick, nil
 }
 
-func memberPruneFromEntry(e *entry) (*audit.MemberPrune, error) {
-	prune := &audit.MemberPrune{
-		BaseEntry: audit.BaseEntry{
+func memberPruneFromEntry(e *rawEntry) (*MemberPrune, error) {
+	prune := &MemberPrune{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -43,9 +41,9 @@ func memberPruneFromEntry(e *entry) (*audit.MemberPrune, error) {
 	return prune, nil
 }
 
-func memberBanAddFromEntry(e *entry) (*audit.MemberBanAdd, error) {
-	ban := &audit.MemberBanAdd{
-		BaseEntry: audit.BaseEntry{
+func memberBanAddFromEntry(e *rawEntry) (*MemberBanAdd, error) {
+	ban := &MemberBanAdd{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -56,9 +54,9 @@ func memberBanAddFromEntry(e *entry) (*audit.MemberBanAdd, error) {
 	return ban, nil
 }
 
-func memberBanRemoveFromEntry(e *entry) (*audit.MemberBanRemove, error) {
-	ban := &audit.MemberBanRemove{
-		BaseEntry: audit.BaseEntry{
+func memberBanRemoveFromEntry(e *rawEntry) (*MemberBanRemove, error) {
+	ban := &MemberBanRemove{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -69,9 +67,9 @@ func memberBanRemoveFromEntry(e *entry) (*audit.MemberBanRemove, error) {
 	return ban, nil
 }
 
-func memberUpdateFromEntry(e *entry) (*audit.MemberUpdate, error) {
-	member := &audit.MemberUpdate{
-		BaseEntry: audit.BaseEntry{
+func memberUpdateFromEntry(e *rawEntry) (*MemberUpdate, error) {
+	member := &MemberUpdate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,
@@ -86,30 +84,30 @@ func memberUpdateFromEntry(e *entry) (*audit.MemberUpdate, error) {
 			if err != nil {
 				return nil, err
 			}
-			member.Nick = &audit.StringValues{Old: oldValue, New: newValue}
+			member.Nick = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyDeaf:
 			oldValue, newValue, err := boolValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			member.Deaf = &audit.BoolValues{Old: oldValue, New: newValue}
+			member.Deaf = &BoolValues{Old: oldValue, New: newValue}
 
 		case changeKeyMute:
 			oldValue, newValue, err := boolValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			member.Mute = &audit.BoolValues{Old: oldValue, New: newValue}
+			member.Mute = &BoolValues{Old: oldValue, New: newValue}
 		}
 	}
 
 	return member, nil
 }
 
-func memberRoleUpdateFromEntry(e *entry) (*audit.MemberRoleUpdate, error) {
-	member := &audit.MemberRoleUpdate{
-		BaseEntry: audit.BaseEntry{
+func memberRoleUpdateFromEntry(e *rawEntry) (*MemberRoleUpdate, error) {
+	member := &MemberRoleUpdate{
+		BaseEntry: BaseEntry{
 			ID:       e.ID,
 			TargetID: e.TargetID,
 			UserID:   e.UserID,

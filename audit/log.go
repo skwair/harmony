@@ -6,16 +6,16 @@ type Log struct {
 	Entries []LogEntry
 }
 
-// LogEntry represents a single entry in the audit log.
+// LogEntry represents a single rawEntry in the audit log.
 // Entries are defined by the EntryType they describe.
 type LogEntry interface {
 	EntryType() EntryType
 }
 
-// BaseEntry contains the shared part of every log entries.
+// BaseEntry contains the shared fields of every log entries.
 type BaseEntry struct {
-	ID       string // ID of the LogEntry.
-	UserID   string // ID of the User that did the action.
-	TargetID string // ID of the entity modified by this action.
-	Reason   string // Reason why this entity was modified.
+	ID       string // ID of the rawEntry.
+	UserID   string // ID of the User that performed the action logged by the rawEntry.
+	TargetID string // ID of the entity affected by this action.
+	Reason   string // Reason why this action was performed.
 }
