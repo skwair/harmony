@@ -366,3 +366,14 @@ type EmojiDelete struct {
 
 // EntryType implements the LogEntry interface.
 func (EmojiDelete) EntryType() EntryType { return EntryTypeEmojiDelete }
+
+// EmojiCreate is the log entry that describes the deletion of messages.
+type MessageDelete struct {
+	BaseEntry
+
+	ChannelID string
+	Count     int
+}
+
+// EntryType implements the LogEntry interface.
+func (MessageDelete) EntryType() EntryType { return EntryTypeMessageDelete }

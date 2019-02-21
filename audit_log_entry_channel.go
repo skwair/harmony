@@ -1,6 +1,8 @@
 package harmony
 
 import (
+	"strconv"
+
 	"github.com/skwair/harmony/audit"
 )
 
@@ -278,4 +280,24 @@ func channelOverwriteDeleteFromEntry(e *entry) (*audit.ChannelOverwriteDelete, e
 	}
 
 	return overwrite, nil
+}
+
+func messageDeleteFromEntry(e *entry) (*audit.MessageDelete, error) {
+	message := &audit.MessageDelete{
+		BaseEntry: audit.BaseEntry{
+			ID:       e.ID,
+			TargetID: e.TargetID,
+			UserID:   e.UserID,
+			Reason:   e.Reason,
+		},
+		ChannelID: e.Options.ChannelID,
+	}
+
+	var err error
+	message.Count, err = strconv.Atoi(e.Options.Count)
+	if err != nil {
+		return nil, err
+	}
+
+	return message, nil
 }

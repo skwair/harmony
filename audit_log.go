@@ -173,6 +173,9 @@ func extractAuditLog(log *auditLog) (*audit.Log, error) {
 
 		case audit.EntryTypeEmojiDelete:
 			entry, err = emojiDeleteFromEntry(&e)
+
+		case audit.EntryTypeMessageDelete:
+			entry, err = messageDeleteFromEntry(&e)
 		}
 
 		if err != nil {
