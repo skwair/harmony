@@ -35,29 +35,29 @@ func main() {
 	// Create a harmony client with a bot token.
 	// NewClient automatically prepends your bot token with "Bot ",
 	// which is a requirement by Discord for bot users.
-	c, err := harmony.NewClient(token)
+	client, err := harmony.NewClient(token)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
+		fmt.Fprint(os.Stderr, err)
 		return
 	}
 
-	b := &bot{client: c}
+	b := &bot{client: client}
 
 	// Register a callback for MESSAGE_CREATE events.
 	// Note that we won't receive events before the client
 	// is actually connected to the Gateway.
-	c.OnMessageCreate(b.onNewMessage)
+	client.OnMessageCreate(b.onNewMessage)
 
 	// Connect to the Gateway. From now on, our registered
 	// handler for MESSAGE_CREATE will be called when there
 	// are new messages.
 	// This connection is designed to be long lived and to survive
 	// network failures, attempting to reconnect whenever a problem occurs.
-	if err = c.Connect(context.Background()); err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
+	if err = client.Connect(context.Background()); err != nil {
+		fmt.Fprint(os.Stderr, err)
 		return
 	}
-	defer c.Disconnect()
+	defer client.Disconnect()
 
 	log.Println("Bot is running, press ctrl+C to exit.")
 
