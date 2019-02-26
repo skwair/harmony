@@ -34,6 +34,15 @@ type rawEntry struct {
 	} `json:"options"`
 }
 
+func baseEntryFromRaw(e *rawEntry) BaseEntry {
+	return BaseEntry{
+		ID:       e.ID,
+		TargetID: e.TargetID,
+		UserID:   e.UserID,
+		Reason:   e.Reason,
+	}
+}
+
 // ParseRaw parses a raw, JSON-encoded audit log returned by Discord's API
 // into a typed and structured Log.
 // It is not intended to be used by end user and is only exposed so

@@ -5,76 +5,51 @@ import (
 )
 
 func memberKickFromEntry(e *rawEntry) (*MemberKick, error) {
-	kick := &MemberKick{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
+	memberKick := &MemberKick{
+		BaseEntry: baseEntryFromRaw(e),
 	}
 
-	return kick, nil
+	return memberKick, nil
 }
 
 func memberPruneFromEntry(e *rawEntry) (*MemberPrune, error) {
-	prune := &MemberPrune{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
+	memberPrune := &MemberPrune{
+		BaseEntry: baseEntryFromRaw(e),
 	}
 
 	var err error
-	prune.DeleteMemberDays, err = strconv.Atoi(e.Options.DeleteMemberDays)
+	memberPrune.DeleteMemberDays, err = strconv.Atoi(e.Options.DeleteMemberDays)
 	if err != nil {
 		return nil, err
 	}
 
-	prune.MembersRemoved, err = strconv.Atoi(e.Options.MembersRemoved)
+	memberPrune.MembersRemoved, err = strconv.Atoi(e.Options.MembersRemoved)
 	if err != nil {
 		return nil, err
 	}
 
-	return prune, nil
+	return memberPrune, nil
 }
 
 func memberBanAddFromEntry(e *rawEntry) (*MemberBanAdd, error) {
-	ban := &MemberBanAdd{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
+	banAdd := &MemberBanAdd{
+		BaseEntry: baseEntryFromRaw(e),
 	}
 
-	return ban, nil
+	return banAdd, nil
 }
 
 func memberBanRemoveFromEntry(e *rawEntry) (*MemberBanRemove, error) {
-	ban := &MemberBanRemove{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
+	banRemove := &MemberBanRemove{
+		BaseEntry: baseEntryFromRaw(e),
 	}
 
-	return ban, nil
+	return banRemove, nil
 }
 
 func memberUpdateFromEntry(e *rawEntry) (*MemberUpdate, error) {
-	member := &MemberUpdate{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
+	memberUpdate := &MemberUpdate{
+		BaseEntry: baseEntryFromRaw(e),
 	}
 
 	for _, ch := range e.Changes {
@@ -84,53 +59,48 @@ func memberUpdateFromEntry(e *rawEntry) (*MemberUpdate, error) {
 			if err != nil {
 				return nil, err
 			}
-			member.Nick = &StringValues{Old: oldValue, New: newValue}
+			memberUpdate.Nick = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyDeaf:
 			oldValue, newValue, err := boolValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			member.Deaf = &BoolValues{Old: oldValue, New: newValue}
+			memberUpdate.Deaf = &BoolValues{Old: oldValue, New: newValue}
 
 		case changeKeyMute:
 			oldValue, newValue, err := boolValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			member.Mute = &BoolValues{Old: oldValue, New: newValue}
+			memberUpdate.Mute = &BoolValues{Old: oldValue, New: newValue}
 		}
 	}
 
-	return member, nil
+	return memberUpdate, nil
 }
 
 func memberRoleUpdateFromEntry(e *rawEntry) (*MemberRoleUpdate, error) {
-	member := &MemberRoleUpdate{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
+	roleUpdate := &MemberRoleUpdate{
+		BaseEntry: baseEntryFromRaw(e),
 	}
 
 	var err error
 	for _, ch := range e.Changes {
 		switch changeKey(ch.Key) {
 		case changeKeyAddRole:
-			member.Added, err = permissionOverwritesValue(ch.New)
+			roleUpdate.Added, err = permissionOverwritesValue(ch.New)
 			if err != nil {
 				return nil, err
 			}
 
 		case changeKeyRemoveRole:
-			member.Removed, err = permissionOverwritesValue(ch.New)
+			roleUpdate.Removed, err = permissionOverwritesValue(ch.New)
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
 
-	return member, nil
+	return roleUpdate, nil
 }

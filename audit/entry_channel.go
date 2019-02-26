@@ -6,12 +6,7 @@ import (
 
 func channelCreateFromEntry(e *rawEntry) (*ChannelCreate, error) {
 	chCreate := &ChannelCreate{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
+		BaseEntry: baseEntryFromRaw(e),
 	}
 
 	var err error
@@ -54,12 +49,7 @@ func channelCreateFromEntry(e *rawEntry) (*ChannelCreate, error) {
 
 func channelUpdateFromEntry(e *rawEntry) (*ChannelUpdate, error) {
 	chUpdate := &ChannelUpdate{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
+		BaseEntry: baseEntryFromRaw(e),
 	}
 
 	for _, ch := range e.Changes {
@@ -120,12 +110,7 @@ func channelUpdateFromEntry(e *rawEntry) (*ChannelUpdate, error) {
 
 func channelDeleteFromEntry(e *rawEntry) (*ChannelDelete, error) {
 	chDelete := &ChannelDelete{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
+		BaseEntry: baseEntryFromRaw(e),
 	}
 
 	var err error
@@ -167,59 +152,49 @@ func channelDeleteFromEntry(e *rawEntry) (*ChannelDelete, error) {
 }
 
 func channelOverwriteCreateFromEntry(e *rawEntry) (*ChannelOverwriteCreate, error) {
-	overwrite := &ChannelOverwriteCreate{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
-		RoleName: e.Options.RoleName,
+	overwriteCreate := &ChannelOverwriteCreate{
+		BaseEntry: baseEntryFromRaw(e),
+		RoleName:  e.Options.RoleName,
 	}
 
 	var err error
 	for _, ch := range e.Changes {
 		switch changeKey(ch.Key) {
 		case changeKeyID:
-			overwrite.ID, err = stringValue(ch.New)
+			overwriteCreate.ID, err = stringValue(ch.New)
 			if err != nil {
 				return nil, err
 			}
 
 		case changeKeyType:
-			overwrite.Type, err = stringValue(ch.New)
+			overwriteCreate.Type, err = stringValue(ch.New)
 			if err != nil {
 				return nil, err
 			}
 
 		case changeKeyAllow:
-			overwrite.Allow, err = intValue(ch.New)
+			overwriteCreate.Allow, err = intValue(ch.New)
 			if err != nil {
 				return nil, err
 			}
 
 		case changeKeyDeny:
-			overwrite.Deny, err = intValue(ch.New)
+			overwriteCreate.Deny, err = intValue(ch.New)
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
 
-	return overwrite, nil
+	return overwriteCreate, nil
 }
 
 func channelOverwriteUpdateFromEntry(e *rawEntry) (*ChannelOverwriteUpdate, error) {
-	overwrite := &ChannelOverwriteUpdate{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
-		Type:     e.Options.Type,
-		ID:       e.Options.ID,
-		RoleName: e.Options.RoleName,
+	overwriteUpdate := &ChannelOverwriteUpdate{
+		BaseEntry: baseEntryFromRaw(e),
+		Type:      e.Options.Type,
+		ID:        e.Options.ID,
+		RoleName:  e.Options.RoleName,
 	}
 
 	for _, ch := range e.Changes {
@@ -229,79 +204,69 @@ func channelOverwriteUpdateFromEntry(e *rawEntry) (*ChannelOverwriteUpdate, erro
 			if err != nil {
 				return nil, err
 			}
-			overwrite.Allow = &IntValues{Old: oldValue, New: newValue}
+			overwriteUpdate.Allow = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyDeny:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
 				return nil, err
 			}
-			overwrite.Deny = &IntValues{Old: oldValue, New: newValue}
+			overwriteUpdate.Deny = &IntValues{Old: oldValue, New: newValue}
 		}
 	}
 
-	return overwrite, nil
+	return overwriteUpdate, nil
 }
 
 func channelOverwriteDeleteFromEntry(e *rawEntry) (*ChannelOverwriteDelete, error) {
-	overwrite := &ChannelOverwriteDelete{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
-		RoleName: e.Options.RoleName,
+	overwriteDelete := &ChannelOverwriteDelete{
+		BaseEntry: baseEntryFromRaw(e),
+		RoleName:  e.Options.RoleName,
 	}
 
 	var err error
 	for _, ch := range e.Changes {
 		switch changeKey(ch.Key) {
 		case changeKeyID:
-			overwrite.ID, err = stringValue(ch.Old)
+			overwriteDelete.ID, err = stringValue(ch.Old)
 			if err != nil {
 				return nil, err
 			}
 
 		case changeKeyType:
-			overwrite.Type, err = stringValue(ch.Old)
+			overwriteDelete.Type, err = stringValue(ch.Old)
 			if err != nil {
 				return nil, err
 			}
 
 		case changeKeyAllow:
-			overwrite.Allow, err = intValue(ch.Old)
+			overwriteDelete.Allow, err = intValue(ch.Old)
 			if err != nil {
 				return nil, err
 			}
 
 		case changeKeyDeny:
-			overwrite.Deny, err = intValue(ch.Old)
+			overwriteDelete.Deny, err = intValue(ch.Old)
 			if err != nil {
 				return nil, err
 			}
 		}
 	}
 
-	return overwrite, nil
+	return overwriteDelete, nil
 }
 
 func messageDeleteFromEntry(e *rawEntry) (*MessageDelete, error) {
-	message := &MessageDelete{
-		BaseEntry: BaseEntry{
-			ID:       e.ID,
-			TargetID: e.TargetID,
-			UserID:   e.UserID,
-			Reason:   e.Reason,
-		},
+	msgDelete := &MessageDelete{
+		BaseEntry: baseEntryFromRaw(e),
 		ChannelID: e.Options.ChannelID,
 	}
 
 	var err error
-	message.Count, err = strconv.Atoi(e.Options.Count)
+	msgDelete.Count, err = strconv.Atoi(e.Options.Count)
 	if err != nil {
 		return nil, err
 	}
 
-	return message, nil
+	return msgDelete, nil
 }
