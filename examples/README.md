@@ -1,7 +1,9 @@
 # Examples
 
 - 01.pingpong: shows how to create a simple bot that replies with `pong` whenever someone sends a `ping` message.
-- 02.embed: demonstrates how to create a bot that replies with some rich embedded content when someone type the `!embed` command.
+- 02.embed: demonstrates how to create a bot that replies with some rich embedded content when someone types the `!embed` command.
+- 03.files: shows how to send files when someone sends the `!file` command.
+- 04.auditlog: shows how to interact with the audit log of a guild.
 
 # Creating a Discord bot
 

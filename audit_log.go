@@ -11,16 +11,6 @@ import (
 	"github.com/skwair/harmony/internal/endpoint"
 )
 
-func reasonHeader(r string) http.Header {
-	h := http.Header{}
-
-	if r != "" {
-		h.Set("X-Audit-Log-Reason", r)
-	}
-
-	return h
-}
-
 type auditLogQuery struct {
 	userID    string
 	entryType audit.EntryType
@@ -103,4 +93,14 @@ func (c *Client) AuditLog(ctx context.Context, guildID string, opts ...AuditLogO
 	}
 
 	return audit.ParseRaw(b)
+}
+
+func reasonHeader(r string) http.Header {
+	h := http.Header{}
+
+	if r != "" {
+		h.Set("X-Audit-Log-Reason", r)
+	}
+
+	return h
 }
