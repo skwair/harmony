@@ -7,6 +7,7 @@ type rawAuditLog struct {
 	Entries []rawEntry `json:"audit_log_entries"`
 }
 
+// rawEntry represents a single audit log entry, as returned by Discord's API.
 type rawEntry struct {
 	ID         string `json:"id"`
 	ActionType int    `json:"action_type"`

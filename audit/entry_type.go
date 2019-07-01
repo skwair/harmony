@@ -5,6 +5,8 @@ import "github.com/skwair/harmony/permission"
 // EntryType defines the type of event an audit log entry describes.
 type EntryType int
 
+// Possible entry type values, as defined here:
+// https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object-audit-log-events
 const (
 	EntryTypeGuildUpdate            EntryType = 1
 	EntryTypeChannelCreate          EntryType = 10

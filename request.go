@@ -18,17 +18,17 @@ type requestPayload struct {
 }
 
 // jsonPayload creates a new requestPayload from some raw JSON data.
-func jsonPayload(p json.RawMessage) *requestPayload {
+func jsonPayload(body json.RawMessage) *requestPayload {
 	return &requestPayload{
-		body:        p,
+		body:        body,
 		contentType: "application/json",
 	}
 }
 
 // customPayload creates a new custom payload from raw bytes and a given content type.
-func customPayload(p []byte, contentType string) *requestPayload {
+func customPayload(body []byte, contentType string) *requestPayload {
 	return &requestPayload{
-		body:        p,
+		body:        body,
 		contentType: contentType,
 	}
 }
@@ -40,9 +40,9 @@ func (c *Client) doReq(ctx context.Context, e *endpoint.Endpoint, p *requestPayl
 }
 
 // doReqWithHeader sends an HTTP request and returns the response given an endpoint
-// an optional body and some headers. It adds the required Authorization header,
-// Content-Type based on the given request payload and also sets the User-Agent.
-// It takes care of rate limiting, using the client's built in rate limiter.
+// an optional payload and some headers. It adds the required Authorization header,
+// Content-Type based on the given payload and also sets the User-Agent.
+// It also takes care of rate limiting, using the client's built in rate limiter.
 func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *requestPayload, h http.Header) (*http.Response, error) {
 	var (
 		err error
@@ -50,7 +50,6 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *r
 	)
 	if p != nil && p.body != nil {
 		req, err = http.NewRequest(e.Method, c.baseURL+e.URL, bytes.NewReader(p.body))
-
 	} else {
 		req, err = http.NewRequest(e.Method, c.baseURL+e.URL, nil)
 	}
@@ -60,13 +59,15 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *r
 
 	req = req.WithContext(ctx)
 
-	// Merge h into req.Header.
+	// Add custom headers provided. This has to be done
+	// before adding other mandatory headers to make
+	// sure they are not overridden.
 	for k, vs := range h {
 		for _, v := range vs {
 			req.Header.Add(k, v)
 		}
 	}
-	// Add the Content-Type header accordingly to the body, if any.
+	// Add the Content-Type header accordingly to the payload's body, if any.
 	if p != nil && p.body != nil {
 		req.Header.Set("Content-Type", p.contentType)
 	}
@@ -88,6 +89,8 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *r
 	// We are being rate limited, rate limiter has been updated
 	// and will wait before sending future requests, but we must
 	// try and resend this one since it was rejected.
+	// NOTE: this should never happen since we now wait
+	// before sending requests.
 	if resp.StatusCode == http.StatusTooManyRequests {
 		return c.doReqWithHeader(ctx, e, p, h)
 	}
@@ -118,7 +121,6 @@ func doReqNoAuthWithHeader(ctx context.Context, e *endpoint.Endpoint, p *request
 	)
 	if p != nil && p.body != nil {
 		req, err = http.NewRequest(e.Method, defaultBaseURL+e.URL, bytes.NewReader(p.body))
-
 	} else {
 		req, err = http.NewRequest(e.Method, defaultBaseURL+e.URL, nil)
 	}

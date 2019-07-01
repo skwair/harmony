@@ -271,7 +271,8 @@ func (r *GuildResource) ModifyChannelPosition(ctx context.Context, pos []Channel
 	return nil
 }
 
-// ChangeNick modifies the nickname of the current user in the guild.
+// ChangeNick modifies the nickname of the current user (i.e.: the bot)
+// for this guild.
 // It returns the nickname on success. Requires the 'CHANGE_NICKNAME'
 // permission. Fires a Guild Member Update Gateway event.
 func (r *GuildResource) ChangeNick(ctx context.Context, name string) (string, error) {
@@ -296,9 +297,6 @@ func (r *GuildResource) ChangeNick(ctx context.Context, name string) (string, er
 		return "", apiError(resp)
 	}
 
-	if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
-		return "", err
-	}
 	return st.Nick, nil
 }
 
