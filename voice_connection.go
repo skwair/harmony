@@ -73,6 +73,8 @@ type VoiceConnection struct {
 	// be sent through this channel.
 	payloads chan *payload
 
+	// wg keeps track of all goroutines that are
+	// started when connecting to a voice channel.
 	wg sync.WaitGroup
 	// The first fatal error encountered will be reported to this channel.
 	error chan error
@@ -84,6 +86,11 @@ type VoiceConnection struct {
 	// Accessed atomically, sequence number of the last
 	// UDP heartbeat we sent.
 	udpHeartbeatSequence uint64
+
+	// opusReadinessWG is a wait group used to make sure
+	// the Opus sender and receiver are correctly started
+	// before assuming we are connected to the voice channel.
+	opusReadinessWG sync.WaitGroup
 
 	errorHandler func(error)
 }
@@ -203,6 +210,8 @@ func (c *Client) ConnectToVoice(guildID, channelID string, opts ...VoiceConnecti
 	}
 	return &vc, nil
 }
+
+var silenceFrame = []byte{0xf8, 0xff, 0xfe}
 
 func (vc *VoiceConnection) connect() error {
 	// This is used to notify the already started event handler that
@@ -351,10 +360,34 @@ func (vc *VoiceConnection) connect() error {
 	copy(vc.secret[:], sd.SecretKey[0:32])
 
 	vc.wg.Add(3) // opusReceiver starts an additional goroutine.
+	vc.opusReadinessWG.Add(2)
 	go vc.opusReceiver()
 	go vc.opusSender()
 
+	// Making sure Opus receiver and sender are started.
+	vc.opusReadinessWG.Wait()
+
+	if err = vc.sendSilenceFrame(); err != nil {
+		return err
+	}
+
 	atomic.StoreInt32(&vc.connected, 1)
+	return nil
+}
+
+// Must send some audio packets so the voice server starts to send us audio packets.
+// This appears to be a bug from Discord.
+func (vc *VoiceConnection) sendSilenceFrame() error {
+	if err := vc.Speaking(true, 0); err != nil {
+		return err
+	}
+
+	vc.Send <- silenceFrame
+
+	if err := vc.Speaking(false, 0); err != nil {
+		return err
+	}
+
 	return nil
 }
 

@@ -30,6 +30,7 @@ type rtpFrame struct {
 // opusReceiver receives and decrypt audio packets, forwarding them to vc.Recv.
 // The Opus encoded audio is not decoded.
 func (vc *VoiceConnection) opusReceiver() {
+	vc.opusReadinessWG.Done()
 	defer vc.wg.Done()
 
 	rtpFrames := make(chan *rtpFrame)
@@ -115,6 +116,7 @@ func (vc *VoiceConnection) readUDP(ch chan<- *rtpFrame) {
 // opusSender creates, encrypts and sends Opus encoded packets sent through the voice
 // connection's Send channel.
 func (vc *VoiceConnection) opusSender() {
+	vc.opusReadinessWG.Done()
 	defer vc.wg.Done()
 
 	const (
