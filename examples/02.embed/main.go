@@ -26,21 +26,21 @@ func main() {
 		return
 	}
 
-	c, err := harmony.NewClient(token)
+	client, err := harmony.NewClient(token)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
+		fmt.Fprint(os.Stderr, err)
 		return
 	}
 
-	b := &bot{client: c}
+	b := &bot{client: client}
 
-	c.OnMessageCreate(b.onNewMessage)
+	client.OnMessageCreate(b.onNewMessage)
 
-	if err = c.Connect(context.Background()); err != nil {
-		fmt.Fprintf(os.Stderr, "%v", err)
+	if err = client.Connect(context.Background()); err != nil {
+		fmt.Fprint(os.Stderr, err)
 		return
 	}
-	defer c.Disconnect()
+	defer client.Disconnect()
 
 	log.Println("Bot is running, press ctrl+C to exit.")
 
