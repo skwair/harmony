@@ -11,11 +11,13 @@ func (c *Client) registerHandler(event string, h handler) {
 	defer c.mu.Unlock()
 
 	if h == nil {
-		panic("harmony: nil handler")
+		panic("harmony: trying to register a nil event handler")
 	}
 	c.handlersMu.Lock()
 	c.handlers[event] = h
 	c.handlersMu.Unlock()
+
+	c.logger.Debugf("registered handler for %s events", event)
 }
 
 type readyHandler func(*Ready)

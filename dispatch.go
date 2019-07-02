@@ -2,7 +2,6 @@ package harmony
 
 import (
 	"encoding/json"
-	"fmt"
 	"sync/atomic"
 )
 
@@ -331,7 +330,8 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		c.handle(eventWebhooksUpdate, &wu)
 
 	default:
-		fmt.Println("NOT HANDLED:", typ, string(data))
+		c.logger.Infof("unrecognized event %s: %s", typ, string(data))
+		return nil
 	}
 	return err
 }

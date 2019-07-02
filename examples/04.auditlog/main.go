@@ -12,7 +12,7 @@ import (
 func main() {
 	token := os.Getenv("BOT_TOKEN")
 	if token == "" {
-		fmt.Fprint(os.Stderr, "Environment variable BOT_TOKEN must be set.")
+		fmt.Fprintln(os.Stderr, "Environment variable BOT_TOKEN must be set.")
 		return
 	}
 
@@ -20,19 +20,19 @@ func main() {
 	// Requires the bot to have the 'VIEW_AUDIT_LOG' permission.
 	guildID := os.Getenv("GUILD_ID")
 	if guildID == "" {
-		fmt.Fprint(os.Stderr, "Environment variable GUILD_ID must be set.")
+		fmt.Fprintln(os.Stderr, "Environment variable GUILD_ID must be set.")
 		return
 	}
 
 	client, err := harmony.NewClient(token)
 	if err != nil {
-		fmt.Fprint(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
 	log, err := client.AuditLog(context.Background(), guildID, harmony.WithLimit(25))
 	if err != nil {
-		fmt.Fprint(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 

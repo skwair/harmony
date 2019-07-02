@@ -3,6 +3,8 @@ package harmony
 import (
 	"net/http"
 	"time"
+
+	"github.com/skwair/harmony/log"
 )
 
 // ClientOption is a function that configures a Client.
@@ -33,16 +35,6 @@ func WithHTTPClient(client *http.Client) ClientOption {
 func WithBaseURL(url string) ClientOption {
 	return func(c *Client) {
 		c.baseURL = url
-	}
-}
-
-// WithErrorHandler allows you to specify a custom error handler function
-// that will be called whenever an error occurs while the connection
-// to the Gateway is up.
-// Defaults to DefaultErrorHandler.
-func WithErrorHandler(h func(error)) ClientOption {
-	return func(c *Client) {
-		c.errorHandler = h
 	}
 }
 
@@ -91,5 +83,12 @@ func WithBackoffStrategy(baseDelay, maxDelay time.Duration, factor, jitter float
 		c.backoff.maxDelay = maxDelay
 		c.backoff.factor = factor
 		c.backoff.jitter = jitter
+	}
+}
+
+// WithLogger can be used to set the logger used by Harmony.
+func WithLogger(l log.Logger) ClientOption {
+	return func(c *Client) {
+		c.logger = l
 	}
 }

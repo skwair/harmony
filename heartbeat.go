@@ -15,6 +15,9 @@ var (
 
 // heartbeat periodically sends a heartbeat payload to the Gateway.
 func (c *Client) heartbeat(every time.Duration) {
+	c.logger.Debug("starting gateway heartbeater")
+	defer c.logger.Debug("stopped gateway heartbeater")
+
 	heartbeat(&c.wg, c.stop, c.error, every, c.sendHeartbeatPayload, &c.lastHeartbeatACK)
 }
 
@@ -31,6 +34,9 @@ func (c *Client) sendHeartbeatPayload() error {
 
 // heartbeat periodically sends a heartbeat payload to the voice server.
 func (vc *VoiceConnection) heartbeat(every time.Duration) {
+	vc.client.logger.Debug("starting voice connection heartbeater")
+	defer vc.client.logger.Debug("stopped voice connection heartbeater")
+
 	heartbeat(&vc.wg, vc.stop, vc.error, every, vc.sendHeartbeatPayload, &vc.lastHeartbeatACK)
 }
 
@@ -92,6 +98,9 @@ func heartbeat(
 // will report any error that occurs with the errCh channel.
 func (vc *VoiceConnection) udpHeartbeat(every time.Duration) {
 	defer vc.wg.Done()
+
+	vc.client.logger.Debug("starting UDP heartbeater")
+	defer vc.client.logger.Debug("stopped UDP heartbeater")
 
 	ticker := time.NewTicker(every)
 	defer ticker.Stop()

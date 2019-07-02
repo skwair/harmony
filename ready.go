@@ -35,6 +35,7 @@ func (c *Client) ready() error {
 	c.userID = rdy.User.ID
 
 	if c.withStateTracking {
+		c.logger.Debug("initializing state tracker")
 		c.State.setInitialState(&rdy)
 	}
 
