@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"compress/zlib"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -25,6 +27,29 @@ type payload struct {
 	T string `json:"t,omitempty"`
 }
 
+// String implements fmt.Stringer.
+func (p *payload) String() string {
+	var s strings.Builder
+
+	s.WriteString(fmt.Sprintf("{code: %d", p.Op))
+
+	if p.S != 0 {
+		s.WriteString(fmt.Sprintf(", sequence: %d", p.S))
+	}
+
+	if p.T != "" {
+		s.WriteString(fmt.Sprintf(", type: %s", p.T))
+	}
+
+	if len(p.D) > 0 && !bytes.Equal(p.D, []byte("null")) {
+		s.WriteString(fmt.Sprintf(", data: %s", string(p.D)))
+	}
+
+	s.WriteRune('}')
+
+	return s.String()
+}
+
 // sendPayload sends a single Payload to the Gateway with
 // the given op and data.
 func (c *Client) sendPayload(op int, d interface{}) error {
@@ -32,12 +57,21 @@ func (c *Client) sendPayload(op int, d interface{}) error {
 	if err != nil {
 		return err
 	}
-	return sendPayload(&c.connWMu, c.conn, &payload{Op: op, D: b})
+	p := &payload{Op: op, D: b}
+	c.logger.Debugf("sent payload: %s", p)
+	return sendPayload(&c.connWMu, c.conn, p)
 }
 
 // recvPayload receives a single Payload from the Gateway.
 func (c *Client) recvPayload() (*payload, error) {
-	return recvPayload(&c.connRMu, c.conn)
+	p, err := recvPayload(&c.connRMu, c.conn)
+	if err != nil {
+		return nil, err
+	}
+
+	c.logger.Debugf("received payload: %s", p)
+
+	return p, nil
 }
 
 // sendPayload sends a single Payload to the Voice server with

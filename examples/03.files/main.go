@@ -20,13 +20,13 @@ type bot struct {
 func main() {
 	token := os.Getenv("BOT_TOKEN")
 	if token == "" {
-		fmt.Fprint(os.Stderr, "Environment variable BOT_TOKEN must be set.")
+		fmt.Fprintln(os.Stderr, "Environment variable BOT_TOKEN must be set.")
 		return
 	}
 
 	client, err := harmony.NewClient(token)
 	if err != nil {
-		fmt.Fprint(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
@@ -35,7 +35,7 @@ func main() {
 	client.OnMessageCreate(b.onNewMessage)
 
 	if err = client.Connect(context.Background()); err != nil {
-		fmt.Fprint(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 	defer client.Disconnect()

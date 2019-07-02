@@ -6,11 +6,17 @@ import (
 
 // listen listens for payloads sent by the Discord Gateway.
 func (c *Client) listen() {
+	c.logger.Debug("starting gateway event listener")
+	defer c.logger.Debug("stopped gateway event listener")
+
 	listen(&c.wg, c.stop, c.error, c.recvPayloads, c.handleEvent)
 }
 
 // listen listens for payloads sent by the voice server.
 func (vc *VoiceConnection) listen() {
+	vc.client.logger.Debug("starting voice connection event listener")
+	defer vc.client.logger.Debug("stopped voice connection event listener")
+
 	listen(&vc.wg, vc.stop, vc.error, vc.recvPayloads, vc.handleEvent)
 }
 

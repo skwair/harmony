@@ -28,7 +28,7 @@ func main() {
 		// Not using log.Fatal() or anything that calls os.Exit()
 		// because defers are not run, thus we won't disconnect
 		// properly from the Gateway.
-		fmt.Fprint(os.Stderr, "Environment variable BOT_TOKEN must be set.")
+		fmt.Fprintln(os.Stderr, "Environment variable BOT_TOKEN must be set.")
 		return
 	}
 
@@ -37,7 +37,7 @@ func main() {
 	// which is a requirement by Discord for bot users.
 	client, err := harmony.NewClient(token)
 	if err != nil {
-		fmt.Fprint(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
@@ -54,7 +54,7 @@ func main() {
 	// This connection is designed to be long lived and to survive
 	// network failures, attempting to reconnect whenever a problem occurs.
 	if err = client.Connect(context.Background()); err != nil {
-		fmt.Fprint(os.Stderr, err)
+		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 	defer client.Disconnect()

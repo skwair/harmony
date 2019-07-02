@@ -1,7 +1,6 @@
 package harmony
 
 import (
-	"log"
 	"net/http"
 	"sync"
 	"time"
@@ -9,6 +8,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/skwair/harmony/internal/rate"
+	"github.com/skwair/harmony/log"
 )
 
 const (
@@ -17,9 +17,6 @@ const (
 )
 
 var (
-	// DefaultErrorHandler is the default handle that is called when an error occurs when connected to the Gateway.
-	DefaultErrorHandler = func(err error) { log.Println("gateway client error:", err) }
-
 	// defaultBackoff is the backoff strategy used by default when trying to reconnect to the Gateway.
 	defaultBackoff = backoff{
 		baseDelay: 1 * time.Second,
@@ -92,9 +89,8 @@ type Client struct {
 	error chan error
 	stop  chan struct{}
 
-	handlersMu   sync.RWMutex
-	handlers     map[string]handler
-	errorHandler func(error)
+	handlersMu sync.RWMutex
+	handlers   map[string]handler
 
 	limiter *rate.Limiter
 
@@ -107,6 +103,8 @@ type Client struct {
 	// are received from the Discord Gateway.
 	withStateTracking bool
 	State             *State
+
+	logger log.Logger
 }
 
 // NewClient creates a new client to work with Discord's API.
@@ -121,11 +119,11 @@ func NewClient(token string, opts ...ClientOption) (*Client, error) {
 		baseURL:           defaultBaseURL,
 		client:            http.DefaultClient,
 		largeThreshold:    defaultLargeThreshold,
-		errorHandler:      DefaultErrorHandler,
 		handlers:          make(map[string]handler),
 		limiter:           rate.NewLimiter(),
 		backoff:           defaultBackoff,
 		withStateTracking: true,
+		logger:            log.NewStd(log.LevelError),
 	}
 
 	for _, opt := range opts {

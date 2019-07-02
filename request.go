@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httputil"
 	"time"
 
 	"github.com/skwair/harmony/internal/endpoint"
@@ -79,10 +80,18 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *r
 
 	c.limiter.Wait(e.Key)
 
+	b, _ := httputil.DumpRequestOut(req, true)
+	c.logger.Debug("--> ", string(b))
+
+	before := time.Now()
+
 	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, err
 	}
+
+	b, _ = httputil.DumpResponse(resp, true)
+	c.logger.Debug("<-- ", time.Since(before), "\n", string(b))
 
 	c.limiter.Update(e.Key, resp.Header)
 

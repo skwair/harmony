@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net"
 	"strings"
 	"sync"
@@ -91,26 +90,11 @@ type VoiceConnection struct {
 	// the Opus sender and receiver are correctly started
 	// before assuming we are connected to the voice channel.
 	opusReadinessWG sync.WaitGroup
-
-	errorHandler func(error)
 }
-
-var (
-	defaultVoiceErrorHandler = func(err error) { log.Println("voice connection error:", err) }
-)
 
 // VoiceConnectionOption is a function that configures a VoiceConnection.
 // It is used in ConnectToVoice.
 type VoiceConnectionOption func(*VoiceConnection)
-
-// WithVoiceErrorHandler allows you to specify a custom error handler function
-// that will be called whenever an error occurs while the connection
-// to the voice is up.
-func WithVoiceErrorHandler(h func(error)) VoiceConnectionOption {
-	return func(c *VoiceConnection) {
-		c.errorHandler = h
-	}
-}
 
 // WithMute allows you to specify whether this voice connection should be muted when connecting.
 func WithMute(t bool) VoiceConnectionOption {
@@ -175,7 +159,7 @@ type sessionDescription struct {
 	MediaSessionID string `json:"media_session_id"`
 }
 
-// ConnectToVoice will create a new VoiceConnection to the specified guild/channel.
+// ConnectToVoice will create a new VoiceConnection to the given voice channel.
 // This method is safe to call from multiple goroutines, but connections will happen
 // sequentially.
 func (c *Client) ConnectToVoice(guildID, channelID string, opts ...VoiceConnectionOption) (*VoiceConnection, error) {
@@ -188,17 +172,16 @@ func (c *Client) ConnectToVoice(guildID, channelID string, opts ...VoiceConnecti
 
 	// Initialize a new VoiceConnection.
 	vc := VoiceConnection{
-		error:        make(chan error),
-		stop:         make(chan struct{}),
-		Send:         make(chan []byte, 2),
-		Recv:         make(chan *AudioPacket),
-		payloads:     make(chan *payload),
-		client:       c,
-		guildID:      guildID,
-		channelID:    channelID,
-		mute:         false,
-		deaf:         false,
-		errorHandler: defaultVoiceErrorHandler,
+		Send:      make(chan []byte, 2),
+		Recv:      make(chan *AudioPacket),
+		payloads:  make(chan *payload),
+		error:     make(chan error),
+		stop:      make(chan struct{}),
+		client:    c,
+		guildID:   guildID,
+		channelID: channelID,
+		mute:      false,
+		deaf:      false,
 	}
 
 	for _, opt := range opts {
@@ -241,6 +224,7 @@ func (vc *VoiceConnection) connect() error {
 
 	// Open the voice websocket connection.
 	vc.endpoint = fmt.Sprintf("wss://%s?v=3", strings.TrimSuffix(server.Endpoint, ":80"))
+	vc.client.logger.Debugf("connecting to voice server: %s", vc.endpoint)
 	vc.conn, _, err = websocket.DefaultDialer.Dial(vc.endpoint, nil)
 	if err != nil {
 		return err
@@ -264,7 +248,8 @@ func (vc *VoiceConnection) connect() error {
 	vc.wg.Add(2) // listen starts an additional goroutine.
 	go vc.listen()
 
-	go vc.wait() // wait does not count in the waitgroup.
+	vc.wg.Add(1)
+	go vc.wait()
 
 	i := &voiceIdentify{
 		ServerID:  vc.guildID,
@@ -272,6 +257,7 @@ func (vc *VoiceConnection) connect() error {
 		SessionID: vc.client.sessionID,
 		Token:     vc.token,
 	}
+	vc.client.logger.Debug("identifying to the voice server")
 	if err = vc.sendPayload(voiceOpcodeIdentify, i); err != nil {
 		return err
 	}
@@ -309,11 +295,13 @@ func (vc *VoiceConnection) connect() error {
 	vc.ssrc = vr.SSRC
 	// We should now be able to open the voice UDP connection.
 	host := fmt.Sprintf("%s:%d", strings.TrimSuffix(server.Endpoint, ":80"), vr.Port)
+	vc.client.logger.Debugf("resolving voice connection UDP endpoint: %s", host)
 	addr, err := net.ResolveUDPAddr("udp", host)
 	if err != nil {
 		return err
 	}
 
+	vc.client.logger.Debugf("dialing voice connection endpoint: %s", host)
 	vc.udpConn, err = net.DialUDP("udp", nil, addr)
 	if err != nil {
 		return err
@@ -330,6 +318,8 @@ func (vc *VoiceConnection) connect() error {
 	if err != nil {
 		return err
 	}
+	ipPort := fmt.Sprintf("%s:%d", ip, port)
+	vc.client.logger.Debugf("IP discovery result: %s", ipPort)
 
 	vc.wg.Add(1)
 	go vc.udpHeartbeat(time.Second * 5)
@@ -372,6 +362,7 @@ func (vc *VoiceConnection) connect() error {
 	}
 
 	atomic.StoreInt32(&vc.connected, 1)
+	vc.client.logger.Debug("connected to voice server")
 	return nil
 }
 
@@ -406,7 +397,7 @@ func (vc *VoiceConnection) Disconnect() {
 		GuildID: vc.guildID,
 	}
 	if err := vc.client.sendPayload(gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
-		vc.errorHandler(err)
+		vc.client.logger.Errorf("voice connection: %v", err)
 	}
 
 	close(vc.stop)
@@ -417,6 +408,11 @@ func (vc *VoiceConnection) Disconnect() {
 }
 
 func (vc *VoiceConnection) wait() {
+	defer vc.wg.Done()
+
+	vc.client.logger.Debug("starting voice connection manager")
+	defer vc.client.logger.Debug("stopped voice connection manager")
+
 	select {
 	case err := <-vc.error:
 		vc.onError(err)
@@ -437,9 +433,9 @@ func (vc *VoiceConnection) onError(err error) {
 		websocket.FormatCloseMessage(websocket.CloseAbnormalClosure, ""),
 		time.Now().Add(time.Second*10),
 	); err != nil {
-		vc.errorHandler(fmt.Errorf("could not properly close websocket: %v", err))
+		vc.client.logger.Errorf("could not properly close voice websocket: %v", err)
 	}
-	vc.errorHandler(err)
+	vc.client.logger.Errorf("voice connection: %v", err)
 	close(vc.stop)
 }
 
@@ -449,7 +445,7 @@ func (vc *VoiceConnection) onDisconnect() {
 		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
 		time.Now().Add(time.Second*10),
 	); err != nil {
-		vc.errorHandler(fmt.Errorf("could not properly close websocket: %v", err))
+		vc.client.logger.Errorf("could not properly close voice websocket: %v", err)
 	}
 	atomic.StoreUint64(&vc.udpHeartbeatSequence, 0)
 }
