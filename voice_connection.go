@@ -12,6 +12,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+
+	"github.com/skwair/harmony/log"
 )
 
 // VoiceConnection represents a Discord voice connection.
@@ -90,6 +92,14 @@ type VoiceConnection struct {
 	// the Opus sender and receiver are correctly started
 	// before assuming we are connected to the voice channel.
 	opusReadinessWG sync.WaitGroup
+
+	logger log.Logger
+}
+
+// Logger is here to make the logger available to third party packages that
+// need to report errors related to this voice connection.
+func (vc *VoiceConnection) Logger() log.Logger {
+	return vc.logger
 }
 
 // VoiceConnectionOption is a function that configures a VoiceConnection.
@@ -182,6 +192,7 @@ func (c *Client) ConnectToVoice(guildID, channelID string, opts ...VoiceConnecti
 		channelID: channelID,
 		mute:      false,
 		deaf:      false,
+		logger:    c.logger,
 	}
 
 	for _, opt := range opts {
@@ -224,7 +235,7 @@ func (vc *VoiceConnection) connect() error {
 
 	// Open the voice websocket connection.
 	vc.endpoint = fmt.Sprintf("wss://%s?v=3", strings.TrimSuffix(server.Endpoint, ":80"))
-	vc.client.logger.Debugf("connecting to voice server: %s", vc.endpoint)
+	vc.logger.Debugf("connecting to voice server: %s", vc.endpoint)
 	vc.conn, _, err = websocket.DefaultDialer.Dial(vc.endpoint, nil)
 	if err != nil {
 		return err
@@ -257,7 +268,7 @@ func (vc *VoiceConnection) connect() error {
 		SessionID: vc.client.sessionID,
 		Token:     vc.token,
 	}
-	vc.client.logger.Debug("identifying to the voice server")
+	vc.logger.Debug("identifying to the voice server")
 	if err = vc.sendPayload(voiceOpcodeIdentify, i); err != nil {
 		return err
 	}
@@ -295,13 +306,13 @@ func (vc *VoiceConnection) connect() error {
 	vc.ssrc = vr.SSRC
 	// We should now be able to open the voice UDP connection.
 	host := fmt.Sprintf("%s:%d", strings.TrimSuffix(server.Endpoint, ":80"), vr.Port)
-	vc.client.logger.Debugf("resolving voice connection UDP endpoint: %s", host)
+	vc.logger.Debugf("resolving voice connection UDP endpoint: %s", host)
 	addr, err := net.ResolveUDPAddr("udp", host)
 	if err != nil {
 		return err
 	}
 
-	vc.client.logger.Debugf("dialing voice connection endpoint: %s", host)
+	vc.logger.Debugf("dialing voice connection endpoint: %s", host)
 	vc.udpConn, err = net.DialUDP("udp", nil, addr)
 	if err != nil {
 		return err
@@ -319,7 +330,7 @@ func (vc *VoiceConnection) connect() error {
 		return err
 	}
 	ipPort := fmt.Sprintf("%s:%d", ip, port)
-	vc.client.logger.Debugf("IP discovery result: %s", ipPort)
+	vc.logger.Debugf("IP discovery result: %s", ipPort)
 
 	vc.wg.Add(1)
 	go vc.udpHeartbeat(time.Second * 5)
@@ -362,7 +373,7 @@ func (vc *VoiceConnection) connect() error {
 	}
 
 	atomic.StoreInt32(&vc.connected, 1)
-	vc.client.logger.Debug("connected to voice server")
+	vc.logger.Debug("connected to voice server")
 	return nil
 }
 
@@ -397,7 +408,7 @@ func (vc *VoiceConnection) Disconnect() {
 		GuildID: vc.guildID,
 	}
 	if err := vc.client.sendPayload(gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
-		vc.client.logger.Errorf("voice connection: %v", err)
+		vc.logger.Errorf("voice connection: %v", err)
 	}
 
 	close(vc.stop)
@@ -410,8 +421,8 @@ func (vc *VoiceConnection) Disconnect() {
 func (vc *VoiceConnection) wait() {
 	defer vc.wg.Done()
 
-	vc.client.logger.Debug("starting voice connection manager")
-	defer vc.client.logger.Debug("stopped voice connection manager")
+	vc.logger.Debug("starting voice connection manager")
+	defer vc.logger.Debug("stopped voice connection manager")
 
 	select {
 	case err := <-vc.error:
@@ -433,9 +444,9 @@ func (vc *VoiceConnection) onError(err error) {
 		websocket.FormatCloseMessage(websocket.CloseAbnormalClosure, ""),
 		time.Now().Add(time.Second*10),
 	); err != nil {
-		vc.client.logger.Errorf("could not properly close voice websocket: %v", err)
+		vc.logger.Errorf("could not properly close voice websocket: %v", err)
 	}
-	vc.client.logger.Errorf("voice connection: %v", err)
+	vc.logger.Errorf("voice connection: %v", err)
 	close(vc.stop)
 }
 
@@ -445,7 +456,7 @@ func (vc *VoiceConnection) onDisconnect() {
 		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
 		time.Now().Add(time.Second*10),
 	); err != nil {
-		vc.client.logger.Errorf("could not properly close voice websocket: %v", err)
+		vc.logger.Errorf("could not properly close voice websocket: %v", err)
 	}
 	atomic.StoreUint64(&vc.udpHeartbeatSequence, 0)
 }

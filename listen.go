@@ -14,8 +14,8 @@ func (c *Client) listen() {
 
 // listen listens for payloads sent by the voice server.
 func (vc *VoiceConnection) listen() {
-	vc.client.logger.Debug("starting voice connection event listener")
-	defer vc.client.logger.Debug("stopped voice connection event listener")
+	vc.logger.Debug("starting voice connection event listener")
+	defer vc.logger.Debug("stopped voice connection event listener")
 
 	listen(&vc.wg, vc.stop, vc.error, vc.recvPayloads, vc.handleEvent)
 }
