@@ -33,8 +33,8 @@ func (vc *VoiceConnection) opusReceiver() {
 	vc.opusReadinessWG.Done()
 	defer vc.wg.Done()
 
-	vc.client.logger.Debug("starting Opus receiver")
-	defer vc.client.logger.Debug("stopped Opus receiver")
+	vc.logger.Debug("starting Opus receiver")
+	defer vc.logger.Debug("stopped Opus receiver")
 
 	rtpFrames := make(chan *rtpFrame)
 	go vc.readUDP(rtpFrames)
@@ -122,8 +122,8 @@ func (vc *VoiceConnection) opusSender() {
 	vc.opusReadinessWG.Done()
 	defer vc.wg.Done()
 
-	vc.client.logger.Debug("starting Opus sender")
-	defer vc.client.logger.Debug("stopped Opus sender")
+	vc.logger.Debug("starting Opus sender")
+	defer vc.logger.Debug("stopped Opus sender")
 
 	const (
 		sampleRate = 48000 // In Hz, the number of samples we take each second.
