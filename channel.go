@@ -25,8 +25,9 @@ type Channel struct {
 	LastMessageID        string                 `json:"last_message_id,omitempty"`
 
 	// For voice channels.
-	Bitrate   int `json:"bitrate,omitempty"`
-	UserLimit int `json:"user_limit,omitempty"`
+	Bitrate          int `json:"bitrate,omitempty"`
+	UserLimit        int `json:"user_limit,omitempty"`
+	RateLimitPerUser int `json:"rate_limit_per_user"`
 
 	// For DMs.
 	Recipients    []User `json:"recipients,omitempty"`
