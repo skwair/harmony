@@ -8,12 +8,13 @@ import (
 
 // identify is used to trigger the initial handshake with the gateway.
 type identify struct {
-	Token          string            `json:"token"`
-	Properties     map[string]string `json:"properties"`
-	Compress       bool              `json:"compress,omitempty"`
-	LargeThreshold int               `json:"large_threshold,omitempty"`
-	Shard          *[2]int           `json:"shard,omitempty"`
-	Presence       *Status           `json:"presence,omitempty"`
+	Token              string            `json:"token"`
+	Properties         map[string]string `json:"properties"`
+	Compress           bool              `json:"compress,omitempty"`
+	LargeThreshold     int               `json:"large_threshold,omitempty"`
+	Shard              *[2]int           `json:"shard,omitempty"`
+	Presence           *Status           `json:"presence,omitempty"`
+	GuildSubscriptions bool              `json:"guild_subscriptions"`
 }
 
 // Status is sent by the client to indicate a presence or status update.
@@ -32,8 +33,9 @@ func (c *Client) identify() error {
 			"$os":      strings.Title(runtime.GOOS),
 			"$browser": "github.com/skwair/harmony",
 		},
-		Compress:       true,
-		LargeThreshold: c.largeThreshold,
+		Compress:           true,
+		LargeThreshold:     c.largeThreshold,
+		GuildSubscriptions: c.guildSubscriptions,
 	}
 
 	if c.shard[1] != 0 {
