@@ -1,10 +1,10 @@
 language: go
 go:
-  - 1.12.x
+  - 1.13.x
 install:
   - go get github.com/skwair/harmony
-  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.17.1
+  - curl -sfL https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | sh -s -- -b $GOPATH/bin v1.20.0
 script:
-  - GO111MODULE=on golangci-lint run
-  - GO111MODULE=on bash _scripts/build_examples.sh
-  - GO111MODULE=on go test -v -race ./...
+  - golangci-lint run
+  - bash _scripts/build_examples.sh
+  - go test -v -race ./...
