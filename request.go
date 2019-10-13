@@ -18,6 +18,10 @@ type requestPayload struct {
 	contentType string
 }
 
+func (p *requestPayload) hasBody() bool {
+	return p != nil && p.body != nil
+}
+
 // jsonPayload creates a new requestPayload from some raw JSON data.
 func jsonPayload(body json.RawMessage) *requestPayload {
 	return &requestPayload{
@@ -49,7 +53,7 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *r
 		err error
 		req *http.Request
 	)
-	if p != nil && p.body != nil {
+	if p.hasBody() {
 		req, err = http.NewRequest(e.Method, c.baseURL+e.URL, bytes.NewReader(p.body))
 	} else {
 		req, err = http.NewRequest(e.Method, c.baseURL+e.URL, nil)
@@ -69,7 +73,7 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *r
 		}
 	}
 	// Add the Content-Type header accordingly to the payload's body, if any.
-	if p != nil && p.body != nil {
+	if p.hasBody() {
 		req.Header.Set("Content-Type", p.contentType)
 	}
 	// Add the Authorization header.
@@ -128,7 +132,7 @@ func doReqNoAuthWithHeader(ctx context.Context, e *endpoint.Endpoint, p *request
 		err error
 		req *http.Request
 	)
-	if p != nil && p.body != nil {
+	if p.hasBody() {
 		req, err = http.NewRequest(e.Method, defaultBaseURL+e.URL, bytes.NewReader(p.body))
 	} else {
 		req, err = http.NewRequest(e.Method, defaultBaseURL+e.URL, nil)
@@ -144,7 +148,7 @@ func doReqNoAuthWithHeader(ctx context.Context, e *endpoint.Endpoint, p *request
 			req.Header.Add(k, v)
 		}
 	}
-	if p != nil && p.body != nil {
+	if p.hasBody() {
 		h.Set("Content-Type", p.contentType)
 	}
 	ua := fmt.Sprintf("%s (github.com/skwair/harmony, %s", "Harmony", version)

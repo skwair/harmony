@@ -17,7 +17,7 @@ import (
 // are set or not depending on the message's type.
 type MessageType int
 
-// supported message types :
+// Supported message types:
 const (
 	Default MessageType = iota
 	RecipientAdd
@@ -374,11 +374,11 @@ type Reaction struct {
 	Emoji *Emoji `json:"emoji"`
 }
 
-// GetReactions returns a list of users that reacted to a message with the given emoji.
+// Reactions returns a list of users that reacted to a message with the given emoji.
 // limit is the number of users to return and can be set to any value ranging from 1 to 100.
 // If set to 0, it defaults to 25. If more than 100 users reacted with the given emoji,
 // the before and after parameters can be used to fetch more users.
-func (r *ChannelResource) GetReactions(ctx context.Context, messageID, emoji string, limit int, before, after string) ([]User, error) {
+func (r *ChannelResource) Reactions(ctx context.Context, messageID, emoji string, limit int, before, after string) ([]User, error) {
 	q := url.Values{}
 	if limit > 0 {
 		q.Set("limit", strconv.Itoa(limit))
@@ -411,7 +411,7 @@ func (r *ChannelResource) GetReactions(ctx context.Context, messageID, emoji str
 // AddReaction adds a reaction to a message in the channel. This endpoint requires
 // the 'READ_MESSAGE_HISTORY' permission to be present on the current user. Additionally,
 // if nobody else has reacted to the message using this emoji, this endpoint requires
-// the'ADD_REACTIONS' permission to be present on the current user.
+// the 'ADD_REACTIONS' permission to be present on the current user.
 func (r *ChannelResource) AddReaction(ctx context.Context, messageID, emoji string) error {
 	e := endpoint.CreateReaction(r.channelID, messageID, url.PathEscape(emoji))
 	resp, err := r.client.doReq(ctx, e, nil)

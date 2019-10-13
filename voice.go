@@ -22,7 +22,7 @@ type VoiceState struct {
 	Suppress  bool   `json:"suppress"` // Whether this user is muted by the current user.
 }
 
-// VoiceRegion represents a voice region a guild is in.
+// VoiceRegion represents a voice region a guild can use or is using for its voice channels.
 type VoiceRegion struct {
 	ID   string `json:"id,omitempty"`
 	Name string `json:"name,omitempty"`
@@ -36,14 +36,9 @@ type VoiceRegion struct {
 	Custom bool `json:"custom,omitempty"`
 }
 
-type speaking struct {
-	Speaking bool   `json:"speaking"`
-	Delay    int    `json:"delay"`
-	SSRC     uint32 `json:"ssrc"`
-}
-
-// GetVoiceRegions returns a list of available voice regions that can be used when creating servers.
-func (c *Client) GetVoiceRegions(ctx context.Context, guildID string) ([]VoiceRegion, error) {
+// VoiceRegions returns a list of available voice regions that can be used when creating
+// or updating servers.
+func (c *Client) VoiceRegions(ctx context.Context, guildID string) ([]VoiceRegion, error) {
 	e := endpoint.GetVoiceRegions()
 	resp, err := c.doReq(ctx, e, nil)
 	if err != nil {
@@ -65,6 +60,7 @@ func (c *Client) GetVoiceRegions(ctx context.Context, guildID string) ([]VoiceRe
 // Speaking sends an Opcode 5 Speaking payload. This does nothing
 // if the user is already in the given state.
 func (vc *VoiceConnection) Speaking(s bool, delay int) error {
+	// Return early if the user is already in the asked state.
 	prev := atomic.LoadInt32(&vc.speaking)
 	if (prev == 1) == s {
 		return nil
@@ -76,10 +72,22 @@ func (vc *VoiceConnection) Speaking(s bool, delay int) error {
 		atomic.StoreInt32(&vc.speaking, 0)
 	}
 
-	p := speaking{
+	p := struct {
+		Speaking bool   `json:"speaking"`
+		Delay    int    `json:"delay"`
+		SSRC     uint32 `json:"ssrc"`
+	}{
 		Speaking: s,
 		Delay:    delay,
 		SSRC:     vc.ssrc,
 	}
-	return vc.sendPayload(voiceOpcodeSpeaking, p)
+
+	if err := vc.sendPayload(voiceOpcodeSpeaking, p); err != nil {
+		// If there is an error, reset our internal value to its previous
+		// state because the update was not acknowledged by Discord.
+		atomic.StoreInt32(&vc.speaking, prev)
+		return err
+	}
+
+	return nil
 }

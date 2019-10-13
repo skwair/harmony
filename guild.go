@@ -373,7 +373,7 @@ func (r *GuildResource) BeginPruneWithReason(ctx context.Context, days int, comp
 }
 
 // VoiceRegions returns a list of available voice regions for the guild.
-// Unlike the similar GetVoiceRegions method of the Client, this returns VIP
+// Unlike the similar VoiceRegions method of the Client, this returns VIP
 // servers when the guild is VIP-enabled.
 func (r *GuildResource) VoiceRegions(ctx context.Context) ([]VoiceRegion, error) {
 	e := endpoint.GetGuildVoiceRegions(r.guildID)
@@ -485,7 +485,7 @@ func (r *GuildResource) VanityURL(ctx context.Context) (*Invite, error) {
 // Requires the 'MANAGE_WEBHOOKS' permission.
 func (r *GuildResource) Webhooks(ctx context.Context) ([]Webhook, error) {
 	e := endpoint.GetGuildWebhooks(r.guildID)
-	return r.client.getWebhooks(ctx, e)
+	return r.client.webhooks(ctx, e)
 }
 
 type requestGuildMembers struct {

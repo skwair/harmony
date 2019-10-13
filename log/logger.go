@@ -1,3 +1,7 @@
+/*
+Package log defines an interface that can be implemented in order to provide a logger
+for Harmony. A default implementation using Go's standard log package is also present.
+*/
 package log
 
 import (
@@ -24,38 +28,46 @@ type std struct {
 
 func (s *std) Debug(v ...interface{}) {
 	if s.level >= LevelDebug {
-		s.Println("[DEBUG]", fmt.Sprint(v...))
+		s.printWithPrefix("[DEBUG]", v...)
 	}
 }
 
 func (s *std) Debugf(format string, v ...interface{}) {
 	if s.level >= LevelDebug {
-		s.Println("[DEBUG]", fmt.Sprintf(format, v...))
+		s.printfWithPrefix("[DEBUG]", format, v...)
 	}
 }
 
 func (s *std) Info(v ...interface{}) {
 	if s.level >= LevelInfo {
-		s.Println("[INFO]", fmt.Sprint(v...))
+		s.printWithPrefix("[INFO]", v...)
 	}
 }
 
 func (s *std) Infof(format string, v ...interface{}) {
 	if s.level >= LevelInfo {
-		s.Println("[INFO]", fmt.Sprintf(format, v...))
+		s.printfWithPrefix("[INFO]", format, v...)
 	}
 }
 
 func (s *std) Error(v ...interface{}) {
 	if s.level >= LevelError {
-		s.Println("[ERROR]", fmt.Sprint(v...))
+		s.printWithPrefix("[ERROR]", v...)
 	}
 }
 
 func (s *std) Errorf(format string, v ...interface{}) {
 	if s.level >= LevelError {
-		s.Println("[ERROR]", fmt.Sprintf(format, v...))
+		s.printfWithPrefix("[ERROR]", format, v...)
 	}
+}
+
+func (s *std) printWithPrefix(prefix string, v ...interface{}) {
+	s.Println(prefix, fmt.Sprint(v...))
+}
+
+func (s *std) printfWithPrefix(prefix, format string, v ...interface{}) {
+	s.Println(prefix, fmt.Sprintf(format, v...))
 }
 
 // Level defines the level from which log should be displayed.

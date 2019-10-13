@@ -130,15 +130,15 @@ func (r *GuildResource) AddMember(ctx context.Context, userID, token string, set
 	return &member, nil
 }
 
-// RemoveMember is like RemoveMemberWithReason but with no particular reason.
-func (r *GuildResource) RemoveMember(ctx context.Context, userID string) error {
-	return r.RemoveMemberWithReason(ctx, userID, "")
+// Kick is like KickWithReason but with no particular reason.
+func (r *GuildResource) Kick(ctx context.Context, userID string) error {
+	return r.KickWithReason(ctx, userID, "")
 }
 
-// RemoveMember removes the given user from the guild. Requires 'KICK_MEMBERS'
+// Kick removes the given user from the guild. Requires 'KICK_MEMBERS'
 // permission. Fires a Guild Member Remove Gateway event.
 // The given reason will be set in the audit log entry for this action.
-func (r *GuildResource) RemoveMemberWithReason(ctx context.Context, userID, reason string) error {
+func (r *GuildResource) KickWithReason(ctx context.Context, userID, reason string) error {
 	e := endpoint.RemoveGuildMember(r.guildID, userID)
 	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {

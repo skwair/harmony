@@ -37,9 +37,9 @@ func (u *User) AvatarURL() string {
 	return fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.png", u.ID, u.Avatar)
 }
 
-// GetUser returns a user  given its ID. Use "@me" as the ID to fetch information
+// User returns a user  given its ID. Use "@me" as the ID to fetch information
 // about the connected user. For every other IDs, this endpoint can only be used by bots.
-func (c *Client) GetUser(ctx context.Context, id string) (*User, error) {
+func (c *Client) User(ctx context.Context, id string) (*User, error) {
 	e := endpoint.GetUser(id)
 	resp, err := c.doReq(ctx, e, nil)
 	if err != nil {
@@ -59,7 +59,7 @@ func (c *Client) GetUser(ctx context.Context, id string) (*User, error) {
 }
 
 // CurrentUserResource is a resource that allows to perform various actions on the
-// current user. Create one with Client.Channel.
+// current user. Create one with Client.CurrentUser.
 type CurrentUserResource struct {
 	client *Client
 }

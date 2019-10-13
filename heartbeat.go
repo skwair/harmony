@@ -48,8 +48,9 @@ func (vc *VoiceConnection) sendHeartbeatPayload() error {
 
 // heartbeat periodically calls the heartbeater function to send a heartbeat payload.
 // It should be called in a separate goroutine. It will decrement the given
-// wait group when done, can be stopped by closing the stop channel and will
-// report any error that occurs with the errCh channel.
+// wait group when done, can be stopped by closing the stop channel, will
+// report any error that occurs with the errCh channel and will atomically update the
+// lastHeartbeatACK field each time it sends a heartbeat.
 func heartbeat(
 	wg *sync.WaitGroup,
 	stop chan struct{},
