@@ -134,34 +134,22 @@ func (r *ChannelResource) DeleteWithReason(ctx context.Context, reason string) (
 }
 
 // UpdatePermissions is like UpdatePermissionsWithReason but with no particular reason.
-func (r *ChannelResource) UpdatePermissions(ctx context.Context, targetID string, allow, deny int, typ string) error {
-	return r.UpdatePermissionsWithReason(ctx, targetID, allow, deny, typ, "")
+func (r *ChannelResource) UpdatePermissions(ctx context.Context, perms permission.Overwrite) error {
+	return r.UpdatePermissionsWithReason(ctx, perms, "")
 }
 
 // UpdatePermissionsWithReason updates the channel permission overwrites for a user or
-// role in the channel. typ is "member" if targetID is a user or "role" if it is a role.
+// role in the channel.
 // If the channel permission overwrites do not not exist, they are created.
 // Only usable for guild channels. Requires the 'MANAGE_ROLES' permission.
 // The given reason will be set in the audit log entry for this action.
-func (r *ChannelResource) UpdatePermissionsWithReason(ctx context.Context, targetID string, allow, deny int, typ, reason string) error {
-	st := struct {
-		ID    string `json:"id,omitempty"`
-		Allow int    `json:"allow,omitempty"`
-		Deny  int    `json:"deny,omitempty"`
-		Type  string `json:"type,omitempty"`
-	}{
-		ID:    targetID,
-		Allow: allow,
-		Deny:  deny,
-		Type:  typ,
-	}
-
-	b, err := json.Marshal(st)
+func (r *ChannelResource) UpdatePermissionsWithReason(ctx context.Context, perms permission.Overwrite, reason string) error {
+	b, err := json.Marshal(perms)
 	if err != nil {
 		return err
 	}
 
-	e := endpoint.EditChannelPermissions(r.channelID, targetID)
+	e := endpoint.EditChannelPermissions(r.channelID, perms.ID)
 	resp, err := r.client.doReqWithHeader(ctx, e, jsonPayload(b), reasonHeader(reason))
 	if err != nil {
 		return err
