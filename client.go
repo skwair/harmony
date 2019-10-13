@@ -49,7 +49,7 @@ type Client struct {
 	// Underlying HTTP client used to call Discord's REST API.
 	client *http.Client
 
-	// Rate limiter used to throttle outgoing HTTP request.
+	// Rate limiter used to throttle outgoing HTTP requests.
 	limiter *rate.Limiter
 
 	// Underlying websocket used to communicate with
