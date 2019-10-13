@@ -74,6 +74,8 @@ type Client struct {
 	largeThreshold int
 	// See WithSharding for more information.
 	shard [2]int
+	// See WithGuildSubscriptions for more information.
+	guildSubscriptions bool
 
 	userID    string
 	sessionID string
@@ -118,16 +120,17 @@ type Client struct {
 // ClientOption.
 func NewClient(token string, opts ...ClientOption) (*Client, error) {
 	c := &Client{
-		name:              "Harmony",
-		token:             "Bot " + token,
-		baseURL:           defaultBaseURL,
-		client:            http.DefaultClient,
-		limiter:           rate.NewLimiter(),
-		largeThreshold:    defaultLargeThreshold,
-		handlers:          make(map[string]handler),
-		backoff:           defaultBackoff,
-		withStateTracking: true,
-		logger:            log.NewStd(log.LevelError),
+		name:               "Harmony",
+		token:              "Bot " + token,
+		baseURL:            defaultBaseURL,
+		client:             http.DefaultClient,
+		limiter:            rate.NewLimiter(),
+		largeThreshold:     defaultLargeThreshold,
+		guildSubscriptions: true,
+		handlers:           make(map[string]handler),
+		backoff:            defaultBackoff,
+		withStateTracking:  true,
+		logger:             log.NewStd(log.LevelError),
 	}
 
 	for _, opt := range opts {

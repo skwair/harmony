@@ -40,11 +40,21 @@ func WithBaseURL(url string) ClientOption {
 
 // WithSharding allows you to specify a sharding configuration when connecting to the Gateway.
 // See https://discordapp.com/developers/docs/topics/gateway#sharding for more details.
-// Default to nothing, sharding is not enabled.
+// Defaults to nothing, sharding is not enabled.
 func WithSharding(current, total int) ClientOption {
 	return func(c *Client) {
 		c.shard[0] = current
 		c.shard[1] = total
+	}
+}
+
+// WithGuildSubscription allows to set whether the client should identify to the Gateway with
+// guild subscription enabled or not. Guild subscriptions are guild member presence updates
+// and typing events.
+// Defaults to true.
+func WithGuildSubscription(y bool) ClientOption {
+	return func(c *Client) {
+		c.guildSubscriptions = y
 	}
 }
 
