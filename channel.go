@@ -292,7 +292,7 @@ func (r *ChannelResource) TriggerTyping(ctx context.Context) error {
 // Webhooks returns webhooks for the channel.
 func (r *ChannelResource) Webhooks(ctx context.Context) ([]Webhook, error) {
 	e := endpoint.GetChannelWebhooks(r.channelID)
-	return r.client.getWebhooks(ctx, e)
+	return r.client.webhooks(ctx, e)
 }
 
 // NewWebhook is like NewWebhookWithReason but with no particular reason.

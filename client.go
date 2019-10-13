@@ -39,13 +39,18 @@ type Client struct {
 	// It defaults to "Harmony".
 	name string
 
+	// Authentication token used to interact with
+	// Discord's API.
 	token string
 
 	gatewayURL string
 	baseURL    string // Base URL of the Discord API.
 
-	// Underlying HTTP client used to call Discord's API.
+	// Underlying HTTP client used to call Discord's REST API.
 	client *http.Client
+
+	// Rate limiter used to throttle outgoing HTTP request.
+	limiter *rate.Limiter
 
 	// Underlying websocket used to communicate with
 	// Discord's real-time API.
@@ -83,8 +88,8 @@ type Client struct {
 	lastHeartbeatSend int64
 
 	// Those fields are used for synchronisation between
-	// the listen, receive and heartbeat goroutines when
-	// the connection to the gateway is up.
+	// the listen, receive, heartbeat and wait goroutines
+	// when the connection to the gateway is up.
 	wg    sync.WaitGroup
 	error chan error
 	stop  chan struct{}
@@ -92,9 +97,7 @@ type Client struct {
 	handlersMu sync.RWMutex
 	handlers   map[string]handler
 
-	limiter *rate.Limiter
-
-	// Used when trying to reconnect to
+	// Backoff strategy used when trying to reconnect to
 	// the Gateway after an error.
 	backoff backoff
 
@@ -111,16 +114,17 @@ type Client struct {
 // It is meant to be long lived and shared across your application.
 // The token is automatically prefixed with "Bot ", which is a requirement
 // by Discord for bot users. Automated normal user accounts (generally called
-// "self-bots"), are not supported.
+// "self-bots"), are not supported. To customize a Client, refer to available
+// ClientOption.
 func NewClient(token string, opts ...ClientOption) (*Client, error) {
 	c := &Client{
 		name:              "Harmony",
 		token:             "Bot " + token,
 		baseURL:           defaultBaseURL,
 		client:            http.DefaultClient,
+		limiter:           rate.NewLimiter(),
 		largeThreshold:    defaultLargeThreshold,
 		handlers:          make(map[string]handler),
-		limiter:           rate.NewLimiter(),
 		backoff:           defaultBackoff,
 		withStateTracking: true,
 		logger:            log.NewStd(log.LevelError),

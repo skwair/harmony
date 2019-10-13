@@ -13,6 +13,7 @@ func (c *Client) handleEvent(p *payload) error {
 	switch p.Op {
 	case gatewayOpcodeDispatch:
 		atomic.StoreInt64(&c.sequence, p.S)
+
 		// Those two events should be sent through the payloads channel if the
 		// client is currently connecting to a voice channel so the ConnectToVoice
 		// method can receive them.
@@ -20,6 +21,7 @@ func (c *Client) handleEvent(p *payload) error {
 			c.isConnectingToVoice() {
 			c.voicePayloads <- p
 		}
+
 		if err := c.dispatch(p.T, p.D); err != nil {
 			return err
 		}

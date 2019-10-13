@@ -43,11 +43,13 @@ func (c *Client) Connect(ctx context.Context) error {
 		}
 	}
 
+	// Those fields' lifecycle is tied to a connection, not to the Client,
+	// so we need to initialize them each time we attempt a new connection.
 	c.voicePayloads = make(chan *payload)
 	c.error = make(chan error)
 	c.stop = make(chan struct{})
 
-	header := http.Header{}
+	header := make(http.Header)
 	header.Add("Accept-Encoding", "zlib")
 	gwURL := fmt.Sprintf("%s?v=%d&encoding=%s", c.gatewayURL, gatewayVersion, gatewayEncoding)
 	c.logger.Debugf("connecting to the gateway: %s", gwURL)
@@ -64,14 +66,14 @@ func (c *Client) Connect(ctx context.Context) error {
 	// this client as not connected.
 	defer func() {
 		if err != nil {
-			c.conn.Close()
+			_ = c.conn.Close() // Not much we can do about this, maybe log it?
 			atomic.StoreInt32(&c.connected, 0)
 			close(c.stop)
 		}
 	}()
 
-	// The Gateway should send us a Hello packet defining the heartbeat
-	// interval when we connect to the websocket.
+	// The Gateway should first send us a Hello packet defining the heartbeat
+	// interval we must use when we connect to the websocket.
 	p, err := c.recvPayload()
 	if err != nil {
 		return fmt.Errorf("could not receive payload from gateway: %v", err)
@@ -89,13 +91,16 @@ func (c *Client) Connect(ctx context.Context) error {
 
 	// If the sequence number is 0 and we don't have a
 	// session ID, we must identify to the Gateway to
-	// create a new session, else we should try to resume it.
+	// create a new session, else this means we have already
+	// been connected to the Gateway with this client and
+	// we should try to resume a previous connection.
 	seq := atomic.LoadInt64(&c.sequence)
 	if seq == 0 && c.sessionID == "" {
 		c.logger.Debug("identifying to the gateway")
 		if err = c.identify(); err != nil {
 			return err
 		}
+
 		// The Gateway should send us a Ready event if we successfully authenticated.
 		if err = c.ready(); err != nil {
 			return err
@@ -137,6 +142,8 @@ func (c *Client) Disconnect() {
 }
 
 // wait waits for an error or a stop signal to be sent.
+// If an unexpected error happens while connected to the
+// Gateway, this method will try to reconnect.
 func (c *Client) wait() {
 	defer c.wg.Done()
 
@@ -149,44 +156,51 @@ func (c *Client) wait() {
 	case err = <-c.error:
 		c.onGatewayError(err)
 
+	// User called Client.Disconnect.
 	case <-c.stop:
 		c.logger.Debug("disconnecting from the gateway")
 		c.onDisconnect()
 	}
 
-	c.conn.Close()
+	_ = c.conn.Close() // Not much we can do about this, maybe log it?
 	atomic.StoreInt32(&c.connected, 0)
 
 	// If there was an error, try to reconnect.
 	if err != nil {
-		c.logger.Debug("trying to reconnect to the gateway")
-		for i := 0; true; i++ {
-			ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-			if err = c.Connect(ctx); err != nil {
-				cancel()
-				duration := c.backoff.forAttempt(i)
-				c.logger.Errorf("failed to reconnect: %v, retrying in %s", err, duration)
-				select {
-				case <-time.After(duration):
-				case <-c.stop:
-					// Client called Disconnect(), stop trying to reconnect.
-					c.logger.Debug("client called Disconnect while trying to reconnect to the gateway, aborting")
-					return
-				}
-			} else {
-				// We could reconnect.
-				c.logger.Info("successfully reconnected to the gateway")
-				cancel()
+		c.reconnectWithBackoff()
+	}
+}
+
+// reconnectWithBackoff attempts to reconnect to the Gateway using the Client's
+// backoff strategy.
+func (c *Client) reconnectWithBackoff() {
+	c.logger.Debug("trying to reconnect to the gateway")
+	for i := 0; true; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		if err := c.Connect(ctx); err != nil {
+			cancel()
+			duration := c.backoff.forAttempt(i)
+			c.logger.Errorf("failed to reconnect: %v, retrying in %s", err, duration)
+			select {
+			case <-time.After(duration):
+			case <-c.stop:
+				// Client called Disconnect(), stop trying to reconnect.
+				c.logger.Debug("client called Disconnect while trying to reconnect to the gateway, aborting")
 				return
 			}
+		} else {
+			// We could reconnect.
+			c.logger.Info("successfully reconnected to the gateway")
+			cancel()
+			return
 		}
 	}
 }
 
 // onGatewayError is called when an error occurs while the connection to
 // the Gateway is up. It closes the underlying websocket connection
-// with a 1006 code, calls the registered error handler and finally
-// signals to all other goroutines (heartbeat, listen, etc.) to stop.
+// with a 1006 code, logs the error and finally signals to all other
+// goroutines (heartbeat, listen, etc.) to stop by closing the stop channel.
 func (c *Client) onGatewayError(err error) {
 	if writeErr := c.conn.WriteControl(
 		websocket.CloseMessage,

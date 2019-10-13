@@ -25,9 +25,9 @@ type Webhook struct {
 	Token     string `json:"token,omitempty"`
 }
 
-// GetWebhookWithToken is like GetWebhook except this call does not require
-// authentication and returns no user in the webhook.
-func GetWebhookWithToken(ctx context.Context, id, token string) (*Webhook, error) {
+// WebhookWithToken returns a webhook given its ID an a token. The user field in
+// the returned webhook will be nil.
+func WebhookWithToken(ctx context.Context, id, token string) (*Webhook, error) {
 	e := endpoint.GetWebhookWithToken(id, token)
 	resp, err := doReqNoAuth(ctx, e, nil)
 	if err != nil {
@@ -89,7 +89,7 @@ func DeleteWebhookWithToken(ctx context.Context, id, token string) error {
 }
 
 // WebhookParameters are the parameters available when executing a
-// webhook with ExecuteWebhook.
+// webhook with ExecWebhook.
 type WebhookParameters struct {
 	Content   string        `json:"content,omitempty"`
 	Username  string        `json:"username,omitempty"`
@@ -105,11 +105,11 @@ func (p *WebhookParameters) json() ([]byte, error) {
 	return json.Marshal(p)
 }
 
-// ExecuteWebhook executes the webhook with the id id given its token and some
+// ExecWebhook executes the webhook with the id id given its token and some
 // execution parameters. wait indicates if we should wait for server confirmation
 // of message send before response. If wait is set to false, the returned Message
 // will be nil even if there is no error.
-func ExecuteWebhook(ctx context.Context, id, token string, p *WebhookParameters, wait bool) (*Message, error) {
+func ExecWebhook(ctx context.Context, id, token string, p *WebhookParameters, wait bool) (*Message, error) {
 	if p == nil {
 		return nil, errors.New("p is nil")
 	}
@@ -156,7 +156,7 @@ func ExecuteWebhook(ctx context.Context, id, token string, p *WebhookParameters,
 	return &m, nil
 }
 
-func (c *Client) getWebhooks(ctx context.Context, e *endpoint.Endpoint) ([]Webhook, error) {
+func (c *Client) webhooks(ctx context.Context, e *endpoint.Endpoint) ([]Webhook, error) {
 	resp, err := c.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err

@@ -153,7 +153,7 @@ func TestHarmony(t *testing.T) {
 	currentUserID := client.State.CurrentUser().ID
 
 	t.Run("get reactions", func(t *testing.T) {
-		users, err := client.Channel(txtCh.ID).GetReactions(context.TODO(), lastMsgID, "👍", 0, "", "")
+		users, err := client.Channel(txtCh.ID).Reactions(context.TODO(), lastMsgID, "👍", 0, "", "")
 		if err != nil {
 			t.Fatalf("could not get reactions to last message: %v", err)
 		}
@@ -166,7 +166,7 @@ func TestHarmony(t *testing.T) {
 			t.Fatalf("expected the ID of the user to be %s; got %s", currentUserID, users[0].ID)
 		}
 
-		users, err = client.Channel(txtCh.ID).GetReactions(context.TODO(), lastMsgID, "👎", 0, "", "")
+		users, err = client.Channel(txtCh.ID).Reactions(context.TODO(), lastMsgID, "👎", 0, "", "")
 		if err != nil {
 			t.Fatalf("could not get reactions to last message: %v", err)
 		}
