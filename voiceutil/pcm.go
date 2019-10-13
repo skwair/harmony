@@ -65,11 +65,14 @@ func OpusDecoder(conn *harmony.VoiceConnection) (pcmOut chan []int16, free chan 
 		for {
 			select {
 			case packet, ok = <-conn.Recv:
-				if !ok {
+				if !ok { // The underlying voice connection has been closed.
 					return
 				}
-			case <-free:
-				return
+
+			case _, ok := <-free:
+				if !ok { // The free chan was closed.
+					return
+				}
 			}
 
 			if _, ok = speakers[packet.SSRC]; !ok {
