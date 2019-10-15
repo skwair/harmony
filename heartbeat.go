@@ -13,7 +13,14 @@ func (c *Client) heartbeat(every time.Duration) {
 	c.logger.Debug("starting gateway heartbeater")
 	defer c.logger.Debug("stopped gateway heartbeater")
 
-	heartbeat.Run(&c.wg, c.stop, c.error, every, c.sendHeartbeatPayload, &c.lastHeartbeatACK)
+	heartbeat.Run(
+		&c.wg,
+		c.stop,
+		c.error,
+		every,
+		c.sendHeartbeatPayload,
+		&c.lastHeartbeatACK,
+	)
 }
 
 // sendHeartbeatPayload sends a single heartbeat payload
@@ -32,7 +39,14 @@ func (vc *VoiceConnection) heartbeat(every time.Duration) {
 	vc.logger.Debug("starting voice connection heartbeater")
 	defer vc.logger.Debug("stopped voice connection heartbeater")
 
-	heartbeat.Run(&vc.wg, vc.stop, vc.error, every, vc.sendHeartbeatPayload, &vc.lastHeartbeatACK)
+	heartbeat.Run(
+		&vc.wg,
+		vc.stop,
+		vc.error,
+		every,
+		vc.sendHeartbeatPayload,
+		&vc.lastHeartbeatACK,
+	)
 }
 
 // sendHeartbeatPayload sends a single heartbeat payload
