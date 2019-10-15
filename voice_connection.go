@@ -305,7 +305,7 @@ func (vc *VoiceConnection) connect() error {
 	}
 	vc.ssrc = vr.SSRC
 	// We should now be able to open the voice UDP connection.
-	host := fmt.Sprintf("%s:%d", strings.TrimSuffix(server.Endpoint, ":80"), vr.Port)
+	host := fmt.Sprintf("%s:%d", vr.IP, vr.Port)
 	vc.logger.Debugf("resolving voice connection UDP endpoint: %s", host)
 	addr, err := net.ResolveUDPAddr("udp", host)
 	if err != nil {
@@ -380,13 +380,13 @@ func (vc *VoiceConnection) connect() error {
 // Must send some audio packets so the voice server starts to send us audio packets.
 // This appears to be a bug from Discord.
 func (vc *VoiceConnection) sendSilenceFrame() error {
-	if err := vc.Speaking(true, 0); err != nil {
+	if err := vc.Speaking(true); err != nil {
 		return err
 	}
 
 	vc.Send <- silenceFrame
 
-	if err := vc.Speaking(false, 0); err != nil {
+	if err := vc.Speaking(false); err != nil {
 		return err
 	}
 
