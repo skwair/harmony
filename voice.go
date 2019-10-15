@@ -59,7 +59,7 @@ func (c *Client) VoiceRegions(ctx context.Context, guildID string) ([]VoiceRegio
 
 // Speaking sends an Opcode 5 Speaking payload. This does nothing
 // if the user is already in the given state.
-func (vc *VoiceConnection) Speaking(s bool, delay int) error {
+func (vc *VoiceConnection) Speaking(s bool) error {
 	// Return early if the user is already in the asked state.
 	prev := atomic.LoadInt32(&vc.speaking)
 	if (prev == 1) == s {
@@ -78,7 +78,7 @@ func (vc *VoiceConnection) Speaking(s bool, delay int) error {
 		SSRC     uint32 `json:"ssrc"`
 	}{
 		Speaking: s,
-		Delay:    delay,
+		Delay:    0,
 		SSRC:     vc.ssrc,
 	}
 
