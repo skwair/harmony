@@ -58,7 +58,7 @@ func Send(connWMu *sync.Mutex, conn *websocket.Conn, p *Payload) error {
 	return err
 }
 
-// Recv receives a single Payload from the provided connection, ensuring
+// Recv receives a single message from the provided connection, ensuring
 // no concurrent call to conn.ReadMessage can occur.
 // It also takes care of optionally decompressing the message and decoding
 // it into a payload.
