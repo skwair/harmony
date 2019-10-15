@@ -18,6 +18,10 @@ func (c *Client) listen() {
 	)
 }
 
+func (c *Client) recvPayloads(ch chan<- *payload.Payload) {
+	payload.RecvAll(&c.wg, ch, c.error, c.recvPayload)
+}
+
 // listen listens for payloads sent by the voice server.
 func (vc *VoiceConnection) listen() {
 	vc.logger.Debug("starting voice connection event listener")
@@ -30,10 +34,6 @@ func (vc *VoiceConnection) listen() {
 		vc.recvPayloads,
 		vc.handleEvent,
 	)
-}
-
-func (c *Client) recvPayloads(ch chan<- *payload.Payload) {
-	payload.RecvAll(&c.wg, ch, c.error, c.recvPayload)
 }
 
 func (vc *VoiceConnection) recvPayloads(ch chan<- *payload.Payload) {
