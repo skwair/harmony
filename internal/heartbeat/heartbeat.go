@@ -6,8 +6,6 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
-
-	"github.com/skwair/harmony/log"
 )
 
 var (
@@ -73,12 +71,8 @@ func RunUDP(
 	every time.Duration,
 	heartbeater func() error,
 	lastUDPHeartbeatACK *int64,
-	logger log.Logger,
 ) {
 	defer wg.Done()
-
-	logger.Debug("starting UDP heartbeater")
-	defer logger.Debug("stopped UDP heartbeater")
 
 	ticker := time.NewTicker(every)
 	defer ticker.Stop()

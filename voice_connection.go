@@ -13,7 +13,6 @@ import (
 
 	"github.com/gorilla/websocket"
 
-	"github.com/skwair/harmony/internal/heartbeat"
 	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/log"
 )
@@ -335,15 +334,7 @@ func (vc *VoiceConnection) connect() error {
 	vc.logger.Debugf("IP discovery result: %s", ipPort)
 
 	vc.wg.Add(1)
-	go heartbeat.RunUDP(
-		&vc.wg,
-		vc.stop,
-		vc.error,
-		time.Second*5,
-		vc.sendUDPHeartbeat,
-		&vc.lastUDPHeartbeatACK,
-		vc.Logger(),
-	)
+	go vc.udpHeartbeat(5 * time.Second)
 
 	sp := &selectProtocol{
 		Protocol: "udp",

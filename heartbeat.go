@@ -41,6 +41,21 @@ func (vc *VoiceConnection) sendHeartbeatPayload() error {
 	return vc.sendPayload(voiceOpcodeHeartbeat, time.Now().Unix())
 }
 
+// udpHeartbeat periodically sends a UDP heartbeat packet to the voice server.
+func (vc *VoiceConnection) udpHeartbeat(every time.Duration) {
+	vc.logger.Debug("starting UDP heartbeater")
+	defer vc.logger.Debug("stopped UDP heartbeater")
+
+	heartbeat.RunUDP(
+		&vc.wg,
+		vc.stop,
+		vc.error,
+		time.Second*5,
+		vc.sendUDPHeartbeat,
+		&vc.lastUDPHeartbeatACK,
+	)
+}
+
 // sendUDPHeartbeat sends a single UDP heartbeat packet and increments the sequence number.
 func (vc *VoiceConnection) sendUDPHeartbeat() error {
 	packet := make([]byte, 8)
