@@ -13,6 +13,8 @@ import (
 
 	"github.com/gorilla/websocket"
 
+	"github.com/skwair/harmony/internal/heartbeat"
+	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/log"
 )
 
@@ -72,7 +74,7 @@ type VoiceConnection struct {
 	// When connectingToVoice is set to 1, some
 	// payloads received by the event handler will
 	// be sent through this channel.
-	payloads chan *payload
+	payloads chan *payload.Payload
 
 	// wg keeps track of all goroutines that are
 	// started when connecting to a voice channel.
@@ -184,7 +186,7 @@ func (c *Client) ConnectToVoice(guildID, channelID string, opts ...VoiceConnecti
 	vc := VoiceConnection{
 		Send:      make(chan []byte, 2),
 		Recv:      make(chan *AudioPacket),
-		payloads:  make(chan *payload),
+		payloads:  make(chan *payload.Payload),
 		error:     make(chan error),
 		stop:      make(chan struct{}),
 		client:    c,
@@ -333,7 +335,15 @@ func (vc *VoiceConnection) connect() error {
 	vc.logger.Debugf("IP discovery result: %s", ipPort)
 
 	vc.wg.Add(1)
-	go vc.udpHeartbeat(time.Second * 5)
+	go heartbeat.RunUDP(
+		&vc.wg,
+		vc.stop,
+		vc.error,
+		time.Second*5,
+		vc.sendUDPHeartbeat,
+		&vc.lastUDPHeartbeatACK,
+		vc.Logger(),
+	)
 
 	sp := &selectProtocol{
 		Protocol: "udp",
@@ -493,7 +503,7 @@ func ipDiscovery(conn *net.UDPConn, ssrc uint32) (ip string, port uint16, err er
 // although only those two payloads must be sent through ch and only once each.
 // NOTE: check if those events are always sequentially sent in the same order, if so,
 // refactor this function.
-func getStateAndServer(ch chan *payload) (*VoiceState, *VoiceServerUpdate, error) {
+func getStateAndServer(ch chan *payload.Payload) (*VoiceState, *VoiceServerUpdate, error) {
 	var (
 		server        VoiceServerUpdate
 		state         VoiceState

@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+
+	"github.com/skwair/harmony/internal/payload"
 )
 
 const (
@@ -45,7 +47,7 @@ func (c *Client) Connect(ctx context.Context) error {
 
 	// Those fields' lifecycle is tied to a connection, not to the Client,
 	// so we need to initialize them each time we attempt a new connection.
-	c.voicePayloads = make(chan *payload)
+	c.voicePayloads = make(chan *payload.Payload)
 	c.error = make(chan error)
 	c.stop = make(chan struct{})
 

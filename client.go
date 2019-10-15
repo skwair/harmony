@@ -7,6 +7,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
+	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/internal/rate"
 	"github.com/skwair/harmony/log"
 )
@@ -68,7 +69,7 @@ type Client struct {
 	// When connectingToVoice is set to 1, some
 	// payloads received by the event handler will
 	// be sent through this channel.
-	voicePayloads chan *payload
+	voicePayloads chan *payload.Payload
 
 	// See WithLargeThreshold for more information.
 	largeThreshold int
