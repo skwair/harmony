@@ -13,17 +13,19 @@ var (
 	errStaleUDPConnection = errors.New("stale UDP connection")
 )
 
-// Run periodically calls the heartbeater function to send a heartbeat payload.
+// Hearbeater is a function that sends a heartbeat.
+type Hearbeater func() error
+
+// Run periodically calls the given heartbeater to send a heartbeat payload.
 // It should be called in a separate goroutine. It will decrement the given
-// wait group when done, can be stopped by closing the stop channel, will
-// report any error that occurs with the errCh channel and will return
-// errStaleConnection if we did not receive a heartbeat ACK since the last sent.
+// wait group when done, can be stopped by closing the stop channel and will
+// report any error that occurs through the provided errCh.
 func Run(
 	wg *sync.WaitGroup,
 	stop chan struct{},
 	errCh chan<- error,
 	every time.Duration,
-	heartbeater func() error,
+	h Hearbeater,
 	lastHeartbeatACK *int64,
 ) {
 	defer wg.Done()
@@ -42,7 +44,8 @@ func Run(
 			return
 		}
 
-		if err := heartbeater(); err != nil {
+		// Send the heartbeat payload.
+		if err := h(); err != nil {
 			errCh <- err
 			return
 		}
@@ -59,17 +62,16 @@ func Run(
 	}
 }
 
-// RunUDP periodically calls the heartbeater function to send a UDP heartbeat packet.
+// RunUDP periodically calls the given heartbeater to send a heartbeat packet.
 // It should be called in a separate goroutine. It will decrement the given
-// wait group when done, can be stopped by closing the stop channel, will
-// report any error that occurs with the errCh channel and will return
-//// errStaleUDPConnection if we did not receive a heartbeat ACK since the last sent.
+// wait group when done, can be stopped by closing the stop channel and will
+// report any error that occurs through the provided errCh.
 func RunUDP(
 	wg *sync.WaitGroup,
 	stop chan struct{},
 	errCh chan<- error,
 	every time.Duration,
-	heartbeater func() error,
+	h Hearbeater,
 	lastUDPHeartbeatACK *int64,
 ) {
 	defer wg.Done()
@@ -91,7 +93,8 @@ func RunUDP(
 			return
 		}
 
-		if err := heartbeater(); err != nil {
+		// Send the heartbeat packet.
+		if err := h(); err != nil {
 			// Silently break out of this loop because
 			// the connection was closed by the client.
 			if isConnectionClosed(err) {

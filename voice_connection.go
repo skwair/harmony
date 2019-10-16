@@ -307,7 +307,7 @@ func (vc *VoiceConnection) connect() error {
 	vc.ssrc = vr.SSRC
 	// We should now be able to open the voice UDP connection.
 	host := fmt.Sprintf("%s:%d", vr.IP, vr.Port)
-	vc.logger.Debugf("resolving voice connection UDP endpoint: %s", host)
+	vc.logger.Debug("resolving voice connection UDP endpoint")
 	addr, err := net.ResolveUDPAddr("udp", host)
 	if err != nil {
 		return err
@@ -326,6 +326,7 @@ func (vc *VoiceConnection) connect() error {
 	}()
 
 	// IP discovery.
+	vc.logger.Debug("starting IP discovery")
 	ip, port, err := ipDiscovery(vc.udpConn, vc.ssrc)
 	if err != nil {
 		return err
@@ -430,13 +431,21 @@ func (vc *VoiceConnection) wait() {
 		vc.onError(err)
 
 	case <-vc.stop:
+		vc.logger.Debug("disconnecting from the voice server")
 		vc.onDisconnect()
 	}
 
-	vc.conn.Close()
-	vc.udpConn.Close()
+	if err := vc.conn.Close(); err != nil {
+		vc.logger.Errorf("failed to properly close voice connection: %v", err)
+	}
+	if err := vc.udpConn.Close(); err != nil {
+		vc.logger.Errorf("failed to properly close voice UDP connection: %v", err)
+	}
 
 	atomic.StoreInt32(&vc.connected, 0)
+
+	// NOTE: maybe try to automatically reconnect if
+	// we err != nil here, like done in the Gateway.
 }
 
 func (vc *VoiceConnection) onError(err error) {
