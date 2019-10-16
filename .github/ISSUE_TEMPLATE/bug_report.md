@@ -1,3 +1,8 @@
+---
+name: Bug report
+about: Report an issues with the library
+---
+
 **Description**
 A clear and concise description of what the bug is.
 
