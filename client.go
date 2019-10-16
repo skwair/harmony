@@ -10,6 +10,7 @@ import (
 	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/internal/rate"
 	"github.com/skwair/harmony/log"
+	"github.com/skwair/harmony/voice"
 )
 
 const (
@@ -110,6 +111,10 @@ type Client struct {
 	withStateTracking bool
 	State             *State
 
+	// voice connections that were established by
+	// this client.
+	voiceConnections map[string]*voice.Connection
+
 	logger log.Logger
 }
 
@@ -131,6 +136,7 @@ func NewClient(token string, opts ...ClientOption) (*Client, error) {
 		handlers:           make(map[string]handler),
 		backoff:            defaultBackoff,
 		withStateTracking:  true,
+		voiceConnections:   make(map[string]*voice.Connection),
 		logger:             log.NewStd(log.LevelError),
 	}
 
