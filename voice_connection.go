@@ -13,6 +13,7 @@ import (
 
 	"github.com/gorilla/websocket"
 
+	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/log"
 )
 
@@ -72,7 +73,7 @@ type VoiceConnection struct {
 	// When connectingToVoice is set to 1, some
 	// payloads received by the event handler will
 	// be sent through this channel.
-	payloads chan *payload
+	payloads chan *payload.Payload
 
 	// wg keeps track of all goroutines that are
 	// started when connecting to a voice channel.
@@ -184,7 +185,7 @@ func (c *Client) ConnectToVoice(guildID, channelID string, opts ...VoiceConnecti
 	vc := VoiceConnection{
 		Send:      make(chan []byte, 2),
 		Recv:      make(chan *AudioPacket),
-		payloads:  make(chan *payload),
+		payloads:  make(chan *payload.Payload),
 		error:     make(chan error),
 		stop:      make(chan struct{}),
 		client:    c,
@@ -306,7 +307,7 @@ func (vc *VoiceConnection) connect() error {
 	vc.ssrc = vr.SSRC
 	// We should now be able to open the voice UDP connection.
 	host := fmt.Sprintf("%s:%d", vr.IP, vr.Port)
-	vc.logger.Debugf("resolving voice connection UDP endpoint: %s", host)
+	vc.logger.Debug("resolving voice connection UDP endpoint")
 	addr, err := net.ResolveUDPAddr("udp", host)
 	if err != nil {
 		return err
@@ -325,6 +326,7 @@ func (vc *VoiceConnection) connect() error {
 	}()
 
 	// IP discovery.
+	vc.logger.Debug("starting IP discovery")
 	ip, port, err := ipDiscovery(vc.udpConn, vc.ssrc)
 	if err != nil {
 		return err
@@ -333,7 +335,7 @@ func (vc *VoiceConnection) connect() error {
 	vc.logger.Debugf("IP discovery result: %s", ipPort)
 
 	vc.wg.Add(1)
-	go vc.udpHeartbeat(time.Second * 5)
+	go vc.udpHeartbeat(5 * time.Second)
 
 	sp := &selectProtocol{
 		Protocol: "udp",
@@ -429,13 +431,21 @@ func (vc *VoiceConnection) wait() {
 		vc.onError(err)
 
 	case <-vc.stop:
+		vc.logger.Debug("disconnecting from the voice server")
 		vc.onDisconnect()
 	}
 
-	vc.conn.Close()
-	vc.udpConn.Close()
+	if err := vc.conn.Close(); err != nil {
+		vc.logger.Errorf("failed to properly close voice connection: %v", err)
+	}
+	if err := vc.udpConn.Close(); err != nil {
+		vc.logger.Errorf("failed to properly close voice UDP connection: %v", err)
+	}
 
 	atomic.StoreInt32(&vc.connected, 0)
+
+	// NOTE: maybe try to automatically reconnect if
+	// we err != nil here, like done in the Gateway.
 }
 
 func (vc *VoiceConnection) onError(err error) {
@@ -493,7 +503,7 @@ func ipDiscovery(conn *net.UDPConn, ssrc uint32) (ip string, port uint16, err er
 // although only those two payloads must be sent through ch and only once each.
 // NOTE: check if those events are always sequentially sent in the same order, if so,
 // refactor this function.
-func getStateAndServer(ch chan *payload) (*VoiceState, *VoiceServerUpdate, error) {
+func getStateAndServer(ch chan *payload.Payload) (*VoiceState, *VoiceServerUpdate, error) {
 	var (
 		server        VoiceServerUpdate
 		state         VoiceState

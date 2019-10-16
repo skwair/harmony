@@ -6,10 +6,12 @@ import (
 	"math/rand"
 	"sync/atomic"
 	"time"
+
+	"github.com/skwair/harmony/internal/payload"
 )
 
 // handleEvent handles all events received from Discord's Gateway once connected to it.
-func (c *Client) handleEvent(p *payload) error {
+func (c *Client) handleEvent(p *payload.Payload) error {
 	switch p.Op {
 	case gatewayOpcodeDispatch:
 		atomic.StoreInt64(&c.sequence, p.S)
@@ -78,7 +80,7 @@ func (c *Client) handleEvent(p *payload) error {
 	return nil
 }
 
-func (vc *VoiceConnection) handleEvent(p *payload) error {
+func (vc *VoiceConnection) handleEvent(p *payload.Payload) error {
 	switch p.Op {
 	case voiceOpcodeReady, voiceOpcodeSessionDescription, voiceOpcodeHello:
 		// Those events should be sent through the payloads channel if this

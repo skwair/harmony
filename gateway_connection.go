@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
+
+	"github.com/skwair/harmony/internal/payload"
 )
 
 const (
@@ -45,7 +47,7 @@ func (c *Client) Connect(ctx context.Context) error {
 
 	// Those fields' lifecycle is tied to a connection, not to the Client,
 	// so we need to initialize them each time we attempt a new connection.
-	c.voicePayloads = make(chan *payload)
+	c.voicePayloads = make(chan *payload.Payload)
 	c.error = make(chan error)
 	c.stop = make(chan struct{})
 
@@ -106,7 +108,7 @@ func (c *Client) Connect(ctx context.Context) error {
 			return err
 		}
 	} else {
-		c.logger.Debug("trying to resume an existing session")
+		c.logger.Debugf("trying to resume an existing session (seq=%d; sessID=%q)", seq, c.sessionID)
 		if err = c.resume(); err != nil {
 			return err
 		}
@@ -141,9 +143,10 @@ func (c *Client) Disconnect() {
 	c.wg.Wait()
 }
 
-// wait waits for an error or a stop signal to be sent.
+// wait waits for an error to happen while connected to the Gateway
+// or for a stop signal to be sent.
 // If an unexpected error happens while connected to the
-// Gateway, this method will try to reconnect.
+// Gateway, this method will automatically try to reconnect.
 func (c *Client) wait() {
 	defer c.wg.Done()
 
@@ -162,7 +165,9 @@ func (c *Client) wait() {
 		c.onDisconnect()
 	}
 
-	_ = c.conn.Close() // Not much we can do about this, maybe log it?
+	if err = c.conn.Close(); err != nil {
+		c.logger.Errorf("failed to properly close Gateway connection: %v", err)
+	}
 	atomic.StoreInt32(&c.connected, 0)
 
 	// If there was an error, try to reconnect.
@@ -175,14 +180,19 @@ func (c *Client) wait() {
 // backoff strategy.
 func (c *Client) reconnectWithBackoff() {
 	c.logger.Debug("trying to reconnect to the gateway")
+
 	for i := 0; true; i++ {
+		// Try to establish a new connection with a 30 seconds timeout.
 		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+
 		if err := c.Connect(ctx); err != nil {
 			cancel()
 			duration := c.backoff.forAttempt(i)
 			c.logger.Errorf("failed to reconnect: %v, retrying in %s", err, duration)
+
 			select {
 			case <-time.After(duration):
+				continue // Make a new connection attempt.
 			case <-c.stop:
 				// Client called Disconnect(), stop trying to reconnect.
 				c.logger.Debug("client called Disconnect while trying to reconnect to the gateway, aborting")
