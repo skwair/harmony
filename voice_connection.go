@@ -29,10 +29,12 @@ func (c *Client) JoinVoiceChannel(guildID, channelID string, mute, deaf bool) (*
 
 	// Notify a voice server that we want to connect to a voice channel.
 	vsu := &voice.StateUpdate{
-		GuildID:   guildID,
-		ChannelID: &channelID,
-		SelfMute:  mute,
-		SelfDeaf:  deaf,
+		State: voice.State{
+			GuildID:   guildID,
+			ChannelID: &channelID,
+			SelfMute:  mute,
+			SelfDeaf:  deaf,
+		},
 	}
 	if err := c.sendPayload(gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
 		return nil, err
@@ -66,7 +68,9 @@ func (c *Client) LeaveVoiceChannel(guildID string) {
 	}
 
 	vsu := &voice.StateUpdate{
-		GuildID: guildID,
+		State: voice.State{
+			GuildID: guildID,
+		},
 	}
 	if err := c.sendPayload(gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
 		c.logger.Errorf("could not properly leave voice channel: %v", err)

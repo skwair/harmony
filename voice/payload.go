@@ -8,6 +8,11 @@ import (
 
 // StateUpdate is the payload describing the update of the voice state of a user.
 type StateUpdate struct {
+	State
+}
+
+// State represents the voice state of a user.
+type State struct {
 	GuildID    string  `json:"guild_id"`
 	ChannelID  *string `json:"channel_id"`
 	UserID     string  `json:"user_id"`
@@ -21,12 +26,12 @@ type StateUpdate struct {
 }
 
 // Clone returns a clone of this StateUpdate.
-func (v *StateUpdate) Clone() *StateUpdate {
+func (v *State) Clone() *State {
 	if v == nil {
 		return nil
 	}
 
-	return &StateUpdate{
+	return &State{
 		GuildID:   v.GuildID,
 		ChannelID: v.ChannelID,
 		UserID:    v.UserID,

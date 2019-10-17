@@ -42,14 +42,14 @@ type Guild struct {
 	SystemChannelID             *string                        `json:"system_channel_id,omitempty"`
 
 	// Following fields are only sent within the GUILD_CREATE event.
-	JoinedAt    time.Time           `json:"joined_at,omitempty"`
-	Large       bool                `json:"large,omitempty"`
-	Unavailable bool                `json:"unavailable,omitempty"`
-	MemberCount int                 `json:"member_count,omitempty"`
-	VoiceStates []voice.StateUpdate `json:"voice_states,omitempty"`
-	Members     []GuildMember       `json:"members,omitempty"`
-	Channels    []Channel           `json:"channels,omitempty"`
-	Presences   []Presence          `json:"presences,omitempty"`
+	JoinedAt    time.Time     `json:"joined_at,omitempty"`
+	Large       bool          `json:"large,omitempty"`
+	Unavailable bool          `json:"unavailable,omitempty"`
+	MemberCount int           `json:"member_count,omitempty"`
+	VoiceStates []voice.State `json:"voice_states,omitempty"`
+	Members     []GuildMember `json:"members,omitempty"`
+	Channels    []Channel     `json:"channels,omitempty"`
+	Presences   []Presence    `json:"presences,omitempty"`
 }
 
 // Presence is a user's current state on a guild.
