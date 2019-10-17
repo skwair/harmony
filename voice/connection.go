@@ -171,7 +171,7 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 		opt(vc)
 	}
 
-	// Open the voice websocket connection.
+	// Start by opening the voice websocket connection.
 	var err error
 	vc.endpoint = fmt.Sprintf("wss://%s?v=3", strings.TrimSuffix(server.Endpoint, ":80"))
 	vc.logger.Debugf("connecting to voice server: %s", vc.endpoint)
@@ -180,7 +180,7 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 		return nil, err
 	}
 
-	// From now, if any error occurs during the rest of the
+	// From now on, if any error occurs during the rest of the
 	// voice connection process, we should close the underlying
 	// websocket so we can try to reconnect.
 	defer func() {
@@ -218,6 +218,7 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 	// NOTE: do not start heartbeating before sending the identify payload
 	// to the voice server, else it will close the connection.
 
+	// Identify on the websocket connection. This is the first payload we must sent to the server.
 	i := &voiceIdentify{
 		ServerID:  vc.guildID,
 		UserID:    vc.userID,
@@ -232,7 +233,7 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 	// There is currently a bug in the Hello payload heartbeat interval.
 	// See https://discordapp.com/developers/docs/topics/voice-connections#heartbeating
 	every := float64(h.HeartbeatInterval) * .75
-	// Now we can start heartbeating.
+	// Now that we sent the identify payload, we can start heartbeating.
 	vc.wg.Add(1)
 	go vc.heartbeat(time.Duration(every) * time.Millisecond)
 
@@ -322,6 +323,8 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 	return vc, nil
 }
 
+// wait waits for an error to happen while connected to the voice server
+// or for a stop signal to be sent.
 func (vc *Connection) wait() {
 	defer vc.wg.Done()
 
@@ -354,6 +357,10 @@ func (vc *Connection) wait() {
 	// we err != nil here, like done in the Gateway.
 }
 
+// onError is called when an error occurs while the connection to
+// the voice server is up. It closes the underlying websocket connection
+// with a 1006 code, logs the error and finally signals to all other
+// goroutines (heartbeat, listen, etc.) to stop by closing the stop channel.
 func (vc *Connection) onError(err error) {
 	if err := vc.conn.WriteControl(
 		websocket.CloseMessage,
@@ -366,6 +373,9 @@ func (vc *Connection) onError(err error) {
 	close(vc.stop)
 }
 
+// onDisconnect is called when a normal disconnection happens (the client
+// called the Close() method). It closes the underlying websocket
+// connection with a 1000 code and resets the UDP heartbeat sequence.
 func (vc *Connection) onDisconnect() {
 	if err := vc.conn.WriteControl(
 		websocket.CloseMessage,
