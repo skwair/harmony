@@ -2,6 +2,7 @@ package harmony
 
 import (
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -137,7 +138,7 @@ func NewClient(token string, opts ...ClientOption) (*Client, error) {
 		backoff:            defaultBackoff,
 		withStateTracking:  true,
 		voiceConnections:   make(map[string]*voice.Connection),
-		logger:             log.NewStd(log.LevelError),
+		logger:             log.NewStd(os.Stderr, log.LevelError),
 	}
 
 	for _, opt := range opts {

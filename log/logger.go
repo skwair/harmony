@@ -6,8 +6,8 @@ package log
 
 import (
 	"fmt"
+	"io"
 	"log"
-	"os"
 )
 
 // Logger is the interface to implement in order to provide a logger
@@ -80,4 +80,4 @@ const (
 )
 
 // NewStd returns a new logger for Harmony based on the standard logger.
-func NewStd(l Level) Logger { return &std{Logger: log.New(os.Stdout, "", 0), level: l} }
+func NewStd(w io.Writer, l Level) Logger { return &std{Logger: log.New(w, "", 0), level: l} }

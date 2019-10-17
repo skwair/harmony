@@ -46,7 +46,7 @@ func (c *Client) JoinVoiceChannel(guildID, channelID string, mute, deaf bool) (*
 		return nil, err
 	}
 
-	conn, err := voice.EstablishNewConnection(state, server)
+	conn, err := voice.EstablishNewConnection(state, server, voice.WithLogger(c.logger))
 	if err != nil {
 		return nil, err
 	}
@@ -62,14 +62,14 @@ func (c *Client) LeaveVoiceChannel(guildID string) {
 	conn, ok := c.voiceConnections[guildID]
 	if ok {
 		conn.Close()
+		delete(c.voiceConnections, guildID)
 	}
-	delete(c.voiceConnections, guildID)
 
 	vsu := &voice.StateUpdate{
 		GuildID: guildID,
 	}
 	if err := c.sendPayload(gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
-		c.logger.Errorf("voice connection: %v", err)
+		c.logger.Errorf("could not properly leave voice channel: %v", err)
 	}
 }
 
@@ -78,10 +78,10 @@ func (c *Client) LeaveVoiceChannel(guildID string) {
 // although only those two payloads must be sent through ch and only once each.
 // NOTE: check if those events are always sequentially sent in the same order, if so,
 // refactor this function.
-func getStateAndServer(ch chan *payload.Payload) (*voice.State, *voice.ServerUpdate, error) {
+func getStateAndServer(ch chan *payload.Payload) (*voice.StateUpdate, *voice.ServerUpdate, error) {
 	var (
 		server        voice.ServerUpdate
-		state         voice.State
+		state         voice.StateUpdate
 		first, second bool
 	)
 
@@ -89,7 +89,7 @@ func getStateAndServer(ch chan *payload.Payload) (*voice.State, *voice.ServerUpd
 		p := <-ch
 		if p.T == eventVoiceStateUpdate {
 			if first {
-				return nil, nil, errors.New("already received Voice Server Update payload")
+				return nil, nil, errors.New("already received voice state update payload")
 			}
 			first = true
 
@@ -98,7 +98,7 @@ func getStateAndServer(ch chan *payload.Payload) (*voice.State, *voice.ServerUpd
 			}
 		} else if p.T == eventVoiceServerUpdate {
 			if second {
-				return nil, nil, errors.New("already received Voice State payload")
+				return nil, nil, errors.New("already received voice server update payload")
 			}
 			second = true
 

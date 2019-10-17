@@ -165,7 +165,9 @@ func (c *Client) wait() {
 		c.onDisconnect()
 	}
 
-	if err = c.conn.Close(); err != nil {
+	// NOTE: make sure not to override the previous error declaration here
+	// else we won't try to reconnect if we had one.
+	if err := c.conn.Close(); err != nil {
 		c.logger.Errorf("failed to properly close Gateway connection: %v", err)
 	}
 	atomic.StoreInt32(&c.connected, 0)

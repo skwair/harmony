@@ -8,19 +8,6 @@ import (
 	"github.com/skwair/harmony/internal/endpoint"
 )
 
-// VoiceState represents the voice state of a user.
-type VoiceState struct {
-	GuildID   string `json:"guild_id"`
-	ChannelID string `json:"channel_id"`
-	UserID    string `json:"user_id"`
-	SessionID string `json:"session_id"`
-	Deaf      bool   `json:"deaf"`
-	Mute      bool   `json:"mute"`
-	SelfDeaf  bool   `json:"self_deaf"`
-	SelfMute  bool   `json:"self_mute"`
-	Suppress  bool   `json:"suppress"` // Whether this user is muted by the current user.
-}
-
 // VoiceRegion represents a voice region a guild can use or is using for its voice channels.
 type VoiceRegion struct {
 	ID   string `json:"id,omitempty"`

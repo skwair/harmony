@@ -2,8 +2,10 @@ package voice
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
+	"os"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -20,7 +22,7 @@ var silenceFrame = []byte{0xf8, 0xff, 0xfe}
 // Connection represents a Discord voice connection.
 type Connection struct {
 	// General lock for long operations that should
-	// not happen concurrently like Disconnect.
+	// not happen concurrently like Close.
 	mu sync.Mutex
 
 	// Send is used to send Opus encoded audio packets.
@@ -29,15 +31,12 @@ type Connection struct {
 	// containing Opus encoded audio data.
 	Recv chan *AudioPacket
 
-	// User and session that initiated this connection.
+	// User and session this connection is established with.
 	userID, sessionID string
-	// guild and channel ID this voice
-	// connection is attached to.
+	// guild and channel IDs this voice connection is attached to.
 	guildID, channelID string
 
-	// This is the the token used to connect
-	// to the voice server. Used when resuming
-	// voice connections.
+	// Token used to identify to the voice server.
 	token string
 	// Websocket endpoint to connect to.
 	endpoint string
@@ -49,6 +48,7 @@ type Connection struct {
 	// set to 1 when the client is connected to voice.
 	connected int32
 
+	// UDP connection voice data is sent across.
 	udpConn *net.UDPConn
 
 	// Accessed atomically, acts as a boolean and
@@ -57,12 +57,12 @@ type Connection struct {
 
 	// Secret used to encrypt voice data.
 	secret [32]byte
-	// ssrc of this user.
+	// SSRC of this user.
 	ssrc uint32
 
 	// Accessed atomically, acts as a boolean
-	// and is set to 1 when the client is
-	// connecting to voice.
+	// and is set to 1 when the connection is
+	// being established.
 	connectingToVoice int32
 	// When connectingToVoice is set to 1, some
 	// payloads received by the event handler will
@@ -70,9 +70,10 @@ type Connection struct {
 	payloads chan *payload.Payload
 
 	// wg keeps track of all goroutines that are
-	// started when connecting to a voice channel.
+	// started when establishing a voice connection.
 	wg sync.WaitGroup
-	// The first fatal error encountered will be reported to this channel.
+	// The first fatal error encountered when connected
+	// to a voice server will be reported to this channel.
 	error chan error
 	// Closing this channel will stop the voice connection.
 	stop chan struct{}
@@ -89,6 +90,19 @@ type Connection struct {
 	opusReadinessWG sync.WaitGroup
 
 	logger log.Logger
+}
+
+// ConnectionOption is a function that configures a Connection.
+// It is used in EstablishNewConnection.
+type ConnectionOption func(*Connection)
+
+// WithLogger can be used to set the logger used by this connection.
+// Defaults to a standard logger reporting only errors.
+// See the log package for more information about logging with Harmony.
+func WithLogger(l log.Logger) ConnectionOption {
+	return func(c *Connection) {
+		c.logger = l
+	}
 }
 
 // voiceIdentify is the payload sent to identify to a voice server.
@@ -134,19 +148,27 @@ type sessionDescription struct {
 // EstablishNewConnection establishes a new voice connection with the provided
 // information. This connection should be closed by calling its Close method
 // when no longer needed.
-func EstablishNewConnection(state *State, server *ServerUpdate) (*Connection, error) {
+func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...ConnectionOption) (*Connection, error) {
+	if state.ChannelID == nil {
+		return nil, errors.New("could not establish voice connection: channel ID in given state is nil")
+	}
+
 	vc := &Connection{
 		Send:      make(chan []byte, 2),
 		Recv:      make(chan *AudioPacket),
 		payloads:  make(chan *payload.Payload),
 		error:     make(chan error),
 		stop:      make(chan struct{}),
-		logger:    log.NewStd(log.LevelDebug), // FIXME: set a noop logger by default?
 		userID:    state.UserID,
 		sessionID: state.SessionID,
 		guildID:   state.GuildID,
-		channelID: state.ChannelID,
+		channelID: *state.ChannelID,
 		token:     server.Token,
+		logger:    log.NewStd(os.Stderr, log.LevelError),
+	}
+
+	for _, opt := range opts {
+		opt(vc)
 	}
 
 	// Open the voice websocket connection.
@@ -214,7 +236,7 @@ func EstablishNewConnection(state *State, server *ServerUpdate) (*Connection, er
 	vc.wg.Add(1)
 	go vc.heartbeat(time.Duration(every) * time.Millisecond)
 
-	// Now we should receive a Ready packet.
+	// A Ready payload should be sent after we identified.
 	p = <-vc.payloads
 	if p.Op != voiceOpcodeReady {
 		return nil, fmt.Errorf("expected Opcode 2 Ready; got Opcode %d", p.Op)
@@ -225,6 +247,7 @@ func EstablishNewConnection(state *State, server *ServerUpdate) (*Connection, er
 		return nil, err
 	}
 	vc.ssrc = vr.SSRC
+
 	// We should now be able to open the voice UDP connection.
 	host := fmt.Sprintf("%s:%d", vr.IP, vr.Port)
 	vc.logger.Debug("resolving voice connection UDP endpoint")
@@ -251,9 +274,9 @@ func EstablishNewConnection(state *State, server *ServerUpdate) (*Connection, er
 	if err != nil {
 		return nil, err
 	}
-	ipPort := fmt.Sprintf("%s:%d", ip, port)
-	vc.logger.Debugf("IP discovery result: %s", ipPort)
+	vc.logger.Debugf("IP discovery result: %s:%d", ip, port)
 
+	// Start heartbeating on the UDP connection.
 	vc.wg.Add(1)
 	go vc.udpHeartbeat(5 * time.Second)
 
@@ -376,41 +399,6 @@ func (vc *Connection) isConnecting() bool {
 	return atomic.LoadInt32(&vc.connectingToVoice) == 1
 }
 
-// Speaking sends an Opcode 5 Speaking payload. This does nothing
-// if the user is already in the given state.
-func (vc *Connection) Speaking(s bool) error {
-	// Return early if the user is already in the asked state.
-	prev := atomic.LoadInt32(&vc.speaking)
-	if (prev == 1) == s {
-		return nil
-	}
-
-	if s {
-		atomic.StoreInt32(&vc.speaking, 1)
-	} else {
-		atomic.StoreInt32(&vc.speaking, 0)
-	}
-
-	p := struct {
-		Speaking bool   `json:"speaking"`
-		Delay    int    `json:"delay"`
-		SSRC     uint32 `json:"ssrc"`
-	}{
-		Speaking: s,
-		Delay:    0,
-		SSRC:     vc.ssrc,
-	}
-
-	if err := vc.sendPayload(voiceOpcodeSpeaking, p); err != nil {
-		// If there is an error, reset our internal value to its previous
-		// state because the update was not acknowledged by Discord.
-		atomic.StoreInt32(&vc.speaking, prev)
-		return err
-	}
-
-	return nil
-}
-
 // Disconnect closes the voice connection.
 func (vc *Connection) Close() {
 	vc.mu.Lock()
@@ -432,32 +420,4 @@ func (vc *Connection) Close() {
 // need to report errors related to this voice connection.
 func (vc *Connection) Logger() log.Logger {
 	return vc.logger
-}
-
-// State represents the voice state of a user.
-type State struct {
-	GuildID   string `json:"guild_id"`
-	ChannelID string `json:"channel_id"`
-	UserID    string `json:"user_id"`
-	SessionID string `json:"session_id"`
-	Deaf      bool   `json:"deaf"`
-	Mute      bool   `json:"mute"`
-	SelfDeaf  bool   `json:"self_deaf"`
-	SelfMute  bool   `json:"self_mute"`
-	Suppress  bool   `json:"suppress"` // Whether this user is muted by the current user.
-}
-
-type ServerUpdate struct {
-	Token    string `json:"token"`
-	GuildID  string `json:"guild_id"`
-	Endpoint string `json:"endpoint"`
-}
-
-// StateUpdate is sent to notify a voice server that
-// the client wants to connect to a voice channel.
-type StateUpdate struct {
-	GuildID   string  `json:"guild_id"`
-	ChannelID *string `json:"channel_id"`
-	SelfMute  bool    `json:"self_mute"`
-	SelfDeaf  bool    `json:"self_deaf"`
 }

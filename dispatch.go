@@ -3,6 +3,8 @@ package harmony
 import (
 	"encoding/json"
 	"sync/atomic"
+
+	"github.com/skwair/harmony/voice"
 )
 
 const (
@@ -310,13 +312,13 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		c.handle(eventUserUpdate, &u)
 
 	case eventVoiceStateUpdate:
-		var vs VoiceState
+		var vs voice.StateUpdate
 		if err = json.Unmarshal(data, &vs); err != nil {
 			return err
 		}
 		c.handle(eventVoiceStateUpdate, &vs)
 	case eventVoiceServerUpdate:
-		var vs VoiceServerUpdate
+		var vs voice.ServerUpdate
 		if err = json.Unmarshal(data, &vs); err != nil {
 			return err
 		}
