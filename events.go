@@ -1,6 +1,10 @@
 package harmony
 
-import "time"
+import (
+	"time"
+
+	"github.com/skwair/harmony/voice"
+)
 
 type handler interface {
 	handle(interface{})
@@ -22,6 +26,7 @@ func (c *Client) registerHandler(event string, h handler) {
 
 type readyHandler func(*Ready)
 
+// handle implements the handler interface.
 func (h readyHandler) handle(v interface{}) {
 	h(v.(*Ready))
 }
@@ -33,6 +38,7 @@ func (c *Client) OnReady(f func(r *Ready)) {
 
 type channelCreateHandler func(*Channel)
 
+// handle implements the handler interface.
 func (h channelCreateHandler) handle(v interface{}) {
 	h(v.(*Channel))
 }
@@ -45,6 +51,7 @@ func (c *Client) OnChannelCreate(f func(c *Channel)) {
 
 type channelUpdateHandler func(*Channel)
 
+// handle implements the handler interface.
 func (h channelUpdateHandler) handle(v interface{}) {
 	h(v.(*Channel))
 }
@@ -57,6 +64,7 @@ func (c *Client) OnChannelUpdate(f func(c *Channel)) {
 
 type channelDeleteHandler func(*Channel)
 
+// handle implements the handler interface.
 func (h channelDeleteHandler) handle(v interface{}) {
 	h(v.(*Channel))
 }
@@ -75,6 +83,7 @@ type ChannelPinsUpdate struct {
 
 type channelPinsUpdateHandler func(*ChannelPinsUpdate)
 
+// handle implements the handler interface.
 func (h channelPinsUpdateHandler) handle(v interface{}) {
 	h(v.(*ChannelPinsUpdate))
 }
@@ -88,6 +97,7 @@ func (c *Client) OnChannelPinsUpdate(f func(cpu *ChannelPinsUpdate)) {
 
 type guildCreateHandler func(*Guild)
 
+// handle implements the handler interface.
 func (h guildCreateHandler) handle(v interface{}) {
 	h(v.(*Guild))
 }
@@ -103,6 +113,7 @@ func (c *Client) OnGuildCreate(f func(g *Guild)) {
 
 type guildUpdateHandler func(*Guild)
 
+// handle implements the handler interface.
 func (h guildUpdateHandler) handle(v interface{}) {
 	h(v.(*Guild))
 }
@@ -114,6 +125,7 @@ func (c *Client) OnGuildUpdate(f func(g *Guild)) {
 
 type guildDeleteHandler func(*UnavailableGuild)
 
+// handle implements the handler interface.
 func (h guildDeleteHandler) handle(v interface{}) {
 	h(v.(*UnavailableGuild))
 }
@@ -133,6 +145,7 @@ type GuildBan struct {
 
 type guildBanAddHandler func(*GuildBan)
 
+// handle implements the handler interface.
 func (h guildBanAddHandler) handle(v interface{}) {
 	h(v.(*GuildBan))
 }
@@ -144,6 +157,7 @@ func (c *Client) OnGuildBanAdd(f func(ban *GuildBan)) {
 
 type guildBanRemoveHandler func(*GuildBan)
 
+// handle implements the handler interface.
 func (h guildBanRemoveHandler) handle(v interface{}) {
 	h(v.(*GuildBan))
 }
@@ -161,6 +175,7 @@ type GuildEmojis struct {
 
 type guildEmojisUpdateHandler func(*GuildEmojis)
 
+// handle implements the handler interface.
 func (h guildEmojisUpdateHandler) handle(v interface{}) {
 	h(v.(*GuildEmojis))
 }
@@ -173,6 +188,7 @@ func (c *Client) OnGuildEmojisUpdate(f func(emojis *GuildEmojis)) {
 
 type guildIntegrationUpdateHandler func(string)
 
+// handle implements the handler interface.
 func (h guildIntegrationUpdateHandler) handle(v interface{}) {
 	h(v.(string))
 }
@@ -190,6 +206,7 @@ type GuildMemberAdd struct {
 
 type guildMemberAddHandler func(*GuildMemberAdd)
 
+// handle implements the handler interface.
 func (h guildMemberAddHandler) handle(v interface{}) {
 	h(v.(*GuildMemberAdd))
 }
@@ -207,6 +224,7 @@ type GuildMemberRemove struct {
 
 type guildMemberRemoveHandler func(*GuildMemberRemove)
 
+// handle implements the handler interface.
 func (h guildMemberRemoveHandler) handle(v interface{}) {
 	h(v.(*GuildMemberRemove))
 }
@@ -226,6 +244,7 @@ type GuildMemberUpdate struct {
 
 type guildMemberUpdateHandler func(*GuildMemberUpdate)
 
+// handle implements the handler interface.
 func (h guildMemberUpdateHandler) handle(v interface{}) {
 	h(v.(*GuildMemberUpdate))
 }
@@ -243,6 +262,7 @@ type GuildMembersChunk struct {
 
 type guildMembersChunkHandler func(*GuildMembersChunk)
 
+// handle implements the handler interface.
 func (h guildMembersChunkHandler) handle(v interface{}) {
 	h(v.(*GuildMembersChunk))
 }
@@ -260,6 +280,7 @@ type GuildRole struct {
 
 type guildRoleCreateHandler func(*GuildRole)
 
+// handle implements the handler interface.
 func (h guildRoleCreateHandler) handle(v interface{}) {
 	h(v.(*GuildRole))
 }
@@ -272,6 +293,7 @@ func (c *Client) OnGuildRoleCreate(f func(r *GuildRole)) {
 
 type guildRoleUpdateHandler func(*GuildRole)
 
+// handle implements the handler interface.
 func (h guildRoleUpdateHandler) handle(v interface{}) {
 	h(v.(*GuildRole))
 }
@@ -289,6 +311,7 @@ type GuildRoleDelete struct {
 
 type guildRoleDeleteHandler func(*GuildRoleDelete)
 
+// handle implements the handler interface.
 func (h guildRoleDeleteHandler) handle(v interface{}) {
 	h(v.(*GuildRoleDelete))
 }
@@ -301,6 +324,7 @@ func (c *Client) OnGuildRoleDelete(f func(r *GuildRoleDelete)) {
 
 type messageCreateHandler func(*Message)
 
+// handle implements the handler interface.
 func (h messageCreateHandler) handle(v interface{}) {
 	h(v.(*Message))
 }
@@ -313,6 +337,7 @@ func (c *Client) OnMessageCreate(f func(m *Message)) {
 
 type messageUpdateHandler func(*Message)
 
+// handle implements the handler interface.
 func (h messageUpdateHandler) handle(v interface{}) {
 	h(v.(*Message))
 }
@@ -331,6 +356,7 @@ type MessageDelete struct {
 
 type messageDeleteHandler func(*MessageDelete)
 
+// handle implements the handler interface.
 func (h messageDeleteHandler) handle(v interface{}) {
 	h(v.(*MessageDelete))
 }
@@ -349,6 +375,7 @@ type MessageDeleteBulk struct {
 
 type messageDeleteBulkHandler func(*MessageDeleteBulk)
 
+// handle implements the handler interface.
 func (h messageDeleteBulkHandler) handle(v interface{}) {
 	h(v.(*MessageDeleteBulk))
 }
@@ -366,6 +393,7 @@ type MessageAck struct {
 
 type messageAckHandler func(*MessageAck)
 
+// handle implements the handler interface.
 func (h messageAckHandler) handle(v interface{}) {
 	h(v.(*MessageAck))
 }
@@ -385,6 +413,7 @@ type MessageReaction struct {
 
 type messageReactionAddHandler func(*MessageReaction)
 
+// handle implements the handler interface.
 func (h messageReactionAddHandler) handle(v interface{}) {
 	h(v.(*MessageReaction))
 }
@@ -397,6 +426,7 @@ func (c *Client) OnMessageReactionAdd(f func(r *MessageReaction)) {
 
 type messageReactionRemoveHandler func(*MessageReaction)
 
+// handle implements the handler interface.
 func (h messageReactionRemoveHandler) handle(v interface{}) {
 	h(v.(*MessageReaction))
 }
@@ -415,6 +445,7 @@ type MessageReactionRemoveAll struct {
 
 type messageReactionRemoveAllHandler func(*MessageReactionRemoveAll)
 
+// handle implements the handler interface.
 func (h messageReactionRemoveAllHandler) handle(v interface{}) {
 	h(v.(*MessageReactionRemoveAll))
 }
@@ -427,6 +458,7 @@ func (c *Client) OnMessageReactionRemoveAll(f func(r *MessageReactionRemoveAll))
 
 type presenceUpdateHandler func(*Presence)
 
+// handle implements the handler interface.
 func (h presenceUpdateHandler) handle(v interface{}) {
 	h(v.(*Presence))
 }
@@ -450,6 +482,7 @@ type TypingStart struct {
 
 type typingStartHandler func(*TypingStart)
 
+// handle implements the handler interface.
 func (h typingStartHandler) handle(v interface{}) {
 	h(v.(*TypingStart))
 }
@@ -462,6 +495,7 @@ func (c *Client) OnTypingStart(f func(ts *TypingStart)) {
 
 type userUpdateHandler func(*User)
 
+// handle implements the handler interface.
 func (h userUpdateHandler) handle(v interface{}) {
 	h(v.(*User))
 }
@@ -472,34 +506,30 @@ func (c *Client) OnUserUpdate(f func(u *User)) {
 	c.registerHandler(eventUserUpdate, userUpdateHandler(f))
 }
 
-type voiceStateUpdateHandler func(*VoiceState)
+type voiceStateUpdateHandler func(*voice.StateUpdate)
 
+// handle implements the handler interface.
 func (h voiceStateUpdateHandler) handle(v interface{}) {
-	h(v.(*VoiceState))
+	h(v.(*voice.StateUpdate))
 }
 
 // HandleVoiceStateUpdate registers the handler function for the "VOICE_STATE_UPDATE" event.
 // Fired when someone joins/leaves/moves voice channels.
-func (c *Client) OnVoiceStateUpdate(f func(vs *VoiceState)) {
+func (c *Client) OnVoiceStateUpdate(f func(update *voice.StateUpdate)) {
 	c.registerHandler(eventVoiceStateUpdate, voiceStateUpdateHandler(f))
 }
 
-type VoiceServerUpdate struct {
-	Token    string `json:"token"`
-	GuildID  string `json:"guild_id"`
-	Endpoint string `json:"endpoint"`
-}
+type voiceServerUpdateHandler func(*voice.ServerUpdate)
 
-type voiceServerUpdateHandler func(*VoiceServerUpdate)
-
+// handle implements the handler interface.
 func (h voiceServerUpdateHandler) handle(v interface{}) {
-	h(v.(*VoiceServerUpdate))
+	h(v.(*voice.ServerUpdate))
 }
 
 // HandleVoiceServerUpdate registers the handler function for the "VOICE_SERVER_UPDATE" event.
 // Fired when a guild's voice server is updated. This is Fired when initially connecting to voice,
 // and when the current voice instance fails over to a new server.
-func (c *Client) OnVoiceServerUpdate(f func(vs *VoiceServerUpdate)) {
+func (c *Client) OnVoiceServerUpdate(f func(update *voice.ServerUpdate)) {
 	c.registerHandler(eventVoiceServerUpdate, voiceServerUpdateHandler(f))
 }
 
@@ -510,6 +540,7 @@ type WebhooksUpdate struct {
 
 type webhooksUpdateHandler func(*WebhooksUpdate)
 
+// handle implements the handler interface.
 func (h webhooksUpdateHandler) handle(v interface{}) {
 	h(v.(*WebhooksUpdate))
 }

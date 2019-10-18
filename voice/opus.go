@@ -1,10 +1,11 @@
-package harmony
+package voice
 
 import (
 	"crypto/rand"
 	"encoding/binary"
 	"math"
 	"math/big"
+	"net"
 	"sync/atomic"
 	"time"
 
@@ -29,7 +30,7 @@ type rtpFrame struct {
 
 // opusReceiver receives and decrypt audio packets, forwarding them to vc.Recv.
 // The Opus encoded audio is not decoded.
-func (vc *VoiceConnection) opusReceiver() {
+func (vc *Connection) opusReceiver() {
 	vc.opusReadinessWG.Done()
 	defer vc.wg.Done()
 
@@ -74,7 +75,7 @@ func (vc *VoiceConnection) opusReceiver() {
 
 // readUDP reads RTP frames from the voice connection's UDP socket
 // and sends them through the given channel as they are read.
-func (vc *VoiceConnection) readUDP(ch chan<- *rtpFrame) {
+func (vc *Connection) readUDP(ch chan<- *rtpFrame) {
 	defer vc.wg.Done()
 
 	for {
@@ -118,7 +119,7 @@ func (vc *VoiceConnection) readUDP(ch chan<- *rtpFrame) {
 
 // opusSender creates, encrypts and sends Opus encoded packets sent through the voice
 // connection's Send channel.
-func (vc *VoiceConnection) opusSender() {
+func (vc *Connection) opusSender() {
 	vc.opusReadinessWG.Done()
 	defer vc.wg.Done()
 
@@ -201,4 +202,14 @@ func (vc *VoiceConnection) opusSender() {
 			return
 		}
 	}
+}
+
+func isConnectionClosed(err error) bool {
+	if e, ok := err.(*net.OpError); ok {
+		// Ugly but : https://github.com/golang/go/issues/4373
+		if e.Err.Error() == "use of closed network connection" {
+			return true
+		}
+	}
+	return false
 }

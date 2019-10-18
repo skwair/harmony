@@ -11,6 +11,7 @@ import (
 	"github.com/skwair/harmony/channel"
 	"github.com/skwair/harmony/guild"
 	"github.com/skwair/harmony/internal/endpoint"
+	"github.com/skwair/harmony/voice"
 )
 
 // Guild in Discord represents an isolated collection of users and channels,
@@ -45,7 +46,7 @@ type Guild struct {
 	Large       bool          `json:"large,omitempty"`
 	Unavailable bool          `json:"unavailable,omitempty"`
 	MemberCount int           `json:"member_count,omitempty"`
-	VoiceStates []VoiceState  `json:"voice_states,omitempty"`
+	VoiceStates []voice.State `json:"voice_states,omitempty"`
 	Members     []GuildMember `json:"members,omitempty"`
 	Channels    []Channel     `json:"channels,omitempty"`
 	Presences   []Presence    `json:"presences,omitempty"`

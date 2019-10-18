@@ -29,18 +29,3 @@ func (c *Client) recvPayload() (*payload.Payload, error) {
 
 	return p, nil
 }
-
-// sendPayload sends a single Payload to the Voice server with
-// the given op and data.
-func (vc *VoiceConnection) sendPayload(op int, d interface{}) error {
-	b, err := json.Marshal(d)
-	if err != nil {
-		return err
-	}
-	return payload.Send(&vc.connWMu, vc.conn, &payload.Payload{Op: op, D: b})
-}
-
-// recvPayload receives a single Payload from the Voice server.
-func (vc *VoiceConnection) recvPayload() (*payload.Payload, error) {
-	return payload.Recv(&vc.connRMu, vc.conn)
-}

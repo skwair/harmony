@@ -96,8 +96,9 @@ func WithBackoffStrategy(baseDelay, maxDelay time.Duration, factor, jitter float
 	}
 }
 
-// WithLogger can be used to set the logger used by Harmony. See the log package
-// for more information about logging with Harmony.
+// WithLogger can be used to set the logger used by Harmony.
+// Defaults to a standard logger reporting only errors.
+// See the log package for more information about logging with Harmony.
 func WithLogger(l log.Logger) ClientOption {
 	return func(c *Client) {
 		c.logger = l

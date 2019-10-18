@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"strings"
 )
@@ -101,14 +100,4 @@ func apiError(resp *http.Response) error {
 		return err
 	}
 	return validationErr
-}
-
-func isConnectionClosed(err error) bool {
-	if e, ok := err.(*net.OpError); ok {
-		// Ugly but : https://github.com/golang/go/issues/4373
-		if e.Err.Error() == "use of closed network connection" {
-			return true
-		}
-	}
-	return false
 }

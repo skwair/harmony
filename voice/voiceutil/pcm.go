@@ -3,7 +3,7 @@ package voiceutil
 import (
 	opus "layeh.com/gopus"
 
-	"github.com/skwair/harmony"
+	"github.com/skwair/harmony/voice"
 )
 
 const (
@@ -20,7 +20,7 @@ const (
 // anymore in order to free allocated resources.
 //
 // Only one OpusEncoder is meant to be used at once on the same voice connection.
-func OpusEncoder(conn *harmony.VoiceConnection) (pcmIn chan []int16, err error) {
+func OpusEncoder(conn *voice.Connection) (pcmIn chan []int16, err error) {
 	enc, err := opus.NewEncoder(sampleRate, channels, opus.Audio)
 	if err != nil {
 		return nil, err
@@ -55,13 +55,13 @@ func OpusEncoder(conn *harmony.VoiceConnection) (pcmIn chan []int16, err error) 
 // those resources.
 //
 // Only one OpusDecoder is meant to be used at once on the same voice connection.
-func OpusDecoder(conn *harmony.VoiceConnection) (pcmOut chan []int16, free chan struct{}) {
+func OpusDecoder(conn *voice.Connection) (pcmOut chan []int16, free chan struct{}) {
 	speakers := make(map[uint32]*opus.Decoder)
 	pcmOut = make(chan []int16)
 
 	go func() {
 		var ok bool
-		var packet *harmony.AudioPacket
+		var packet *voice.AudioPacket
 		for {
 			select {
 			case packet, ok = <-conn.Recv:

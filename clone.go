@@ -127,25 +127,6 @@ func (e *Emoji) Clone() *Emoji {
 	return emoji
 }
 
-// Clone returns a clone of this VoiceState.
-func (v *VoiceState) Clone() *VoiceState {
-	if v == nil {
-		return nil
-	}
-
-	return &VoiceState{
-		GuildID:   v.GuildID,
-		ChannelID: v.ChannelID,
-		UserID:    v.UserID,
-		SessionID: v.SessionID,
-		Deaf:      v.Deaf,
-		Mute:      v.Mute,
-		SelfDeaf:  v.SelfDeaf,
-		SelfMute:  v.SelfMute,
-		Suppress:  v.Suppress,
-	}
-}
-
 // Clone returns a clone of this GuildMember.
 func (m *GuildMember) Clone() *GuildMember {
 	if m == nil {
