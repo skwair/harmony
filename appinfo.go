@@ -1,9 +1,10 @@
 package harmony
 
 import (
-	"encoding/json"
 	"context"
+	"encoding/json"
 	"net/http"
+
 	"github.com/skwair/harmony/internal/endpoint"
 )
 
@@ -22,21 +23,21 @@ type TeamMember struct {
 }
 
 type ApplicationInfo struct {
-	ID                  string           `json:"id,omitempty"`
-	Name                string           `json:"name,omitempty"`
-	Icon                string           `json:"icon,omitempty"`
-	Description         string           `json:"description,omitempty"`
-	RPCOrigins          []string         `json:"rpc_origins,omitempty"`
-	BotPublic           bool             `json:"bot_public,omitempty"`
-	BotRequireCodeGrant bool             `json:"bot_require_code_grant,omitempty"`
-	Owner               *User            `json:"owner,omitempty"`
-	Summary             string           `json:"summary,omitempty"`
-	VerifyKey           string           `json:"verify_key,omitempty"`
-	Team                *Team            `json:"team,omitempty"`
-	GuildID             string           `json:"guild_id,omitempty"`
-	PrimarySKUID        string           `json:"primary_sku_id,omitempty"`
-	Slug                string           `json:"slug,omitempty"`
-	CoverImage          string           `json:"cover_image,omitempty"`
+	ID                  string   `json:"id,omitempty"`
+	Name                string   `json:"name,omitempty"`
+	Icon                string   `json:"icon,omitempty"`
+	Description         string   `json:"description,omitempty"`
+	RPCOrigins          []string `json:"rpc_origins,omitempty"`
+	BotPublic           bool     `json:"bot_public,omitempty"`
+	BotRequireCodeGrant bool     `json:"bot_require_code_grant,omitempty"`
+	Owner               *User    `json:"owner,omitempty"`
+	Summary             string   `json:"summary,omitempty"`
+	VerifyKey           string   `json:"verify_key,omitempty"`
+	Team                *Team    `json:"team,omitempty"`
+	GuildID             string   `json:"guild_id,omitempty"`
+	PrimarySKUID        string   `json:"primary_sku_id,omitempty"`
+	Slug                string   `json:"slug,omitempty"`
+	CoverImage          string   `json:"cover_image,omitempty"`
 }
 
 // ApplicationInfo returns the bot's OAuth2 application info.
