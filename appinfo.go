@@ -41,7 +41,7 @@ type ApplicationInfo struct {
 }
 
 // ApplicationInfo returns the bot's OAuth2 application info.
-func (c *Client) ApplicationInfo(ctx context.Context) (*AppInfo, error) {
+func (c *Client) ApplicationInfo(ctx context.Context) (*ApplicationInfo, error) {
 	e := endpoint.GetApplicationInfo()
 	resp, err := c.doReq(ctx, e, nil)
 	if err != nil {
