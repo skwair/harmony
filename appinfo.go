@@ -38,6 +38,7 @@ type AppInfo struct {
 	CoverImage          string           `json:"cover_image,omitempty"`
 }
 
+// AppInfo returns the bot's OAuth2 application info.
 func (c *Client) AppInfo(ctx context.Context) (*AppInfo, error) {
 	e := endpoint.GetAppInfo()
 
