@@ -1,10 +1,11 @@
 package harmony
 
-import "encoding/json"
-import "context"
-import "net/http"
-
-import "github.com/skwair/harmony/internal/endpoint"
+import (
+	"encoding/json"
+	"context"
+	"net/http"
+	"github.com/skwair/harmony/internal/endpoint"
+)
 
 type Team struct {
 	Icon        string        `json:"icon,omitempty"`
