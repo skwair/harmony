@@ -21,7 +21,7 @@ type TeamMember struct {
 	User            *User    `json:"user,omitempty"`
 }
 
-type AppInfo struct {
+type ApplicationInfo struct {
 	ID                  string           `json:"id,omitempty"`
 	Name                string           `json:"name,omitempty"`
 	Icon                string           `json:"icon,omitempty"`
@@ -39,10 +39,9 @@ type AppInfo struct {
 	CoverImage          string           `json:"cover_image,omitempty"`
 }
 
-// AppInfo returns the bot's OAuth2 application info.
-func (c *Client) AppInfo(ctx context.Context) (*AppInfo, error) {
-	e := endpoint.GetAppInfo()
-
+// ApplicationInfo returns the bot's OAuth2 application info.
+func (c *Client) ApplicationInfo(ctx context.Context) (*AppInfo, error) {
+	e := endpoint.GetApplicationInfo()
 	resp, err := c.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
@@ -53,7 +52,7 @@ func (c *Client) AppInfo(ctx context.Context) (*AppInfo, error) {
 		return nil, apiError(resp)
 	}
 
-	var a AppInfo
+	var a ApplicationInfo
 	if err = json.NewDecoder(resp.Body).Decode(&a); err != nil {
 		return nil, err
 	}
