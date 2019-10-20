@@ -1,6 +1,7 @@
 package voice
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,7 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"nhooyr.io/websocket"
 
 	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/log"
@@ -148,7 +149,7 @@ type sessionDescription struct {
 // EstablishNewConnection establishes a new voice connection with the provided
 // information. This connection should be closed by calling its Close method
 // when no longer needed.
-func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...ConnectionOption) (*Connection, error) {
+func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *ServerUpdate, opts ...ConnectionOption) (*Connection, error) {
 	if state.ChannelID == nil {
 		return nil, errors.New("could not establish voice connection: channel ID in given state is nil")
 	}
@@ -175,7 +176,7 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 	var err error
 	vc.endpoint = fmt.Sprintf("wss://%s?v=3", strings.TrimSuffix(server.Endpoint, ":80"))
 	vc.logger.Debugf("connecting to voice server: %s", vc.endpoint)
-	vc.conn, _, err = websocket.DefaultDialer.Dial(vc.endpoint, nil)
+	vc.conn, _, err = websocket.Dial(ctx, vc.endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -185,7 +186,7 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 	// websocket so we can try to reconnect.
 	defer func() {
 		if err != nil {
-			vc.conn.Close()
+			_ = vc.conn.Close(websocket.StatusAbnormalClosure, "")
 			atomic.StoreInt32(&vc.connected, 0)
 		}
 	}()
@@ -342,9 +343,6 @@ func (vc *Connection) wait() {
 
 	close(vc.payloads)
 
-	if err := vc.conn.Close(); err != nil {
-		vc.logger.Errorf("failed to properly close voice connection: %v", err)
-	}
 	if vc.udpConn != nil {
 		if err := vc.udpConn.Close(); err != nil {
 			vc.logger.Errorf("failed to properly close voice UDP connection: %v", err)
@@ -362,14 +360,10 @@ func (vc *Connection) wait() {
 // with a 1006 code, logs the error and finally signals to all other
 // goroutines (heartbeat, listen, etc.) to stop by closing the stop channel.
 func (vc *Connection) onError(err error) {
-	if err := vc.conn.WriteControl(
-		websocket.CloseMessage,
-		websocket.FormatCloseMessage(websocket.CloseAbnormalClosure, ""),
-		time.Now().Add(time.Second*10),
-	); err != nil {
-		vc.logger.Errorf("could not properly close voice websocket: %v", err)
+	if closeErr := vc.conn.Close(websocket.StatusAbnormalClosure, "voice error"); closeErr != nil {
+		vc.logger.Errorf("could not properly close voice websocket connection: %v", closeErr)
+		vc.logger.Errorf("voice connection: %v", err)
 	}
-	vc.logger.Errorf("voice connection: %v", err)
 	close(vc.stop)
 }
 
@@ -377,12 +371,8 @@ func (vc *Connection) onError(err error) {
 // called the Close() method). It closes the underlying websocket
 // connection with a 1000 code and resets the UDP heartbeat sequence.
 func (vc *Connection) onDisconnect() {
-	if err := vc.conn.WriteControl(
-		websocket.CloseMessage,
-		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
-		time.Now().Add(time.Second*10),
-	); err != nil {
-		vc.logger.Errorf("could not properly close voice websocket: %v", err)
+	if err := vc.conn.Close(websocket.StatusNormalClosure, "disconnecting"); err != nil {
+		vc.logger.Errorf("could not properly close voice websocket connection: %v", err)
 	}
 	atomic.StoreUint64(&vc.udpHeartbeatSequence, 0)
 }

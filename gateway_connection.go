@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"nhooyr.io/websocket"
 
 	"github.com/skwair/harmony/internal/payload"
 )
@@ -55,7 +55,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	header.Add("Accept-Encoding", "zlib")
 	gwURL := fmt.Sprintf("%s?v=%d&encoding=%s", c.gatewayURL, gatewayVersion, gatewayEncoding)
 	c.logger.Debugf("connecting to the gateway: %s", gwURL)
-	c.conn, _, err = websocket.DefaultDialer.DialContext(ctx, gwURL, header)
+	c.conn, _, err = websocket.Dial(ctx, gwURL, &websocket.DialOptions{HTTPHeader: header})
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	// this client as not connected.
 	defer func() {
 		if err != nil {
-			_ = c.conn.Close() // Not much we can do about this, maybe log it?
+			_ = c.conn.Close(websocket.StatusAbnormalClosure, "could not connect") // Not much we can do about this, maybe log it?
 			atomic.StoreInt32(&c.connected, 0)
 			close(c.stop)
 		}
@@ -165,11 +165,6 @@ func (c *Client) wait() {
 		c.onDisconnect()
 	}
 
-	// NOTE: make sure not to override the previous error declaration here
-	// else we won't try to reconnect if we had one.
-	if err := c.conn.Close(); err != nil {
-		c.logger.Errorf("failed to properly close Gateway connection: %v", err)
-	}
 	atomic.StoreInt32(&c.connected, 0)
 
 	// If there was an error, try to reconnect.
@@ -214,12 +209,8 @@ func (c *Client) reconnectWithBackoff() {
 // with a 1006 code, logs the error and finally signals to all other
 // goroutines (heartbeat, listen, etc.) to stop by closing the stop channel.
 func (c *Client) onGatewayError(err error) {
-	if writeErr := c.conn.WriteControl(
-		websocket.CloseMessage,
-		websocket.FormatCloseMessage(websocket.CloseAbnormalClosure, ""),
-		time.Now().Add(time.Second*10),
-	); writeErr != nil {
-		c.logger.Errorf("could not properly close websocket: %v", writeErr)
+	if closeErr := c.conn.Close(websocket.StatusAbnormalClosure, "gateway error"); closeErr != nil {
+		c.logger.Errorf("could not properly close websocket connection (error): %v", closeErr)
 		// If we can't properly close the websocket connection,
 		// we should reset our session so the next call to Connect
 		// won't try to resume a corrupted session forever.
@@ -234,11 +225,7 @@ func (c *Client) onGatewayError(err error) {
 // connection with a 1000 code and resets the session of this Client
 // so it can open a new fresh connection by calling Connect() again.
 func (c *Client) onDisconnect() {
-	if err := c.conn.WriteControl(
-		websocket.CloseMessage,
-		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
-		time.Now().Add(time.Second*10),
-	); err != nil {
+	if err := c.conn.Close(websocket.StatusNormalClosure, "disconnecting"); err != nil {
 		c.logger.Errorf("could not properly close websocket connection: %v", err)
 	}
 	// Reset the Gateway session so the user gets a new

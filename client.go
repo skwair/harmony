@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"nhooyr.io/websocket"
 
 	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/internal/rate"

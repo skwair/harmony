@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,7 +15,7 @@ import (
 // This method is safe to call from multiple goroutines, but connections will happen
 // sequentially.
 // To properly leave the voice channel, call LeaveVoiceChannel.
-func (c *Client) JoinVoiceChannel(guildID, channelID string, mute, deaf bool) (*voice.Connection, error) {
+func (c *Client) JoinVoiceChannel(ctx context.Context, guildID, channelID string, mute, deaf bool) (*voice.Connection, error) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -48,7 +49,7 @@ func (c *Client) JoinVoiceChannel(guildID, channelID string, mute, deaf bool) (*
 		return nil, err
 	}
 
-	conn, err := voice.EstablishNewConnection(state, server, voice.WithLogger(c.logger))
+	conn, err := voice.EstablishNewConnection(ctx, state, server, voice.WithLogger(c.logger))
 	if err != nil {
 		return nil, err
 	}
