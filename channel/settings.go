@@ -5,19 +5,6 @@ import (
 	"github.com/skwair/harmony/permission"
 )
 
-// Type describes the type of a channel. Different fields
-// are set or not depending on the channel's type.
-type Type int
-
-// Supported channel types :
-const (
-	TypeGuildText Type = iota
-	TypeDM
-	TypeGuildVoice
-	TypeGroupDM
-	TypeGuildCategory
-)
-
 // Settings describes a channel creation.
 type Settings struct {
 	Name      *optional.String `json:"name,omitempty"` // 2-100 characters.

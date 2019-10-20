@@ -373,7 +373,8 @@ func (s *State) updateChannel(c *Channel) {
 	case channel.TypeGroupDM:
 		s.groups[c.ID] = c
 
-	case channel.TypeGuildText, channel.TypeGuildVoice, channel.TypeGuildCategory:
+	case channel.TypeGuildText, channel.TypeGuildVoice, channel.TypeGuildCategory,
+		channel.TypeGuildNews, channel.TypeGuildStore:
 		guild := s.guilds[c.GuildID]
 		var found bool
 		for i := 0; i < len(guild.Channels); i++ {
