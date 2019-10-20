@@ -8,8 +8,7 @@ import (
 // Settings describes a channel creation.
 type Settings struct {
 	Name      *optional.String `json:"name,omitempty"` // 2-100 characters.
-	Type      *optional.Int    `json:"type,omitempty"`
-	Topic     *optional.String `json:"topic"` // 0-1000 characters.
+	Topic     *optional.String `json:"topic"`          // 0-1000 characters.
 	Bitrate   *optional.Int    `json:"bitrate,omitempty"`
 	UserLimit *optional.Int    `json:"user_limit,omitempty"`
 	// RateLimitPerUser is the amount of seconds a user has to wait before sending
@@ -41,13 +40,6 @@ func NewSettings(opts ...Setting) *Settings {
 func WithName(name string) Setting {
 	return func(s *Settings) {
 		s.Name = optional.NewString(name)
-	}
-}
-
-// WithType sets the type of a channel. Can only be used when creating channels.
-func WithType(typ Type) Setting {
-	return func(s *Settings) {
-		s.Type = optional.NewInt(int(typ))
 	}
 }
 
