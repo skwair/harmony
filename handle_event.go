@@ -17,7 +17,7 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 		atomic.StoreInt64(&c.sequence, p.S)
 
 		// Those two events should be sent through the payloads channel if the
-		// client is currently connecting to a voice channel so the ConnectToVoice
+		// client is currently connecting to a voice channel so the JoinVoiceChannel
 		// method can receive them.
 		if (p.T == eventVoiceStateUpdate || p.T == eventVoiceServerUpdate) &&
 			c.isConnectingToVoice() {
