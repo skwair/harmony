@@ -186,7 +186,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	// websocket so we can try to reconnect.
 	defer func() {
 		if err != nil {
-			_ = vc.conn.Close(websocket.StatusAbnormalClosure, "")
+			_ = vc.conn.Close(websocket.StatusAbnormalClosure, "failed to establish voice connection")
 			atomic.StoreInt32(&vc.connected, 0)
 		}
 	}()

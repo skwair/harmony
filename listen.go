@@ -4,7 +4,8 @@ import (
 	"github.com/skwair/harmony/internal/payload"
 )
 
-// listen listens for payloads sent by the Discord Gateway.
+// listen listens for payloads sent by the Discord Gateway
+// and handles them as they are received.
 func (c *Client) listen() {
 	c.logger.Debug("starting gateway event listener")
 	defer c.logger.Debug("stopped gateway event listener")

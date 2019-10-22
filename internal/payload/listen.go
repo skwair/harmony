@@ -1,7 +1,6 @@
 package payload
 
 import (
-	"errors"
 	"sync"
 
 	"nhooyr.io/websocket"
@@ -55,11 +54,8 @@ func RecvAll(
 		if err != nil {
 			// Silently break out of this loop because
 			// the connection was closed by the client.
-			var wsErr websocket.CloseError
-			if errors.As(err, &wsErr) {
-				if wsErr.Code == websocket.StatusNormalClosure {
-					return
-				}
+			if websocket.CloseStatus(err) == websocket.StatusNormalClosure {
+				return
 			}
 
 			// NOTE: maybe treat websocket close errors differently based on their code.
