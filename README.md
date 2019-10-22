@@ -27,10 +27,10 @@ Make sure you have a working Go installation, if not see [this page](https://gol
 Then, install this package with the `go get` command:
 
 ```sh
-go get -u github.com/skwair/harmony
+go get github.com/skwair/harmony
 ```
 
-> Note that `go get -u` will always pull the latest version from the master branch before Go 1.11. With newer versions and Go modules enabled, the latest minor or patch release will be downloaded. `go get github.com/skwair/harmony@major.minor.patch` can be used to download a specific version. See [Go modules](https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies) for more information.
+> Note that `go get` will always pull the latest version from the master branch before Go 1.11. With newer versions and Go modules enabled, the latest minor or patch release will be downloaded. `go get github.com/skwair/harmony@major.minor.patch` can be used to download a specific version. See [Go modules](https://github.com/golang/go/wiki/Modules#how-to-upgrade-and-downgrade-dependencies) for more information.
 
 # Usage
 
@@ -46,13 +46,13 @@ import (
 )
 
 func main() {
-    c, err := harmony.NewClient("your.bot.token")
+    client, err := harmony.NewClient("your.bot.token")
     if err != nil {
         log.Fatal(err)
     }
 
     // Get information about the current user.
-    u, err := c.CurrentUser().Get(context.Background())
+    u, err := client.CurrentUser().Get(context.Background())
     if err != nil {
         log.Fatal(err)
     }
@@ -92,11 +92,11 @@ go test -v -race ./...
 
 # How does it compare to [DiscordGo](https://github.com/bwmarrin/discordgo)?
 
-DiscordGo offers some additional features right now, such as a way to create and manage your [Discord applications](https://discordapp.com/developers/applications/me). The majority of features though, such a receiving events, sending messages, ~receiving~ and sending voice data, etc. are also implemented in this library. Another thing that this library does not support is self bot, as they are a violation of Discord's TOS.
+Harmony exposes its API differently. It uses a [resource-based](https://godoc.org/github.com/skwair/harmony#hdr-Using_the_HTTP_API) approach which organizes methods by topic, greatly reducing the number of methods on the main `Client` type. The goal by doing this is to have a more friendly API which is easier to navigate.
 
-The main difference resides in the Gateway (websocket) real time API implementation. This library takes a different approach (using more synchronisation mechanisms) to avoid having to rely on hacks like [this](https://github.com/bwmarrin/discordgo/blob/8325a6bf6dd6c91ed4040a1617b07287b8fb0eba/wsapi.go#L868) or [this](https://github.com/bwmarrin/discordgo/blob/8325a6bf6dd6c91ed4040a1617b07287b8fb0eba/wsapi.go#L822), hopefully providing a more robust implementation as well as a better user experience.
+Another key difference is in the "event handler" mechanism. Instead of having a single [method](https://github.com/bwmarrin/discordgo/blob/dd99dea7adba674baa401e52362d6e330b50acf8/event.go#L120) that takes an `interface{}` as a parameter and guesses for which event you registered a handler based on its concrete type, this library provides a dedicated method for each event type, making it clear what signature your handler must have and ensuring it at compile time, not at runtime.
 
-Another difference is in the "event handler" mechanism. Instead of having a single [method](https://github.com/bwmarrin/discordgo/blob/8325a6bf6dd6c91ed4040a1617b07287b8fb0eba/event.go#L120) that takes an `interface{}` as a parameter and guesses for which event you registered a handler based on its concrete type, this library provides one method per event type, making it clear what signature your handler must have and ensuring it at compile time, not at runtime.
+Each action that results in an entry in the audit log has a `...WithReason` form, allowing to set a reason for the change (see the `X-Audit-Log-Reason` [header](https://discordapp.com/developers/docs/resources/audit-log#audit-logs) documentation for more information).
 
 Finally, this library has a full support of the [context](https://golang.org/pkg/context/) package, allowing the use of timeouts, deadlines and cancellation when interacting with Discord's API.
 

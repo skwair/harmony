@@ -14,8 +14,8 @@ and the ClientOption type for more information on how to do so.
 
 Once you have a Client, you can start interacting with the Discord API,
 but some methods (such as event handlers) won't be available until you
-connect to Discord's Gateway (link). You can do so by simply calling
-the Connect method of the Client:
+connect to Discord's Gateway. You can do so by simply calling the Connect
+method of the Client:
 
 	if err = client.Connect(); err != nil {
 		// Handle error
