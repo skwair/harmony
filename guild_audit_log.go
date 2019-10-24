@@ -54,7 +54,7 @@ func WithLimit(limit int) AuditLogOption {
 }
 
 // AuditLog returns the audit log of the given Guild. Requires the 'VIEW_AUDIT_LOG' permission.
-func (c *Client) AuditLog(ctx context.Context, guildID string, opts ...AuditLogOption) (*audit.Log, error) {
+func (r *GuildResource) AuditLog(ctx context.Context, opts ...AuditLogOption) (*audit.Log, error) {
 	query := &auditLogQuery{}
 
 	for _, opt := range opts {
@@ -76,8 +76,8 @@ func (c *Client) AuditLog(ctx context.Context, guildID string, opts ...AuditLogO
 		q.Set("limit", strconv.Itoa(query.limit))
 	}
 
-	e := endpoint.GetAuditLog(guildID, q.Encode())
-	resp, err := c.doReq(ctx, e, nil)
+	e := endpoint.GetAuditLog(r.guildID, q.Encode())
+	resp, err := r.client.doReq(ctx, e, nil)
 	if err != nil {
 		return nil, err
 	}

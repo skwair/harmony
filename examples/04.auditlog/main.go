@@ -30,7 +30,7 @@ func main() {
 		return
 	}
 
-	log, err := client.AuditLog(context.Background(), guildID, harmony.WithLimit(25))
+	log, err := client.Guild(guildID).AuditLog(context.Background(), harmony.WithLimit(25))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return
