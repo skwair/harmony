@@ -5,24 +5,10 @@ import (
 	"github.com/skwair/harmony/permission"
 )
 
-// Type describes the type of a channel. Different fields
-// are set or not depending on the channel's type.
-type Type int
-
-// Supported channel types :
-const (
-	TypeGuildText Type = iota
-	TypeDM
-	TypeGuildVoice
-	TypeGroupDM
-	TypeGuildCategory
-)
-
 // Settings describes a channel creation.
 type Settings struct {
 	Name      *optional.String `json:"name,omitempty"` // 2-100 characters.
-	Type      *optional.Int    `json:"type,omitempty"`
-	Topic     *optional.String `json:"topic"` // 0-1000 characters.
+	Topic     *optional.String `json:"topic"`          // 0-1000 characters.
 	Bitrate   *optional.Int    `json:"bitrate,omitempty"`
 	UserLimit *optional.Int    `json:"user_limit,omitempty"`
 	// RateLimitPerUser is the amount of seconds a user has to wait before sending
@@ -54,13 +40,6 @@ func NewSettings(opts ...Setting) *Settings {
 func WithName(name string) Setting {
 	return func(s *Settings) {
 		s.Name = optional.NewString(name)
-	}
-}
-
-// WithType sets the type of a channel. Can only be used when creating channels.
-func WithType(typ Type) Setting {
-	return func(s *Settings) {
-		s.Type = optional.NewInt(int(typ))
 	}
 }
 
