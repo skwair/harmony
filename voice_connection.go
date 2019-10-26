@@ -37,7 +37,7 @@ func (c *Client) JoinVoiceChannel(ctx context.Context, guildID, channelID string
 			SelfDeaf:  deaf,
 		},
 	}
-	if err := c.sendPayload(gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
+	if err := c.sendPayload(ctx, gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
 		return nil, err
 	}
 
@@ -61,7 +61,7 @@ func (c *Client) JoinVoiceChannel(ctx context.Context, guildID, channelID string
 
 // LeaveVoiceChannel notifies the Gateway we want the voice channel we are
 // connected to in the given guild.
-func (c *Client) LeaveVoiceChannel(guildID string) {
+func (c *Client) LeaveVoiceChannel(ctx context.Context, guildID string) {
 	conn, ok := c.voiceConnections[guildID]
 	if ok {
 		conn.Close()
@@ -73,7 +73,7 @@ func (c *Client) LeaveVoiceChannel(guildID string) {
 			GuildID: guildID,
 		},
 	}
-	if err := c.sendPayload(gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
+	if err := c.sendPayload(ctx, gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
 		c.logger.Errorf("could not properly leave voice channel: %v", err)
 	}
 }

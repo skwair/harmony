@@ -30,5 +30,5 @@ func (c *Client) sendHeartbeatPayload() error {
 		sequence = &seq
 	}
 	atomic.StoreInt64(&c.lastHeartbeatSend, time.Now().UnixNano())
-	return c.sendPayload(gatewayOpcodeHeartbeat, sequence)
+	return c.sendPayload(c.ctx, gatewayOpcodeHeartbeat, sequence)
 }

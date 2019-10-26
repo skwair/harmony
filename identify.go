@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"runtime"
 	"strings"
 	"sync/atomic"
@@ -26,7 +27,7 @@ type Status struct {
 }
 
 // identify sends an Identify payload to the Gateway.
-func (c *Client) identify() error {
+func (c *Client) identify(ctx context.Context) error {
 	i := &identify{
 		Token: c.token,
 		Properties: map[string]string{
@@ -42,7 +43,7 @@ func (c *Client) identify() error {
 		i.Shard = &[2]int{c.shard[0], c.shard[1]}
 	}
 
-	return c.sendPayload(gatewayOpcodeIdentify, i)
+	return c.sendPayload(ctx, gatewayOpcodeIdentify, i)
 }
 
 // resume is used to replay missed events when a disconnected client resumes.
@@ -53,11 +54,11 @@ type resume struct {
 }
 
 // resume sends a Resume payload to the Gateway.
-func (c *Client) resume() error {
+func (c *Client) resume(ctx context.Context) error {
 	r := &resume{
 		Token:     c.token,
 		SessionID: c.sessionID,
 		Seq:       atomic.LoadInt64(&c.sequence),
 	}
-	return c.sendPayload(gatewayOpcodeResume, r)
+	return c.sendPayload(ctx, gatewayOpcodeResume, r)
 }

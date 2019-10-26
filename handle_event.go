@@ -52,7 +52,7 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 		}
 
 		if resumable {
-			if err := c.resume(); err != nil {
+			if err := c.resume(c.ctx); err != nil {
 				return err
 			}
 		} else {
@@ -63,7 +63,7 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 			time.Sleep(time.Duration(rand.Intn(5)+1) * time.Second)
 
 			c.resetGatewaySession()
-			if err := c.identify(); err != nil {
+			if err := c.identify(c.ctx); err != nil {
 				return err
 			}
 		}

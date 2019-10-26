@@ -1,6 +1,7 @@
 package harmony
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"sync"
@@ -59,7 +60,6 @@ type Client struct {
 	// Discord's real-time API.
 	conn    *websocket.Conn
 	connRMu sync.Mutex // Read mutex.
-	connWMu sync.Mutex // Write mutex.
 
 	// Accessed atomically, acts as a boolean and is set to 1
 	// when the client is connected to the Gateway.
@@ -98,6 +98,12 @@ type Client struct {
 	wg    sync.WaitGroup
 	error chan error
 	stop  chan struct{}
+
+	// Shared context used for sending and receiving websocket
+	// payloads. Will be canceled when the client disconnects
+	// or an error occurs.
+	ctx    context.Context
+	cancel context.CancelFunc
 
 	handlersMu sync.RWMutex
 	handlers   map[string]handler

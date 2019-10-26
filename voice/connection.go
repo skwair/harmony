@@ -43,7 +43,6 @@ type Connection struct {
 	endpoint string
 
 	connRMu sync.Mutex
-	connWMu sync.Mutex
 	conn    *websocket.Conn
 	// Accessed atomically, acts as a boolean and is
 	// set to 1 when the client is connected to voice.
@@ -78,6 +77,12 @@ type Connection struct {
 	error chan error
 	// Closing this channel will stop the voice connection.
 	stop chan struct{}
+
+	// Shared context used for sending and receiving websocket
+	// payloads. Will be canceled when the client disconnects
+	// or an error occurs.
+	ctx    context.Context
+	cancel context.CancelFunc
 
 	// Accessed atomically, UNIX timestamps in nanoseconds.
 	lastHeartbeatACK, lastUDPHeartbeatACK int64
@@ -168,6 +173,8 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 		logger:    log.NewStd(os.Stderr, log.LevelError),
 	}
 
+	vc.ctx, vc.cancel = context.WithCancel(context.Background())
+
 	for _, opt := range opts {
 		opt(vc)
 	}
@@ -188,6 +195,8 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 		if err != nil {
 			_ = vc.conn.Close(websocket.StatusAbnormalClosure, "failed to establish voice connection")
 			atomic.StoreInt32(&vc.connected, 0)
+			close(vc.stop)
+			vc.cancel()
 		}
 	}()
 
@@ -227,7 +236,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 		Token:     vc.token,
 	}
 	vc.logger.Debug("identifying to the voice server")
-	if err = vc.sendPayload(voiceOpcodeIdentify, i); err != nil {
+	if err = vc.sendPayload(ctx, voiceOpcodeIdentify, i); err != nil {
 		return nil, err
 	}
 
@@ -290,7 +299,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 			Mode:    "xsalsa20_poly1305",
 		},
 	}
-	if err = vc.sendPayload(voiceOpcodeSelectProtocol, sp); err != nil {
+	if err = vc.sendPayload(ctx, voiceOpcodeSelectProtocol, sp); err != nil {
 		return nil, err
 	}
 
@@ -315,7 +324,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	// Making sure Opus receiver and sender are started.
 	vc.opusReadinessWG.Wait()
 
-	if err = vc.sendSilenceFrame(); err != nil {
+	if err = vc.sendSilenceFrame(ctx); err != nil {
 		return nil, err
 	}
 
@@ -349,6 +358,7 @@ func (vc *Connection) wait() {
 		}
 	}
 
+	vc.cancel()
 	atomic.StoreInt32(&vc.connected, 0)
 
 	// NOTE: maybe try to automatically reconnect if
@@ -379,14 +389,14 @@ func (vc *Connection) onDisconnect() {
 
 // Must send some audio packets so the voice server starts to send us audio packets.
 // This appears to be a bug from Discord.
-func (vc *Connection) sendSilenceFrame() error {
-	if err := vc.Speaking(true); err != nil {
+func (vc *Connection) sendSilenceFrame(ctx context.Context) error {
+	if err := vc.Speaking(ctx, true); err != nil {
 		return err
 	}
 
 	vc.Send <- silenceFrame
 
-	if err := vc.Speaking(false); err != nil {
+	if err := vc.Speaking(ctx, false); err != nil {
 		return err
 	}
 

@@ -21,3 +21,5 @@ gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
 layeh.com/gopus v0.0.0-20161224163843-0ebf989153aa/go.mod h1:AOef7vHz0+v4sWwJnr0jSyHiX/1NgsMoaxl+rEPz/I0=
 nhooyr.io/websocket v1.7.1 h1:W8X03PI0a2fiKb3Srck2gpmWr8UwJqDGndXw8bb93yM=
 nhooyr.io/websocket v1.7.1/go.mod h1:FyTYp9aYEPchTiPpXj2mOOnHJ49S35YStWZCjotwizg=
+nhooyr.io/websocket v1.7.2 h1:aIkwzOCACzgKF5DMqGA9pvJoJCiP0GsBeomGWVexRTc=
+nhooyr.io/websocket v1.7.2/go.mod h1:FyTYp9aYEPchTiPpXj2mOOnHJ49S35YStWZCjotwizg=

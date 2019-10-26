@@ -53,20 +53,17 @@ func (p *Payload) String() string {
 }
 
 // Send sends the given Payload, ensuring no concurrent call to conn.WriteJSON can occur.
-func Send(connWMu *sync.Mutex, conn *websocket.Conn, p *Payload) error {
-	connWMu.Lock()
-	err := wsjson.Write(context.TODO(), conn, p)
-	connWMu.Unlock()
-	return err
+func Send(ctx context.Context, conn *websocket.Conn, p *Payload) error {
+	return wsjson.Write(ctx, conn, p)
 }
 
 // Recv receives a single message from the provided connection, ensuring
 // no concurrent call to conn.ReadMessage can occur.
 // It also takes care of optionally decompressing the message and decoding
 // it into a payload.
-func Recv(connRMu *sync.Mutex, conn *websocket.Conn) (*Payload, error) {
+func Recv(ctx context.Context, connRMu *sync.Mutex, conn *websocket.Conn) (*Payload, error) {
 	connRMu.Lock()
-	typ, b, err := conn.Read(context.TODO())
+	typ, b, err := conn.Read(ctx)
 	connRMu.Unlock()
 	if err != nil {
 		return nil, err

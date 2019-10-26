@@ -26,7 +26,7 @@ func (vc *Connection) heartbeat(every time.Duration) {
 // sendHeartbeatPayload sends a single heartbeat payload
 // to the voice server containing a nonce.
 func (vc *Connection) sendHeartbeatPayload() error {
-	return vc.sendPayload(voiceOpcodeHeartbeat, time.Now().Unix())
+	return vc.sendPayload(vc.ctx, voiceOpcodeHeartbeat, time.Now().Unix())
 }
 
 // udpHeartbeat periodically sends a UDP heartbeat packet to the voice server.

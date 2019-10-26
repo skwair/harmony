@@ -51,6 +51,8 @@ func (c *Client) Connect(ctx context.Context) error {
 	c.error = make(chan error)
 	c.stop = make(chan struct{})
 
+	c.ctx, c.cancel = context.WithCancel(context.Background())
+
 	header := make(http.Header)
 	header.Add("Accept-Encoding", "zlib")
 	gwURL := fmt.Sprintf("%s?v=%d&encoding=%s", c.gatewayURL, gatewayVersion, gatewayEncoding)
@@ -68,9 +70,10 @@ func (c *Client) Connect(ctx context.Context) error {
 	// this client as not connected.
 	defer func() {
 		if err != nil {
-			_ = c.conn.Close(websocket.StatusAbnormalClosure, "could not connect") // Not much we can do about this, maybe log it?
+			_ = c.conn.Close(websocket.StatusAbnormalClosure, "failed to establish connection") // Not much we can do about this, maybe log it?
 			atomic.StoreInt32(&c.connected, 0)
 			close(c.stop)
+			c.cancel()
 		}
 	}()
 
@@ -99,7 +102,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	seq := atomic.LoadInt64(&c.sequence)
 	if seq == 0 && c.sessionID == "" {
 		c.logger.Debug("identifying to the gateway")
-		if err = c.identify(); err != nil {
+		if err = c.identify(ctx); err != nil {
 			return err
 		}
 
@@ -109,7 +112,7 @@ func (c *Client) Connect(ctx context.Context) error {
 		}
 	} else {
 		c.logger.Debugf("trying to resume an existing session (seq=%d; sessID=%q)", seq, c.sessionID)
-		if err = c.resume(); err != nil {
+		if err = c.resume(ctx); err != nil {
 			return err
 		}
 		// The Gateway should replay events we missed since we were disconnected
@@ -165,6 +168,7 @@ func (c *Client) wait() {
 		c.onDisconnect()
 	}
 
+	c.cancel()
 	atomic.StoreInt32(&c.connected, 0)
 
 	// If there was an error, try to reconnect.
