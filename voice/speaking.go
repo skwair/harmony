@@ -1,10 +1,13 @@
 package voice
 
-import "sync/atomic"
+import (
+	"context"
+	"sync/atomic"
+)
 
 // Speaking sends an Opcode 5 Speaking payload. This does nothing
 // if the user is already in the given state.
-func (vc *Connection) Speaking(s bool) error {
+func (vc *Connection) Speaking(ctx context.Context, s bool) error {
 	// Return early if the user is already in the asked state.
 	prev := atomic.LoadInt32(&vc.speaking)
 	if (prev == 1) == s {
@@ -27,7 +30,7 @@ func (vc *Connection) Speaking(s bool) error {
 		SSRC:     vc.ssrc,
 	}
 
-	if err := vc.sendPayload(voiceOpcodeSpeaking, p); err != nil {
+	if err := vc.sendPayload(ctx, voiceOpcodeSpeaking, p); err != nil {
 		// If there is an error, reset our internal value to its previous
 		// state because the update was not acknowledged by Discord.
 		atomic.StoreInt32(&vc.speaking, prev)

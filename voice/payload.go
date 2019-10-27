@@ -1,6 +1,7 @@
 package voice
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/skwair/harmony/internal/payload"
@@ -53,15 +54,15 @@ type ServerUpdate struct {
 
 // sendPayload sends a single Payload to the Voice server with
 // the given op and data.
-func (vc *Connection) sendPayload(op int, d interface{}) error {
+func (vc *Connection) sendPayload(ctx context.Context, op int, d interface{}) error {
 	b, err := json.Marshal(d)
 	if err != nil {
 		return err
 	}
-	return payload.Send(&vc.connWMu, vc.conn, &payload.Payload{Op: op, D: b})
+	return payload.Send(ctx, vc.conn, &payload.Payload{Op: op, D: b})
 }
 
 // recvPayload receives a single Payload from the Voice server.
 func (vc *Connection) recvPayload() (*payload.Payload, error) {
-	return payload.Recv(&vc.connRMu, vc.conn)
+	return payload.Recv(vc.ctx, &vc.connRMu, vc.conn)
 }

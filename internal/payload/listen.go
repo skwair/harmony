@@ -1,8 +1,9 @@
 package payload
 
 import (
-	"net"
 	"sync"
+
+	"nhooyr.io/websocket"
 )
 
 // Listen uses the given receiver to receive payloads and passes them to the
@@ -53,14 +54,12 @@ func RecvAll(
 		if err != nil {
 			// Silently break out of this loop because
 			// the connection was closed by the client.
-			if isConnectionClosed(err) {
+			if websocket.CloseStatus(err) == websocket.StatusNormalClosure {
 				return
 			}
 
 			// NOTE: maybe treat websocket close errors differently based on their code.
 			// See : https://discordapp.com/developers/docs/topics/opcodes-and-status-codes
-			// if e, ok := err.(*websocket.CloseError); ok {
-			// }
 
 			errCh <- err
 			return
@@ -68,14 +67,4 @@ func RecvAll(
 
 		payloads <- p
 	}
-}
-
-func isConnectionClosed(err error) bool {
-	if e, ok := err.(*net.OpError); ok {
-		// Ugly but : https://github.com/golang/go/issues/4373
-		if e.Err.Error() == "use of closed network connection" {
-			return true
-		}
-	}
-	return false
 }

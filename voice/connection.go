@@ -1,6 +1,7 @@
 package voice
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -11,7 +12,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/gorilla/websocket"
+	"nhooyr.io/websocket"
 
 	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/log"
@@ -42,7 +43,6 @@ type Connection struct {
 	endpoint string
 
 	connRMu sync.Mutex
-	connWMu sync.Mutex
 	conn    *websocket.Conn
 	// Accessed atomically, acts as a boolean and is
 	// set to 1 when the client is connected to voice.
@@ -77,6 +77,12 @@ type Connection struct {
 	error chan error
 	// Closing this channel will stop the voice connection.
 	stop chan struct{}
+
+	// Shared context used for sending and receiving websocket
+	// payloads. Will be canceled when the client disconnects
+	// or an error occurs.
+	ctx    context.Context
+	cancel context.CancelFunc
 
 	// Accessed atomically, UNIX timestamps in nanoseconds.
 	lastHeartbeatACK, lastUDPHeartbeatACK int64
@@ -148,7 +154,7 @@ type sessionDescription struct {
 // EstablishNewConnection establishes a new voice connection with the provided
 // information. This connection should be closed by calling its Close method
 // when no longer needed.
-func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...ConnectionOption) (*Connection, error) {
+func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *ServerUpdate, opts ...ConnectionOption) (*Connection, error) {
 	if state.ChannelID == nil {
 		return nil, errors.New("could not establish voice connection: channel ID in given state is nil")
 	}
@@ -167,6 +173,8 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 		logger:    log.NewStd(os.Stderr, log.LevelError),
 	}
 
+	vc.ctx, vc.cancel = context.WithCancel(context.Background())
+
 	for _, opt := range opts {
 		opt(vc)
 	}
@@ -175,7 +183,7 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 	var err error
 	vc.endpoint = fmt.Sprintf("wss://%s?v=3", strings.TrimSuffix(server.Endpoint, ":80"))
 	vc.logger.Debugf("connecting to voice server: %s", vc.endpoint)
-	vc.conn, _, err = websocket.DefaultDialer.Dial(vc.endpoint, nil)
+	vc.conn, _, err = websocket.Dial(ctx, vc.endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -185,8 +193,10 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 	// websocket so we can try to reconnect.
 	defer func() {
 		if err != nil {
-			vc.conn.Close()
+			_ = vc.conn.Close(websocket.StatusAbnormalClosure, "failed to establish voice connection")
 			atomic.StoreInt32(&vc.connected, 0)
+			close(vc.stop)
+			vc.cancel()
 		}
 	}()
 
@@ -226,7 +236,7 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 		Token:     vc.token,
 	}
 	vc.logger.Debug("identifying to the voice server")
-	if err = vc.sendPayload(voiceOpcodeIdentify, i); err != nil {
+	if err = vc.sendPayload(ctx, voiceOpcodeIdentify, i); err != nil {
 		return nil, err
 	}
 
@@ -289,7 +299,7 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 			Mode:    "xsalsa20_poly1305",
 		},
 	}
-	if err = vc.sendPayload(voiceOpcodeSelectProtocol, sp); err != nil {
+	if err = vc.sendPayload(ctx, voiceOpcodeSelectProtocol, sp); err != nil {
 		return nil, err
 	}
 
@@ -314,7 +324,7 @@ func EstablishNewConnection(state *StateUpdate, server *ServerUpdate, opts ...Co
 	// Making sure Opus receiver and sender are started.
 	vc.opusReadinessWG.Wait()
 
-	if err = vc.sendSilenceFrame(); err != nil {
+	if err = vc.sendSilenceFrame(ctx); err != nil {
 		return nil, err
 	}
 
@@ -342,15 +352,13 @@ func (vc *Connection) wait() {
 
 	close(vc.payloads)
 
-	if err := vc.conn.Close(); err != nil {
-		vc.logger.Errorf("failed to properly close voice connection: %v", err)
-	}
 	if vc.udpConn != nil {
 		if err := vc.udpConn.Close(); err != nil {
 			vc.logger.Errorf("failed to properly close voice UDP connection: %v", err)
 		}
 	}
 
+	vc.cancel()
 	atomic.StoreInt32(&vc.connected, 0)
 
 	// NOTE: maybe try to automatically reconnect if
@@ -362,14 +370,10 @@ func (vc *Connection) wait() {
 // with a 1006 code, logs the error and finally signals to all other
 // goroutines (heartbeat, listen, etc.) to stop by closing the stop channel.
 func (vc *Connection) onError(err error) {
-	if err := vc.conn.WriteControl(
-		websocket.CloseMessage,
-		websocket.FormatCloseMessage(websocket.CloseAbnormalClosure, ""),
-		time.Now().Add(time.Second*10),
-	); err != nil {
-		vc.logger.Errorf("could not properly close voice websocket: %v", err)
+	if closeErr := vc.conn.Close(websocket.StatusAbnormalClosure, "voice error"); closeErr != nil {
+		vc.logger.Errorf("could not properly close voice websocket connection: %v", closeErr)
+		vc.logger.Errorf("voice connection: %v", err)
 	}
-	vc.logger.Errorf("voice connection: %v", err)
 	close(vc.stop)
 }
 
@@ -377,26 +381,22 @@ func (vc *Connection) onError(err error) {
 // called the Close() method). It closes the underlying websocket
 // connection with a 1000 code and resets the UDP heartbeat sequence.
 func (vc *Connection) onDisconnect() {
-	if err := vc.conn.WriteControl(
-		websocket.CloseMessage,
-		websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""),
-		time.Now().Add(time.Second*10),
-	); err != nil {
-		vc.logger.Errorf("could not properly close voice websocket: %v", err)
+	if err := vc.conn.Close(websocket.StatusNormalClosure, "disconnecting"); err != nil {
+		vc.logger.Errorf("could not properly close voice websocket connection: %v", err)
 	}
 	atomic.StoreUint64(&vc.udpHeartbeatSequence, 0)
 }
 
 // Must send some audio packets so the voice server starts to send us audio packets.
 // This appears to be a bug from Discord.
-func (vc *Connection) sendSilenceFrame() error {
-	if err := vc.Speaking(true); err != nil {
+func (vc *Connection) sendSilenceFrame(ctx context.Context) error {
+	if err := vc.Speaking(ctx, true); err != nil {
 		return err
 	}
 
 	vc.Send <- silenceFrame
 
-	if err := vc.Speaking(false); err != nil {
+	if err := vc.Speaking(ctx, false); err != nil {
 		return err
 	}
 
