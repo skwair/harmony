@@ -113,7 +113,10 @@ func (vc *Connection) readUDP(ch chan<- *rtpFrame) {
 			continue
 		}
 
-		ch <- &rtpFrame{raw: buf, size: l}
+		select {
+		case ch <- &rtpFrame{raw: buf, size: l}:
+		default:
+		}
 	}
 }
 
