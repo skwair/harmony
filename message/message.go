@@ -26,11 +26,11 @@ type Flag int
 
 const (
 	// This message has been published to subscribed channels (via Channel Following).
-	FlagCrossposted = 1 << 0
+	FlagCrossposted Flag = 1 << 0
 	// This message originated from a message in another channel (via Channel Following).
-	FlagIsCrosspost = 1 << 1
+	FlagIsCrosspost Flag = 1 << 1
 	// Do not include any embeds when serializing this message.
-	FlagSuppressEmbeds = 1 << 2
+	FlagSuppressEmbeds Flag = 1 << 2
 )
 
 // Attachment is a file attached to a message.
