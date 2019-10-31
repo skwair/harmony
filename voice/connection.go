@@ -223,8 +223,8 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	}
 
 	var h struct {
-		V                 int `json:"v"`
-		HeartbeatInterval int `json:"heartbeat_interval"`
+		V                 int     `json:"v"`
+		HeartbeatInterval float64 `json:"heartbeat_interval"`
 	}
 	if err = json.Unmarshal(p.D, &h); err != nil {
 		return nil, err
@@ -375,6 +375,13 @@ func (vc *Connection) onError(err error) {
 		vc.logger.Errorf("could not properly close voice websocket connection: %v", closeErr)
 		vc.logger.Errorf("voice connection: %v", err)
 	}
+
+	// If an error occurred before the connection is established,
+	// the stop channel will already be closed, so return early.
+	if !vc.isEstablished() {
+		return
+	}
+
 	close(vc.stop)
 }
 
@@ -415,8 +422,7 @@ func (vc *Connection) Close() {
 	vc.mu.Lock()
 	defer vc.mu.Unlock()
 
-	connected := atomic.LoadInt32(&vc.connected) == 1
-	if !connected {
+	if !vc.isEstablished() {
 		return
 	}
 
@@ -431,4 +437,9 @@ func (vc *Connection) Close() {
 // need to report errors related to this voice connection.
 func (vc *Connection) Logger() log.Logger {
 	return vc.logger
+}
+
+// isEstablished reports whether the voice connection is fully established.
+func (vc *Connection) isEstablished() bool {
+	return atomic.LoadInt32(&vc.connected) == 1
 }

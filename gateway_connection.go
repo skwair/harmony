@@ -221,6 +221,13 @@ func (c *Client) onGatewayError(err error) {
 		c.resetGatewaySession()
 	}
 	c.logger.Errorf("gateway connection: %v", err)
+
+	// If an error occurred before the connection is established,
+	// the stop channel will already be closed, so return early.
+	if !c.isConnected() {
+		return
+	}
+
 	close(c.stop)
 }
 
