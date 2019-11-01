@@ -74,10 +74,12 @@ func (s *std) printfWithPrefix(prefix, format string, v ...interface{}) {
 type Level int
 
 const (
+	// Beware of debug level which will log sensitive information
+	// such as bot tokens, voice connections secret keys, etc.
 	LevelDebug Level = 2
 	LevelInfo  Level = 1
 	LevelError Level = 0
 )
 
 // NewStd returns a new logger for Harmony based on the standard logger.
-func NewStd(w io.Writer, l Level) Logger { return &std{Logger: log.New(w, "", 0), level: l} }
+func NewStd(w io.Writer, l Level) Logger { return &std{Logger: log.New(w, "", log.LstdFlags), level: l} }

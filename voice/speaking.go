@@ -2,40 +2,48 @@ package voice
 
 import (
 	"context"
-	"sync/atomic"
 )
 
-// Speaking sends an Opcode 5 Speaking payload. This does nothing
+// SpeakingMode is the type for modes that can be used as a bitwise mask for SetSpeakingMode.
+type SpeakingMode uint32
+
+const (
+	// Normal transmission of audio.
+	SpeakingModeVoice SpeakingMode = 0x1
+	// Transmission of context audio for video, no speaking indicator.
+	SpeakingModeSoundshare SpeakingMode = 0x2
+	// Priority speaker, lowering audio of other speakers.
+	SpeakingModePriority SpeakingMode = 0x4
+	// No audio transmission.
+	SpeakingModeOff SpeakingMode = 0x0
+)
+
+// SetSpeakingMode sends an Opcode 5 Speaking payload. This does nothing
 // if the user is already in the given state.
-func (vc *Connection) Speaking(ctx context.Context, s bool) error {
+func (vc *Connection) SetSpeakingMode(ctx context.Context, mode SpeakingMode) error {
+	vc.mu.Lock()
+	defer vc.mu.Unlock()
+
 	// Return early if the user is already in the asked state.
-	prev := atomic.LoadInt32(&vc.speaking)
-	if (prev == 1) == s {
+	if mode == vc.speakingMode {
 		return nil
 	}
 
-	if s {
-		atomic.StoreInt32(&vc.speaking, 1)
-	} else {
-		atomic.StoreInt32(&vc.speaking, 0)
-	}
-
 	p := struct {
-		Speaking bool   `json:"speaking"`
+		Speaking uint32 `json:"speaking"`
 		Delay    int    `json:"delay"`
 		SSRC     uint32 `json:"ssrc"`
 	}{
-		Speaking: s,
+		Speaking: uint32(mode),
 		Delay:    0,
 		SSRC:     vc.ssrc,
 	}
 
 	if err := vc.sendPayload(ctx, voiceOpcodeSpeaking, p); err != nil {
-		// If there is an error, reset our internal value to its previous
-		// state because the update was not acknowledged by Discord.
-		atomic.StoreInt32(&vc.speaking, prev)
 		return err
 	}
+
+	vc.speakingMode = mode
 
 	return nil
 }

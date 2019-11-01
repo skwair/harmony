@@ -18,12 +18,16 @@ import (
 	"github.com/skwair/harmony/log"
 )
 
+const (
+	gatewayVersion = 4
+)
+
 var silenceFrame = []byte{0xf8, 0xff, 0xfe}
 
 // Connection represents a Discord voice connection.
 type Connection struct {
 	// General lock for long operations that should
-	// not happen concurrently like Close.
+	// not happen concurrently like Close or SetSpeakingMode.
 	mu sync.Mutex
 
 	// Send is used to send Opus encoded audio packets.
@@ -51,9 +55,9 @@ type Connection struct {
 	// UDP connection voice data is sent across.
 	udpConn *net.UDPConn
 
-	// Accessed atomically, acts as a boolean and
-	// is set to 1 when the client is speaking.
-	speaking int32
+	// Holds the value of the last
+	// speaking (opcode 5) payload sent.
+	speakingMode SpeakingMode
 
 	// Secret used to encrypt voice data.
 	secret [32]byte
@@ -181,7 +185,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 
 	// Start by opening the voice websocket connection.
 	var err error
-	vc.endpoint = fmt.Sprintf("wss://%s?v=3", strings.TrimSuffix(server.Endpoint, ":80"))
+	vc.endpoint = fmt.Sprintf("wss://%s?v=%d", strings.TrimSuffix(server.Endpoint, ":80"), gatewayVersion)
 	vc.logger.Debugf("connecting to voice server: %s", vc.endpoint)
 	vc.conn, _, err = websocket.Dial(ctx, vc.endpoint, nil)
 	if err != nil {
@@ -219,8 +223,8 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	}
 
 	var h struct {
-		V                 int `json:"v"`
-		HeartbeatInterval int `json:"heartbeat_interval"`
+		V                 int     `json:"v"`
+		HeartbeatInterval float64 `json:"heartbeat_interval"`
 	}
 	if err = json.Unmarshal(p.D, &h); err != nil {
 		return nil, err
@@ -240,12 +244,9 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 		return nil, err
 	}
 
-	// There is currently a bug in the Hello payload heartbeat interval.
-	// See https://discordapp.com/developers/docs/topics/voice-connections#heartbeating
-	every := float64(h.HeartbeatInterval) * .75
 	// Now that we sent the identify payload, we can start heartbeating.
 	vc.wg.Add(1)
-	go vc.heartbeat(time.Duration(every) * time.Millisecond)
+	go vc.heartbeat(time.Duration(h.HeartbeatInterval) * time.Millisecond)
 
 	// A Ready payload should be sent after we identified.
 	p = <-vc.payloads
@@ -275,7 +276,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	// From now on, close the UDP connection if any error occurs.
 	defer func() {
 		if err != nil {
-			vc.udpConn.Close()
+			_ = vc.udpConn.Close()
 		}
 	}()
 
@@ -374,6 +375,13 @@ func (vc *Connection) onError(err error) {
 		vc.logger.Errorf("could not properly close voice websocket connection: %v", closeErr)
 		vc.logger.Errorf("voice connection: %v", err)
 	}
+
+	// If an error occurred before the connection is established,
+	// the stop channel will already be closed, so return early.
+	if !vc.isEstablished() {
+		return
+	}
+
 	close(vc.stop)
 }
 
@@ -390,13 +398,13 @@ func (vc *Connection) onDisconnect() {
 // Must send some audio packets so the voice server starts to send us audio packets.
 // This appears to be a bug from Discord.
 func (vc *Connection) sendSilenceFrame(ctx context.Context) error {
-	if err := vc.Speaking(ctx, true); err != nil {
+	if err := vc.SetSpeakingMode(ctx, SpeakingModeVoice); err != nil {
 		return err
 	}
 
 	vc.Send <- silenceFrame
 
-	if err := vc.Speaking(ctx, false); err != nil {
+	if err := vc.SetSpeakingMode(ctx, SpeakingModeOff); err != nil {
 		return err
 	}
 
@@ -414,8 +422,7 @@ func (vc *Connection) Close() {
 	vc.mu.Lock()
 	defer vc.mu.Unlock()
 
-	connected := atomic.LoadInt32(&vc.connected) == 1
-	if !connected {
+	if !vc.isEstablished() {
 		return
 	}
 
@@ -430,4 +437,9 @@ func (vc *Connection) Close() {
 // need to report errors related to this voice connection.
 func (vc *Connection) Logger() log.Logger {
 	return vc.logger
+}
+
+// isEstablished reports whether the voice connection is fully established.
+func (vc *Connection) isEstablished() bool {
+	return atomic.LoadInt32(&vc.connected) == 1
 }
