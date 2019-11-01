@@ -113,7 +113,12 @@ func (vc *Connection) readUDP(ch chan<- *rtpFrame) {
 			continue
 		}
 
-		ch <- &rtpFrame{raw: buf, size: l}
+		// Only send voice data through the channel if someone is listening
+		// on the other side, else we'll just block forever.
+		select {
+		case ch <- &rtpFrame{raw: buf, size: l}:
+		default:
+		}
 	}
 }
 
