@@ -27,7 +27,7 @@ var silenceFrame = []byte{0xf8, 0xff, 0xfe}
 // Connection represents a Discord voice connection.
 type Connection struct {
 	// General lock for long operations that should
-	// not happen concurrently like Close or SetSpeaking.
+	// not happen concurrently like Close or SetSpeakingMode.
 	mu sync.Mutex
 
 	// Send is used to send Opus encoded audio packets.
@@ -56,8 +56,8 @@ type Connection struct {
 	udpConn *net.UDPConn
 
 	// Holds the value of the last
-	//speaking (opcode 5) payload sent.
-	speaking SpeakingFlag
+	// speaking (opcode 5) payload sent.
+	speakingMode SpeakingMode
 
 	// Secret used to encrypt voice data.
 	secret [32]byte
@@ -398,13 +398,13 @@ func (vc *Connection) onDisconnect() {
 // Must send some audio packets so the voice server starts to send us audio packets.
 // This appears to be a bug from Discord.
 func (vc *Connection) sendSilenceFrame(ctx context.Context) error {
-	if err := vc.SetSpeaking(ctx, SpeakingFlagVoice); err != nil {
+	if err := vc.SetSpeakingMode(ctx, SpeakingModeVoice); err != nil {
 		return err
 	}
 
 	vc.Send <- silenceFrame
 
-	if err := vc.SetSpeaking(ctx, SpeakingFlagOff); err != nil {
+	if err := vc.SetSpeakingMode(ctx, SpeakingModeOff); err != nil {
 		return err
 	}
 
