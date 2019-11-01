@@ -2,6 +2,7 @@ package harmony
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"sync"
@@ -132,6 +133,10 @@ type Client struct {
 // "self-bots"), are not supported. To customize a Client, refer to available
 // ClientOption.
 func NewClient(token string, opts ...ClientOption) (*Client, error) {
+	if token == "" {
+		return nil, errors.New("harmony: a token is mandatory to create a client")
+	}
+
 	c := &Client{
 		name:               "Harmony",
 		token:              "Bot " + token,

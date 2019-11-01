@@ -54,7 +54,9 @@ func (b *bot) onNewMessage(m *harmony.Message) {
 		// use FileFromURL instead.
 		// If you already have your own reader, then FileFromReadCloser is the
 		// function you want to use.
-		file, err := harmony.FileFromDisk("discord-gopher.png", "zob")
+		// Leaving the name argument empty makes it default to the name of the
+		// file.
+		file, err := harmony.FileFromDisk("discord-gopher.png", "")
 		if err != nil {
 			log.Println(err)
 			return
