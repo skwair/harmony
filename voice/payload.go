@@ -59,10 +59,19 @@ func (vc *Connection) sendPayload(ctx context.Context, op int, d interface{}) er
 	if err != nil {
 		return err
 	}
-	return payload.Send(ctx, vc.conn, &payload.Payload{Op: op, D: b})
+	p := &payload.Payload{Op: op, D: b}
+	vc.logger.Debugf("sent voice payload (channel=%q): %s", vc.channelID, p)
+	return payload.Send(ctx, vc.conn, p)
 }
 
 // recvPayload receives a single Payload from the Voice server.
 func (vc *Connection) recvPayload() (*payload.Payload, error) {
-	return payload.Recv(vc.ctx, &vc.connRMu, vc.conn)
+	p, err := payload.Recv(vc.ctx, &vc.connRMu, vc.conn)
+	if err != nil {
+		return nil, err
+	}
+
+	vc.logger.Debugf("received voice payload (channel=%q): %s", vc.channelID, p)
+
+	return p, nil
 }
