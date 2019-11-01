@@ -322,9 +322,29 @@ func (s *State) updateGuildVoiceStates(vsu *voice.StateUpdate) {
 		return
 	}
 
+	// If we have a channel ID, then it means it is either a new voice
+	// state or an update to an existing one.
 	if vsu.ChannelID != nil {
-		g.VoiceStates = append(g.VoiceStates, vsu.State)
-	} else {
+		var (
+			found bool
+			index int
+		)
+		// Check if we already have a voice state for this user.
+		// If we do, save the index of the voice state.
+		for i, state := range g.VoiceStates {
+			if state.UserID == vsu.UserID {
+				found = true
+				index = i
+			}
+		}
+
+		// This state is already tracked, update it.
+		if found {
+			g.VoiceStates[index] = vsu.State
+		} else { // This is a new voice state, append it.
+			g.VoiceStates = append(g.VoiceStates, vsu.State)
+		}
+	} else { // We have no channel ID, the user left the channel, remove it from the state.
 		// Find the index of the voice state update to remove.
 		var toRemove int
 		for i, update := range g.VoiceStates {
