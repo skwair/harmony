@@ -7,9 +7,12 @@ import (
 )
 
 const (
-	sampleRate = 48000
-	channels   = 2
-	frameSize  = 960
+	// Number of channels supported.
+	Channels = 2
+	// Size of a single frame; this represents 20ms of audio sampled at 48kHz.
+	FrameSize = 960
+	// Sample rate used by Discord.
+	SampleRate = 48000
 )
 
 // OpusEncoder is an adapter that allows to send a PCM signal through the
@@ -21,7 +24,7 @@ const (
 //
 // Only one OpusEncoder is meant to be used at once on the same voice connection.
 func OpusEncoder(conn *voice.Connection) (pcmIn chan []int16, err error) {
-	enc, err := opus.NewEncoder(sampleRate, channels, opus.Audio)
+	enc, err := opus.NewEncoder(SampleRate, Channels, opus.Audio)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +37,7 @@ func OpusEncoder(conn *voice.Connection) (pcmIn chan []int16, err error) {
 				return
 			}
 
-			opusEncoded, err := enc.Encode(pcm, frameSize, frameSize*2*2)
+			opusEncoded, err := enc.Encode(pcm, FrameSize, FrameSize*2*2)
 			if err != nil {
 				conn.Logger().Errorf("could not encode PCM data: %v", err)
 				return
@@ -77,14 +80,14 @@ func OpusDecoder(conn *voice.Connection) (pcmOut chan []int16, free chan struct{
 
 			if _, ok = speakers[packet.SSRC]; !ok {
 				var err error
-				speakers[packet.SSRC], err = opus.NewDecoder(sampleRate, channels)
+				speakers[packet.SSRC], err = opus.NewDecoder(SampleRate, Channels)
 				if err != nil {
 					conn.Logger().Errorf("could not create Opus decoder: %v", err)
 					return
 				}
 			}
 
-			pcm, err := speakers[packet.SSRC].Decode(packet.Opus, frameSize, false)
+			pcm, err := speakers[packet.SSRC].Decode(packet.Opus, FrameSize, false)
 			if err != nil {
 				conn.Logger().Errorf("could not decode Opus data: %v", err)
 				return
