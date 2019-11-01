@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/skwair/harmony/channel"
+	"github.com/skwair/harmony/voice"
 )
 
 // State is a cache of the state of the application that is updated in real-time
@@ -307,6 +308,34 @@ func (s *State) updateGuildEmojis(guildID string, emojis []Emoji) {
 
 	if s.guilds[guildID] != nil {
 		s.guilds[guildID].Emojis = emojis
+	}
+}
+
+// updateGuildVoiceStates updates the voice states in a guild if it is
+// already tracked by the state, does nothing otherwise.
+func (s *State) updateGuildVoiceStates(vsu *voice.StateUpdate) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	g := s.guilds[vsu.GuildID]
+	if g == nil {
+		return
+	}
+
+	if vsu.ChannelID != nil {
+		g.VoiceStates = append(g.VoiceStates, vsu.State)
+	} else {
+		// Find the index of the voice state update to remove.
+		var toRemove int
+		for i, update := range g.VoiceStates {
+			if update.GuildID == vsu.GuildID {
+				toRemove = i
+			}
+		}
+
+		// Remove it, without preserving the order of the slice.
+		g.VoiceStates[toRemove] = g.VoiceStates[len(g.VoiceStates)-1]
+		g.VoiceStates = g.VoiceStates[:len(g.VoiceStates)-1]
 	}
 }
 

@@ -316,6 +316,9 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		if err = json.Unmarshal(data, &vs); err != nil {
 			return err
 		}
+		if c.withStateTracking {
+			c.State.updateGuildVoiceStates(&vs)
+		}
 		c.handle(eventVoiceStateUpdate, &vs)
 	case eventVoiceServerUpdate:
 		var vs voice.ServerUpdate
