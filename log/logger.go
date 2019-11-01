@@ -74,6 +74,8 @@ func (s *std) printfWithPrefix(prefix, format string, v ...interface{}) {
 type Level int
 
 const (
+	// Beware of debug level which will log sensitive information
+	// such as bot tokens, voice connections secret keys, etc.
 	LevelDebug Level = 2
 	LevelInfo  Level = 1
 	LevelError Level = 0
