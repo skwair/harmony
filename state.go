@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/skwair/harmony/channel"
+	"github.com/skwair/harmony/voice"
 )
 
 // State is a cache of the state of the application that is updated in real-time
@@ -307,6 +308,50 @@ func (s *State) updateGuildEmojis(guildID string, emojis []Emoji) {
 
 	if s.guilds[guildID] != nil {
 		s.guilds[guildID].Emojis = emojis
+	}
+}
+
+// updateGuildVoiceStates updates the voice states in a guild if it is
+// already tracked by the state, does nothing otherwise.
+func (s *State) updateGuildVoiceStates(vsu *voice.StateUpdate) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	g := s.guilds[vsu.GuildID]
+	if g == nil {
+		return
+	}
+
+	// If we have a channel ID, then it means it is either a new voice
+	// state or an update to an existing one.
+	if vsu.ChannelID != nil {
+		index := -1
+		// Check if we already have a voice state for this user.
+		// If we do, save the index of the voice state.
+		for i, state := range g.VoiceStates {
+			if state.UserID == vsu.UserID {
+				index = i
+			}
+		}
+
+		// This state is already tracked, update it.
+		if index != -1 {
+			g.VoiceStates[index] = vsu.State
+		} else { // This is a new voice state, append it.
+			g.VoiceStates = append(g.VoiceStates, vsu.State)
+		}
+	} else { // We have no channel ID, the user left the channel, remove it from the state.
+		// Find the index of the voice state update to remove.
+		var toRemove int
+		for i, update := range g.VoiceStates {
+			if update.GuildID == vsu.GuildID {
+				toRemove = i
+			}
+		}
+
+		// Remove it, without preserving the order of the slice.
+		g.VoiceStates[toRemove] = g.VoiceStates[len(g.VoiceStates)-1]
+		g.VoiceStates = g.VoiceStates[:len(g.VoiceStates)-1]
 	}
 }
 
