@@ -325,21 +325,17 @@ func (s *State) updateGuildVoiceStates(vsu *voice.StateUpdate) {
 	// If we have a channel ID, then it means it is either a new voice
 	// state or an update to an existing one.
 	if vsu.ChannelID != nil {
-		var (
-			found bool
-			index int
-		)
+		index := -1
 		// Check if we already have a voice state for this user.
 		// If we do, save the index of the voice state.
 		for i, state := range g.VoiceStates {
 			if state.UserID == vsu.UserID {
-				found = true
 				index = i
 			}
 		}
 
 		// This state is already tracked, update it.
-		if found {
+		if index != -1 {
 			g.VoiceStates[index] = vsu.State
 		} else { // This is a new voice state, append it.
 			g.VoiceStates = append(g.VoiceStates, vsu.State)
