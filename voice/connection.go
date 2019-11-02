@@ -197,7 +197,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	// websocket so we can try to reconnect.
 	defer func() {
 		if err != nil {
-			_ = vc.conn.Close(websocket.StatusAbnormalClosure, "failed to establish voice connection")
+			_ = vc.conn.Close(websocket.StatusInternalError, "failed to establish voice connection")
 			atomic.StoreInt32(&vc.connected, 0)
 			close(vc.stop)
 			vc.cancel()
@@ -371,7 +371,7 @@ func (vc *Connection) wait() {
 // with a 1006 code, logs the error and finally signals to all other
 // goroutines (heartbeat, listen, etc.) to stop by closing the stop channel.
 func (vc *Connection) onError(err error) {
-	if closeErr := vc.conn.Close(websocket.StatusAbnormalClosure, "voice error"); closeErr != nil {
+	if closeErr := vc.conn.Close(websocket.StatusInternalError, "voice error"); closeErr != nil {
 		vc.logger.Errorf("could not properly close voice websocket connection: %v", closeErr)
 		vc.logger.Errorf("voice connection: %v", err)
 	}
