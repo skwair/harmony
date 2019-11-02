@@ -213,10 +213,11 @@ func (c *Client) reconnectWithBackoff() {
 // with a 1006 code, logs the error and finally signals to all other
 // goroutines (heartbeat, listen, etc.) to stop by closing the stop channel.
 func (c *Client) onGatewayError(err error) {
+	c.logger.Errorf("gateway connection error: %v", err)
+
 	if closeErr := c.conn.Close(websocket.StatusInternalError, "gateway error"); closeErr != nil {
 		c.logger.Errorf("could not properly close websocket connection (error): %v", closeErr)
 	}
-	c.logger.Errorf("gateway connection: %v", err)
 
 	// If an error occurred before the connection is established,
 	// the stop channel will already be closed, so return early.
