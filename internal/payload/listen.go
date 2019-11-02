@@ -52,13 +52,16 @@ func RecvAll(
 	for {
 		p, err := receiver()
 		if err != nil {
-			// Silently break out of this loop because
-			// the connection was closed by the client.
-			if websocket.CloseStatus(err) == websocket.StatusNormalClosure {
+			// Silently break out of this loop because the connection
+			// was closed (either intentionally by calling Disconnect
+			// or because we encountered an error).
+			if websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
+				websocket.CloseStatus(err) == websocket.StatusInternalError {
 				return
 			}
 
-			// NOTE: maybe treat websocket close errors differently based on their code.
+			// NOTE: maybe treat websocket close errors differently based on their code
+			// for the 4000-4999 range.
 			// See : https://discordapp.com/developers/docs/topics/opcodes-and-status-codes
 
 			errCh <- err

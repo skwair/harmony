@@ -70,7 +70,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	// this client as not connected.
 	defer func() {
 		if err != nil {
-			_ = c.conn.Close(websocket.StatusAbnormalClosure, "failed to establish connection") // Not much we can do about this, maybe log it?
+			_ = c.conn.Close(websocket.StatusInternalError, "failed to establish connection") // Not much we can do about this, maybe log it?
 			atomic.StoreInt32(&c.connected, 0)
 			close(c.stop)
 			c.cancel()
@@ -213,14 +213,17 @@ func (c *Client) reconnectWithBackoff() {
 // with a 1006 code, logs the error and finally signals to all other
 // goroutines (heartbeat, listen, etc.) to stop by closing the stop channel.
 func (c *Client) onGatewayError(err error) {
-	if closeErr := c.conn.Close(websocket.StatusAbnormalClosure, "gateway error"); closeErr != nil {
+	if closeErr := c.conn.Close(websocket.StatusInternalError, "gateway error"); closeErr != nil {
 		c.logger.Errorf("could not properly close websocket connection (error): %v", closeErr)
-		// If we can't properly close the websocket connection,
-		// we should reset our session so the next call to Connect
-		// won't try to resume a corrupted session forever.
-		c.resetGatewaySession()
 	}
 	c.logger.Errorf("gateway connection: %v", err)
+
+	// If an error occurred before the connection is established,
+	// the stop channel will already be closed, so return early.
+	if !c.isConnected() {
+		return
+	}
+
 	close(c.stop)
 }
 
