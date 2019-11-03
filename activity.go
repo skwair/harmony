@@ -35,8 +35,8 @@ type Activity struct {
 // ActivityTimestamp is the unix time (in milliseconds) of when the
 // activity starts and ends.
 type ActivityTimestamp struct {
-	Start int `json:"start,omitempty"`
-	End   int `json:"end,omitempty"`
+	Start int64 `json:"start,omitempty"`
+	End   int64 `json:"end,omitempty"`
 }
 
 // ActivityParty contains information for the current party of the player.
