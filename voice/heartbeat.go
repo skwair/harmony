@@ -2,7 +2,6 @@ package voice
 
 import (
 	"encoding/binary"
-	"sync/atomic"
 	"time"
 
 	"github.com/skwair/harmony/internal/heartbeat"
@@ -19,7 +18,7 @@ func (vc *Connection) heartbeat(every time.Duration) {
 		vc.error,
 		every,
 		vc.sendHeartbeatPayload,
-		&vc.lastHeartbeatACK,
+		vc.lastHeartbeatACK,
 	)
 }
 
@@ -40,7 +39,7 @@ func (vc *Connection) udpHeartbeat(every time.Duration) {
 		vc.error,
 		time.Second*5,
 		vc.sendUDPHeartbeat,
-		&vc.lastUDPHeartbeatACK,
+		vc.lastUDPHeartbeatACK,
 	)
 }
 
@@ -50,7 +49,7 @@ func (vc *Connection) sendUDPHeartbeat() error {
 
 	// Load and increment the UDP sequence atomically,
 	// but send the value before the increment.
-	binary.LittleEndian.PutUint64(packet, atomic.AddUint64(&vc.udpHeartbeatSequence, 1)-1)
+	binary.LittleEndian.PutUint64(packet, vc.udpHeartbeatSequence.Add(1)-1)
 	if _, err := vc.udpConn.Write(packet); err != nil {
 		return err
 	}

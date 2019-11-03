@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"math/rand"
-	"sync/atomic"
 	"time"
 
 	"github.com/skwair/harmony/internal/payload"
@@ -14,7 +13,7 @@ import (
 func (c *Client) handleEvent(p *payload.Payload) error {
 	switch p.Op {
 	case gatewayOpcodeDispatch:
-		atomic.StoreInt64(&c.sequence, p.S)
+		c.sequence.Store(p.S)
 
 		// Those two events should be sent through the payloads channel if the
 		// client is currently connecting to a voice channel so the JoinVoiceChannel
@@ -73,9 +72,9 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 
 	case gatewayOpcodeHeartbeatACK:
 		if c.withStateTracking {
-			c.State.setRTT(time.Since(time.Unix(0, c.lastHeartbeatSend)))
+			c.State.setRTT(time.Since(time.Unix(0, c.lastHeartbeatSend.Load())))
 		}
-		atomic.StoreInt64(&c.lastHeartbeatACK, time.Now().UnixNano())
+		c.lastHeartbeatACK.Store(time.Now().UnixNano())
 	}
 	return nil
 }

@@ -2,7 +2,6 @@ package harmony
 
 import (
 	"encoding/json"
-	"sync/atomic"
 
 	"github.com/skwair/harmony/voice"
 )
@@ -55,14 +54,14 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	switch typ {
 	case eventHello:
 	case eventReady:
-		atomic.StoreInt32(&c.connected, 1)
+		c.connected.Store(true)
 		var r Ready
 		if err = json.Unmarshal(data, &r); err != nil {
 			return err
 		}
 		c.handle(eventReady, &r)
 	case eventResumed:
-		atomic.StoreInt32(&c.connected, 1)
+		c.connected.Store(true)
 	case eventInvalidSession:
 
 	case eventChannelCreate:
