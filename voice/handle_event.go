@@ -1,7 +1,6 @@
 package voice
 
 import (
-	"sync/atomic"
 	"time"
 
 	"github.com/skwair/harmony/internal/payload"
@@ -20,7 +19,7 @@ func (vc *Connection) handleEvent(p *payload.Payload) error {
 	// Heartbeat ACK.
 	case voiceOpcodeHeartbeatACK:
 		// TODO: Check nonce ?
-		atomic.StoreInt64(&vc.lastHeartbeatACK, time.Now().UnixNano())
+		vc.lastHeartbeatACK.Store(time.Now().UnixNano())
 
 	// Resume acknowledged by the voice server.
 	case voiceOpcodeResumed:

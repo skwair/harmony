@@ -4,7 +4,6 @@ import (
 	"context"
 	"runtime"
 	"strings"
-	"sync/atomic"
 )
 
 // identify is used to trigger the initial handshake with the gateway.
@@ -58,7 +57,7 @@ func (c *Client) resume(ctx context.Context) error {
 	r := &resume{
 		Token:     c.token,
 		SessionID: c.sessionID,
-		Seq:       atomic.LoadInt64(&c.sequence),
+		Seq:       c.sequence.Load(),
 	}
 	return c.sendPayload(ctx, gatewayOpcodeResume, r)
 }

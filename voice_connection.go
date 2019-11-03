@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"sync/atomic"
 
 	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/voice"
@@ -25,8 +24,8 @@ func (c *Client) JoinVoiceChannel(ctx context.Context, guildID, channelID string
 
 	// This is used to notify the already started event handler that
 	// some specific payloads should be sent through to c.payloads.
-	atomic.StoreInt32(&c.connectingToVoice, 1)
-	defer atomic.StoreInt32(&c.connectingToVoice, 0)
+	c.connectingToVoice.Store(true)
+	defer c.connectingToVoice.Store(false)
 
 	// Notify a voice server that we want to connect to a voice channel.
 	vsu := &voice.StateUpdate{

@@ -6,7 +6,6 @@ import (
 	"math"
 	"math/big"
 	"net"
-	"sync/atomic"
 	"time"
 
 	"golang.org/x/crypto/nacl/secretbox"
@@ -97,7 +96,7 @@ func (vc *Connection) readUDP(ch chan<- *rtpFrame) {
 
 		// Handle UDP heartbeat ACK.
 		if l == 8 {
-			atomic.StoreInt64(&vc.lastUDPHeartbeatACK, time.Now().UnixNano())
+			vc.lastUDPHeartbeatACK.Store(time.Now().UnixNano())
 
 			// TODO: check the sequence number in the UDP heartbeat ?
 			// udpSeq := binary.LittleEndian.Uint64(buf[:l])

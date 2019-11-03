@@ -4,8 +4,9 @@ import (
 	"errors"
 	"net"
 	"sync"
-	"sync/atomic"
 	"time"
+
+	"go.uber.org/atomic"
 )
 
 var (
@@ -26,7 +27,7 @@ func Run(
 	errCh chan<- error,
 	every time.Duration,
 	h Hearbeater,
-	lastHeartbeatACK *int64,
+	lastHeartbeatACK *atomic.Int64,
 ) {
 	defer wg.Done()
 
@@ -38,7 +39,7 @@ func Run(
 		// If we haven't received a heartbeat ACK since the
 		// last heartbeat we sent, we should consider the
 		// connection as stale and return an error.
-		t := atomic.LoadInt64(lastHeartbeatACK)
+		t := lastHeartbeatACK.Load()
 		if !first && time.Now().UTC().Sub(time.Unix(0, t).UTC()) > every {
 			errCh <- errStaleConnection
 			return
@@ -72,7 +73,7 @@ func RunUDP(
 	errCh chan<- error,
 	every time.Duration,
 	h Hearbeater,
-	lastUDPHeartbeatACK *int64,
+	lastUDPHeartbeatACK *atomic.Int64,
 ) {
 	defer wg.Done()
 
@@ -87,7 +88,7 @@ func RunUDP(
 		// NOTE: since we're dealing with UDP, this might
 		// not be the best idea. Maybe consider adding a threshold
 		// before assuming the connection is down?
-		t := atomic.LoadInt64(lastUDPHeartbeatACK)
+		t := lastUDPHeartbeatACK.Load()
 		if !first && time.Now().UTC().Sub(time.Unix(0, t).UTC()) > every {
 			errCh <- errStaleUDPConnection
 			return

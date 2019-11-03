@@ -9,9 +9,9 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
+	"go.uber.org/atomic"
 	"nhooyr.io/websocket"
 
 	"github.com/skwair/harmony/internal/payload"
@@ -50,7 +50,7 @@ type Connection struct {
 	conn    *websocket.Conn
 	// Accessed atomically, acts as a boolean and is
 	// set to 1 when the client is connected to voice.
-	connected int32
+	connected *atomic.Bool
 
 	// UDP connection voice data is sent across.
 	udpConn *net.UDPConn
@@ -67,7 +67,7 @@ type Connection struct {
 	// Accessed atomically, acts as a boolean
 	// and is set to 1 when the connection is
 	// being established.
-	connectingToVoice int32
+	connectingToVoice *atomic.Bool
 	// When connectingToVoice is set to 1, some
 	// payloads received by the event handler will
 	// be sent through this channel.
@@ -89,10 +89,10 @@ type Connection struct {
 	cancel context.CancelFunc
 
 	// Accessed atomically, UNIX timestamps in nanoseconds.
-	lastHeartbeatACK, lastUDPHeartbeatACK int64
+	lastHeartbeatACK, lastUDPHeartbeatACK *atomic.Int64
 	// Accessed atomically, sequence number of the last
 	// UDP heartbeat we sent.
-	udpHeartbeatSequence uint64
+	udpHeartbeatSequence *atomic.Uint64
 
 	// opusReadinessWG is a wait group used to make sure
 	// the Opus sender and receiver are correctly started
@@ -164,17 +164,22 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	}
 
 	vc := &Connection{
-		Send:      make(chan []byte, 2),
-		Recv:      make(chan *AudioPacket),
-		payloads:  make(chan *payload.Payload),
-		error:     make(chan error),
-		stop:      make(chan struct{}),
-		userID:    state.UserID,
-		sessionID: state.SessionID,
-		guildID:   state.GuildID,
-		channelID: *state.ChannelID,
-		token:     server.Token,
-		logger:    log.NewStd(os.Stderr, log.LevelError),
+		Send:                 make(chan []byte, 2),
+		Recv:                 make(chan *AudioPacket),
+		payloads:             make(chan *payload.Payload),
+		error:                make(chan error),
+		stop:                 make(chan struct{}),
+		userID:               state.UserID,
+		sessionID:            state.SessionID,
+		guildID:              state.GuildID,
+		channelID:            *state.ChannelID,
+		token:                server.Token,
+		logger:               log.NewStd(os.Stderr, log.LevelError),
+		lastHeartbeatACK:     atomic.NewInt64(0),
+		udpHeartbeatSequence: atomic.NewUint64(0),
+		lastUDPHeartbeatACK:  atomic.NewInt64(0),
+		connected:            atomic.NewBool(false),
+		connectingToVoice:    atomic.NewBool(false),
 	}
 
 	vc.ctx, vc.cancel = context.WithCancel(context.Background())
@@ -198,16 +203,17 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	defer func() {
 		if err != nil {
 			_ = vc.conn.Close(websocket.StatusInternalError, "failed to establish voice connection")
-			atomic.StoreInt32(&vc.connected, 0)
+			vc.connected.Store(false)
 			close(vc.stop)
 			vc.cancel()
 		}
 	}()
 
 	// This is used to notify the event handler that some
-	// specific payloads should be sent through to vc.payloads.
-	atomic.StoreInt32(&vc.connectingToVoice, 1)
-	defer atomic.StoreInt32(&vc.connectingToVoice, 0)
+	// specific payloads should be sent through to vc.payloads
+	// while we are connecting to the voice server.
+	vc.connectingToVoice.Store(true)
+	defer vc.connectingToVoice.Store(false)
 
 	vc.wg.Add(2) // listen starts an additional goroutine.
 	go vc.listen()
@@ -329,7 +335,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 		return nil, err
 	}
 
-	atomic.StoreInt32(&vc.connected, 1)
+	vc.connected.Store(true)
 	vc.logger.Debug("connected to voice server")
 	return vc, nil
 }
@@ -360,7 +366,7 @@ func (vc *Connection) wait() {
 	}
 
 	vc.cancel()
-	atomic.StoreInt32(&vc.connected, 0)
+	vc.connected.Store(false)
 
 	// NOTE: maybe try to automatically reconnect if
 	// we err != nil here, like done in the Gateway.
@@ -392,7 +398,7 @@ func (vc *Connection) onDisconnect() {
 	if err := vc.conn.Close(websocket.StatusNormalClosure, "disconnecting"); err != nil {
 		vc.logger.Errorf("could not properly close voice websocket connection: %v", err)
 	}
-	atomic.StoreUint64(&vc.udpHeartbeatSequence, 0)
+	vc.udpHeartbeatSequence.Store(0)
 }
 
 // Must send some audio packets so the voice server starts to send us audio packets.
@@ -414,7 +420,7 @@ func (vc *Connection) sendSilenceFrame(ctx context.Context) error {
 // isConnecting returns whether this voice connection is currently connecting
 // to a voice channel.
 func (vc *Connection) isConnecting() bool {
-	return atomic.LoadInt32(&vc.connectingToVoice) == 1
+	return vc.connectingToVoice.Load()
 }
 
 // Disconnect closes the voice connection.
@@ -441,5 +447,5 @@ func (vc *Connection) Logger() log.Logger {
 
 // isEstablished reports whether the voice connection is fully established.
 func (vc *Connection) isEstablished() bool {
-	return atomic.LoadInt32(&vc.connected) == 1
+	return vc.connected.Load()
 }

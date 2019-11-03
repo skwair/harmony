@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"go.uber.org/atomic"
 	"nhooyr.io/websocket"
 
 	"github.com/skwair/harmony/internal/payload"
@@ -64,11 +65,11 @@ type Client struct {
 
 	// Accessed atomically, acts as a boolean and is set to 1
 	// when the client is connected to the Gateway.
-	connected int32
+	connected *atomic.Bool
 
 	// Accessed atomically, acts as a boolean and is set to 1
 	// when the client is connecting to voice.
-	connectingToVoice int32
+	connectingToVoice *atomic.Bool
 	// When connectingToVoice is set to 1, some
 	// payloads received by the event handler will
 	// be sent through this channel.
@@ -85,13 +86,13 @@ type Client struct {
 	sessionID string
 	// Accessed atomically, sequence number of the last
 	// Dispatch event we received from the Gateway.
-	sequence int64
+	sequence *atomic.Int64
 	// Accessed atomically, UNIX timestamp in nanoseconds
 	// of the last heartbeat acknowledgement.
-	lastHeartbeatACK int64
+	lastHeartbeatACK *atomic.Int64
 	// Accessed atomically, UNIX timestamp in nanoseconds
 	// of the last heartbeat send. Used to calculate RTT.
-	lastHeartbeatSend int64
+	lastHeartbeatSend *atomic.Int64
 
 	// Those fields are used for synchronisation between
 	// the listen, receive, heartbeat and wait goroutines
@@ -150,6 +151,11 @@ func NewClient(token string, opts ...ClientOption) (*Client, error) {
 		withStateTracking:  true,
 		voiceConnections:   make(map[string]*voice.Connection),
 		logger:             log.NewStd(os.Stderr, log.LevelError),
+		sequence:           atomic.NewInt64(0),
+		lastHeartbeatSend:  atomic.NewInt64(0),
+		lastHeartbeatACK:   atomic.NewInt64(0),
+		connected:          atomic.NewBool(false),
+		connectingToVoice:  atomic.NewBool(false),
 	}
 
 	for _, opt := range opts {

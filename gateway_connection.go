@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"sync/atomic"
 	"time"
 
 	"nhooyr.io/websocket"
@@ -71,7 +70,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	defer func() {
 		if err != nil {
 			_ = c.conn.Close(websocket.StatusInternalError, "failed to establish connection") // Not much we can do about this, maybe log it?
-			atomic.StoreInt32(&c.connected, 0)
+			c.connected.Store(false)
 			close(c.stop)
 			c.cancel()
 		}
@@ -99,7 +98,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	// create a new session, else this means we have already
 	// been connected to the Gateway with this client and
 	// we should try to resume a previous connection.
-	seq := atomic.LoadInt64(&c.sequence)
+	seq := c.sequence.Load()
 	if seq == 0 && c.sessionID == "" {
 		c.logger.Debug("identifying to the gateway")
 		if err = c.identify(ctx); err != nil {
@@ -169,7 +168,7 @@ func (c *Client) wait() {
 	}
 
 	c.cancel()
-	atomic.StoreInt32(&c.connected, 0)
+	c.connected.Store(false)
 
 	// If there was an error, try to reconnect.
 	if err != nil {
@@ -243,13 +242,13 @@ func (c *Client) onDisconnect() {
 
 // isConnected reports whether the client is currently connected to the Gateway.
 func (c *Client) isConnected() bool {
-	return atomic.LoadInt32(&c.connected) == 1
+	return c.connected.Load()
 }
 
 // isConnectingToVoice reports whether the client is currently connecting to
 // a voice server.
 func (c *Client) isConnectingToVoice() bool {
-	return atomic.LoadInt32(&c.connectingToVoice) == 1
+	return c.connectingToVoice.Load()
 }
 
 // resetGatewaySession resets the session ID as well as the sequence number
@@ -258,5 +257,5 @@ func (c *Client) isConnectingToVoice() bool {
 // start a new fresh session, instead of trying to resume an existing session.
 func (c *Client) resetGatewaySession() {
 	c.sessionID = ""
-	atomic.StoreInt64(&c.sequence, 0)
+	c.sequence.Store(0)
 }
