@@ -344,7 +344,7 @@ func (s *State) updateGuildVoiceStates(vsu *voice.StateUpdate) {
 		// Find the index of the voice state update to remove.
 		var toRemove int
 		for i, update := range g.VoiceStates {
-			if update.GuildID == vsu.GuildID {
+			if update.UserID == vsu.UserID {
 				toRemove = i
 			}
 		}
