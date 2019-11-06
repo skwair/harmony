@@ -20,5 +20,5 @@ func (c *Client) listen() {
 }
 
 func (c *Client) recvPayloads(ch chan<- *payload.Payload) {
-	payload.RecvAll(&c.wg, ch, c.error, c.recvPayload)
+	payload.RecvAll(&c.wg, ch, c.error, c.stop, c.recvPayload)
 }

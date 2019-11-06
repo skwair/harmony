@@ -45,6 +45,7 @@ func RecvAll(
 	wg *sync.WaitGroup,
 	payloads chan<- *Payload,
 	errCh chan<- error,
+	stop <-chan struct{},
 	receiver func() (*Payload, error),
 ) {
 	defer wg.Done()
@@ -68,6 +69,10 @@ func RecvAll(
 			return
 		}
 
-		payloads <- p
+		select {
+		case payloads <- p:
+		case <-stop:
+			return
+		}
 	}
 }

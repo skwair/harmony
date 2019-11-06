@@ -17,5 +17,5 @@ func (vc *Connection) listen() {
 }
 
 func (vc *Connection) recvPayloads(ch chan<- *payload.Payload) {
-	payload.RecvAll(&vc.wg, ch, vc.error, vc.recvPayload)
+	payload.RecvAll(&vc.wg, ch, vc.error, vc.stop, vc.recvPayload)
 }

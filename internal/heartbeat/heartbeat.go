@@ -1,17 +1,12 @@
 package heartbeat
 
 import (
-	"errors"
+	"fmt"
 	"net"
 	"sync"
 	"time"
 
 	"go.uber.org/atomic"
-)
-
-var (
-	errStaleConnection    = errors.New("stale connection")
-	errStaleUDPConnection = errors.New("stale UDP connection")
 )
 
 // Hearbeater is a function that sends a heartbeat.
@@ -39,9 +34,9 @@ func Run(
 		// If we haven't received a heartbeat ACK since the
 		// last heartbeat we sent, we should consider the
 		// connection as stale and return an error.
-		t := lastHeartbeatACK.Load()
-		if !first && time.Now().UTC().Sub(time.Unix(0, t).UTC()) > every {
-			errCh <- errStaleConnection
+		t := time.Unix(0, lastHeartbeatACK.Load()).UTC()
+		if !first && time.Now().UTC().Sub(t) > every {
+			errCh <- fmt.Errorf("no heartbeat received since %v (%v ago)", t, time.Now().Sub(t))
 			return
 		}
 
@@ -88,9 +83,9 @@ func RunUDP(
 		// NOTE: since we're dealing with UDP, this might
 		// not be the best idea. Maybe consider adding a threshold
 		// before assuming the connection is down?
-		t := lastUDPHeartbeatACK.Load()
-		if !first && time.Now().UTC().Sub(time.Unix(0, t).UTC()) > every {
-			errCh <- errStaleUDPConnection
+		t := time.Unix(0, lastUDPHeartbeatACK.Load()).UTC()
+		if !first && time.Now().UTC().Sub(t) > every {
+			errCh <- fmt.Errorf("no UDP heartbeat received since %v (%v ago)", t, time.Now().Sub(t))
 			return
 		}
 
