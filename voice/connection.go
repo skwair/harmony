@@ -22,7 +22,9 @@ const (
 	gatewayVersion = 4
 )
 
-var silenceFrame = []byte{0xf8, 0xff, 0xfe}
+// Five silence frames should be sent when there is a break in the sent data.
+// See https://discordapp.com/developers/docs/topics/voice-connections#voice-data-interpolation for more information.
+var SilenceFrame = []byte{0xf8, 0xff, 0xfe}
 
 // Connection represents a Discord voice connection.
 type Connection struct {
@@ -45,12 +47,11 @@ type Connection struct {
 	token string
 	// Websocket endpoint to connect to.
 	endpoint string
+	// UDP endpoint to send voice data to.
+	dataEndpoint *net.UDPAddr
 
 	connRMu sync.Mutex
 	conn    *websocket.Conn
-	// Accessed atomically, acts as a boolean and is
-	// set to 1 when the client is connected to voice.
-	connected *atomic.Bool
 
 	// UDP connection voice data is sent across.
 	udpConn *net.UDPConn
@@ -64,10 +65,15 @@ type Connection struct {
 	// SSRC of this user.
 	ssrc uint32
 
-	// Accessed atomically, acts as a boolean
-	// and is set to 1 when the connection is
-	// being established.
+	// Whether this voice connection is up.
+	connected *atomic.Bool
+	// Whether this voice connection is currently
+	// connecting to a voice server.
 	connectingToVoice *atomic.Bool
+	// Whether this voice connection is currently
+	// trying to reconnect to a voice server.
+	reconnecting *atomic.Bool
+
 	// When connectingToVoice is set to 1, some
 	// payloads received by the event handler will
 	// be sent through this channel.
@@ -102,59 +108,6 @@ type Connection struct {
 	logger log.Logger
 }
 
-// ConnectionOption is a function that configures a Connection.
-// It is used in EstablishNewConnection.
-type ConnectionOption func(*Connection)
-
-// WithLogger can be used to set the logger used by this connection.
-// Defaults to a standard logger reporting only errors.
-// See the log package for more information about logging with Harmony.
-func WithLogger(l log.Logger) ConnectionOption {
-	return func(c *Connection) {
-		c.logger = l
-	}
-}
-
-// voiceIdentify is the payload sent to identify to a voice server.
-type voiceIdentify struct {
-	ServerID  string `json:"server_id"`
-	UserID    string `json:"user_id"`
-	SessionID string `json:"session_id"`
-	Token     string `json:"token"`
-}
-
-// voiceReady payload is received when the client successfully identified
-// with the voice server.
-type voiceReady struct {
-	SSRC  uint32   `json:"ssrc"`
-	IP    string   `json:"ip"`
-	Port  int      `json:"port"`
-	Modes []string `json:"modes"`
-}
-
-// selectProtocol is sent by the client through the voice
-// websocket to start the voice UDP connection.
-type selectProtocol struct {
-	Protocol string              `json:"protocol"`
-	Data     *selectProtocolData `json:"data"`
-}
-
-type selectProtocolData struct {
-	Address string `json:"address"`
-	Port    uint16 `json:"port"`
-	Mode    string `json:"mode"`
-}
-
-// sessionDescription is received when the client selected the UDP
-// voice protocol. It contains the key to encrypt voice data.
-type sessionDescription struct {
-	Mode           string `json:"mode"`
-	SecretKey      []byte `json:"secret_key"`
-	VideoCodec     string `json:"video_codec"`
-	AudioCodec     string `json:"audio_codec"`
-	MediaSessionID string `json:"media_session_id"`
-}
-
 // EstablishNewConnection establishes a new voice connection with the provided
 // information. This connection should be closed by calling its Close method
 // when no longer needed.
@@ -180,6 +133,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 		lastUDPHeartbeatACK:  atomic.NewInt64(0),
 		connected:            atomic.NewBool(false),
 		connectingToVoice:    atomic.NewBool(false),
+		reconnecting:         atomic.NewBool(false),
 	}
 
 	vc.ctx, vc.cancel = context.WithCancel(context.Background())
@@ -269,13 +223,13 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	// We should now be able to open the voice UDP connection.
 	host := fmt.Sprintf("%s:%d", vr.IP, vr.Port)
 	vc.logger.Debug("resolving voice connection UDP endpoint")
-	addr, err := net.ResolveUDPAddr("udp", host)
+	vc.dataEndpoint, err = net.ResolveUDPAddr("udp", host)
 	if err != nil {
 		return nil, err
 	}
 
 	vc.logger.Debugf("dialing voice connection endpoint: %s", host)
-	vc.udpConn, err = net.DialUDP("udp", nil, addr)
+	vc.udpConn, err = net.DialUDP("udp", nil, vc.dataEndpoint)
 	if err != nil {
 		return nil, err
 	}
@@ -336,6 +290,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	}
 
 	vc.connected.Store(true)
+
 	vc.logger.Debug("connected to voice server")
 	return vc, nil
 }
@@ -348,8 +303,9 @@ func (vc *Connection) wait() {
 	vc.logger.Debug("starting voice connection manager")
 	defer vc.logger.Debug("stopped voice connection manager")
 
+	var err error
 	select {
-	case err := <-vc.error:
+	case err = <-vc.error:
 		vc.onError(err)
 
 	case <-vc.stop:
@@ -368,8 +324,151 @@ func (vc *Connection) wait() {
 	vc.cancel()
 	vc.connected.Store(false)
 
-	// NOTE: maybe try to automatically reconnect if
-	// we err != nil here, like done in the Gateway.
+	// If there was an error, try to reconnect.
+	if err != nil && !vc.isReconnecting() {
+		vc.reconnectWithBackoff()
+	}
+}
+
+func (vc *Connection) reconnectWithBackoff() {
+	vc.reconnecting.Store(true)
+	defer vc.reconnecting.Store(false)
+
+	vc.logger.Debug("trying to reconnect to the voice server")
+
+	for i := 0; true; i++ {
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+
+		if err := vc.reconnect(ctx); err != nil {
+			cancel()
+
+			if err == errInvalidSession {
+				vc.logger.Error("invalid session, can not recover")
+				return
+			}
+
+			duration := time.Second * 2
+			vc.logger.Errorf("failed to reconnect to voice server: %v, retrying in %s", err, duration)
+
+			select {
+			case <-time.After(duration):
+				continue // Make a new connection attempt.
+			case <-vc.stop:
+				// Client called Disconnect(), stop trying to reconnect.
+				vc.logger.Debug("client called Close while trying to reconnect to the voice server, aborting")
+				return
+			}
+		} else {
+			// We could reconnect.
+			vc.logger.Info("successfully reconnected to the voice server")
+			cancel()
+			return
+		}
+	}
+}
+
+var errInvalidSession = errors.New("invalid voice session")
+
+func (vc *Connection) reconnect(ctx context.Context) error {
+	vc.ctx, vc.cancel = context.WithCancel(context.Background())
+
+	vc.payloads = make(chan *payload.Payload)
+	vc.error = make(chan error)
+	vc.stop = make(chan struct{})
+
+	// Start by re-opening the voice websocket connection.
+	var err error
+	vc.logger.Debugf("connecting to voice server: %s", vc.endpoint)
+	vc.conn, _, err = websocket.Dial(ctx, vc.endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	// This is used to notify the event handler that some
+	// specific payloads should be sent through to vc.payloads
+	// while we are reconnecting to the voice server.
+	vc.connectingToVoice.Store(true)
+	defer vc.connectingToVoice.Store(false)
+
+	// Then re-establish the voice data UDP connection.
+	vc.udpConn, err = net.DialUDP("udp", nil, vc.dataEndpoint)
+	if err != nil {
+		return err
+	}
+
+	// Start heartbeating on the UDP connection.
+	vc.wg.Add(1)
+	go vc.udpHeartbeat(5 * time.Second)
+
+	// Send the resume payload to notify the voice server this is not a new connection.
+	resume := struct {
+		ServerID  string `json:"server_id"`
+		SessionID string `json:"session_id"`
+		Token     string `json:"token"`
+	}{
+		ServerID:  vc.guildID,
+		SessionID: vc.sessionID,
+		Token:     vc.token,
+	}
+	if err = vc.sendPayload(ctx, voiceOpcodeResume, resume); err != nil {
+		return err
+	}
+
+	// Followed by an Opcode 8 Hello payload, indicating the heartbeat interval
+	// for the websocket connection.
+	p, err := vc.recvPayload()
+	if err != nil {
+		if websocket.CloseStatus(err) == 4006 {
+			return errInvalidSession
+		}
+	}
+	if p.Op != voiceOpcodeHello {
+		return fmt.Errorf("expected Opcode 8 Hello; got Opcode %d", p.Op)
+	}
+
+	var h struct {
+		V                 int     `json:"v"`
+		HeartbeatInterval float64 `json:"heartbeat_interval"`
+	}
+	if err = json.Unmarshal(p.D, &h); err != nil {
+		return err
+	}
+
+	// It should reply with a an Opcode 9 Resumed payload to acknowledge the resume.
+	p, err = vc.recvPayload()
+	if err != nil {
+		if websocket.CloseStatus(err) == 4006 {
+			return errInvalidSession
+		}
+	}
+	if p.Op != voiceOpcodeResumed {
+		return fmt.Errorf("expected Opcode 9 Resumed; got Opcode %d", p.Op)
+	}
+
+	vc.wg.Add(2) // listen starts an additional goroutine.
+	go vc.listen()
+
+	vc.wg.Add(1)
+	go vc.wait()
+
+	vc.wg.Add(1)
+	go vc.heartbeat(time.Duration(h.HeartbeatInterval) * time.Millisecond)
+
+	vc.wg.Add(3) // opusReceiver starts an additional goroutine.
+	vc.opusReadinessWG.Add(2)
+	go vc.opusReceiver()
+	go vc.opusSender()
+
+	// Making sure Opus receiver and sender are started.
+	vc.opusReadinessWG.Wait()
+
+	if err = vc.sendSilenceFrame(ctx); err != nil {
+		return err
+	}
+
+	vc.connected.Store(true)
+
+	return nil
 }
 
 // onError is called when an error occurs while the connection to
@@ -377,9 +476,10 @@ func (vc *Connection) wait() {
 // with a 1006 code, logs the error and finally signals to all other
 // goroutines (heartbeat, listen, etc.) to stop by closing the stop channel.
 func (vc *Connection) onError(err error) {
+	vc.logger.Errorf("voice connection error: %v", err)
+
 	if closeErr := vc.conn.Close(websocket.StatusInternalError, "voice error"); closeErr != nil {
 		vc.logger.Errorf("could not properly close voice websocket connection: %v", closeErr)
-		vc.logger.Errorf("voice connection: %v", err)
 	}
 
 	// If an error occurred before the connection is established,
@@ -408,7 +508,7 @@ func (vc *Connection) sendSilenceFrame(ctx context.Context) error {
 		return err
 	}
 
-	vc.Send <- silenceFrame
+	vc.Send <- SilenceFrame
 
 	if err := vc.SetSpeakingMode(ctx, SpeakingModeOff); err != nil {
 		return err
@@ -448,4 +548,8 @@ func (vc *Connection) Logger() log.Logger {
 // isEstablished reports whether the voice connection is fully established.
 func (vc *Connection) isEstablished() bool {
 	return vc.connected.Load()
+}
+
+func (vc *Connection) isReconnecting() bool {
+	return vc.reconnecting.Load()
 }

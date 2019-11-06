@@ -52,6 +52,46 @@ type ServerUpdate struct {
 	Endpoint string `json:"endpoint"`
 }
 
+// voiceIdentify is the payload sent to identify to a voice server.
+type voiceIdentify struct {
+	ServerID  string `json:"server_id"`
+	UserID    string `json:"user_id"`
+	SessionID string `json:"session_id"`
+	Token     string `json:"token"`
+}
+
+// voiceReady payload is received when the client successfully identified
+// with the voice server.
+type voiceReady struct {
+	SSRC  uint32   `json:"ssrc"`
+	IP    string   `json:"ip"`
+	Port  int      `json:"port"`
+	Modes []string `json:"modes"`
+}
+
+// selectProtocol is sent by the client through the voice
+// websocket to start the voice UDP connection.
+type selectProtocol struct {
+	Protocol string              `json:"protocol"`
+	Data     *selectProtocolData `json:"data"`
+}
+
+type selectProtocolData struct {
+	Address string `json:"address"`
+	Port    uint16 `json:"port"`
+	Mode    string `json:"mode"`
+}
+
+// sessionDescription is received when the client selected the UDP
+// voice protocol. It contains the key to encrypt voice data.
+type sessionDescription struct {
+	Mode           string `json:"mode"`
+	SecretKey      []byte `json:"secret_key"`
+	VideoCodec     string `json:"video_codec"`
+	AudioCodec     string `json:"audio_codec"`
+	MediaSessionID string `json:"media_session_id"`
+}
+
 // sendPayload sends a single Payload to the Voice server with
 // the given op and data.
 func (vc *Connection) sendPayload(ctx context.Context, op int, d interface{}) error {
