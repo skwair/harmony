@@ -150,7 +150,6 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	if err != nil {
 		return nil, err
 	}
-
 	// From now on, if any error occurs during the rest of the
 	// voice connection process, we should close the underlying
 	// websocket so we can try to reconnect.
@@ -325,6 +324,8 @@ func (vc *Connection) wait() {
 	vc.connected.Store(false)
 
 	// If there was an error, try to reconnect.
+	// NOTE: we should not try to reconnect on
+	// every errors (e.g.: a disconnected error).
 	if err != nil && !vc.isReconnecting() {
 		vc.reconnectWithBackoff()
 	}
@@ -383,6 +384,17 @@ func (vc *Connection) reconnect(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	// From now on, if any error occurs during the rest of the
+	// voice reconnection process, we should close the underlying
+	// websocket so we can try to reconnect.
+	defer func() {
+		if err != nil {
+			_ = vc.conn.Close(websocket.StatusInternalError, "failed to reestablish voice connection")
+			vc.connected.Store(false)
+			close(vc.stop)
+			vc.cancel()
+		}
+	}()
 
 	// This is used to notify the event handler that some
 	// specific payloads should be sent through to vc.payloads
@@ -395,27 +407,19 @@ func (vc *Connection) reconnect(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	// From now on, close the UDP connection if any error occurs.
+	defer func() {
+		if err != nil {
+			_ = vc.udpConn.Close()
+		}
+	}()
 
 	// Start heartbeating on the UDP connection.
 	vc.wg.Add(1)
 	go vc.udpHeartbeat(5 * time.Second)
 
-	// Send the resume payload to notify the voice server this is not a new connection.
-	resume := struct {
-		ServerID  string `json:"server_id"`
-		SessionID string `json:"session_id"`
-		Token     string `json:"token"`
-	}{
-		ServerID:  vc.guildID,
-		SessionID: vc.sessionID,
-		Token:     vc.token,
-	}
-	if err = vc.sendPayload(ctx, voiceOpcodeResume, resume); err != nil {
-		return err
-	}
-
-	// Followed by an Opcode 8 Hello payload, indicating the heartbeat interval
-	// for the websocket connection.
+	// Once the websocket connection is re opened, the sever should send us an
+	// Opcode 8 Hello payload, indicating the heartbeat interval we should use.
 	p, err := vc.recvPayload()
 	if err != nil {
 		if websocket.CloseStatus(err) == 4006 {
@@ -434,7 +438,17 @@ func (vc *Connection) reconnect(ctx context.Context) error {
 		return err
 	}
 
-	// It should reply with a an Opcode 9 Resumed payload to acknowledge the resume.
+	// Send the resume payload to notify the voice server this is not a new connection.
+	r := resume{
+		ServerID:  vc.guildID,
+		SessionID: vc.sessionID,
+		Token:     vc.token,
+	}
+	if err = vc.sendPayload(ctx, voiceOpcodeResume, r); err != nil {
+		return err
+	}
+
+	// We should receive an Opcode 9 Resumed payload to acknowledge the resume.
 	p, err = vc.recvPayload()
 	if err != nil {
 		if websocket.CloseStatus(err) == 4006 {

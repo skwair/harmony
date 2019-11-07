@@ -92,6 +92,14 @@ type sessionDescription struct {
 	MediaSessionID string `json:"media_session_id"`
 }
 
+// resume is sent by the client to notify a voice server it is trying
+// to resume a connection which was unexpectedly ended.
+type resume struct {
+	ServerID  string `json:"server_id"`
+	SessionID string `json:"session_id"`
+	Token     string `json:"token"`
+}
+
 // sendPayload sends a single Payload to the Voice server with
 // the given op and data.
 func (vc *Connection) sendPayload(ctx context.Context, op int, d interface{}) error {
@@ -100,7 +108,7 @@ func (vc *Connection) sendPayload(ctx context.Context, op int, d interface{}) er
 		return err
 	}
 	p := &payload.Payload{Op: op, D: b}
-	vc.logger.Debugf("sent voice payload (channel=%q): %s", vc.channelID, p)
+	vc.logger.Debugf("sent voice payload (guild=%q): %s", vc.guildID, p)
 	return payload.Send(ctx, vc.conn, p)
 }
 
@@ -111,7 +119,7 @@ func (vc *Connection) recvPayload() (*payload.Payload, error) {
 		return nil, err
 	}
 
-	vc.logger.Debugf("received voice payload (channel=%q): %s", vc.channelID, p)
+	vc.logger.Debugf("received voice payload (guild=%q): %s", vc.guildID, p)
 
 	return p, nil
 }
