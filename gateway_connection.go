@@ -23,7 +23,7 @@ var (
 	ErrAlreadyConnected = errors.New("already connected to the Gateway")
 )
 
-// Connect connects and identifies the client to the Discord gateway.
+// Connect connects and identifies the client to the Discord Gateway.
 func (c *Client) Connect(ctx context.Context) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
@@ -31,6 +31,9 @@ func (c *Client) Connect(ctx context.Context) error {
 	if c.isConnected() {
 		return ErrAlreadyConnected
 	}
+
+	c.connecting.Store(true)
+	defer c.connecting.Store(false)
 
 	var err error
 	// Get the Gateway endpoint if we don't have one cached yet.
@@ -50,8 +53,11 @@ func (c *Client) Connect(ctx context.Context) error {
 	c.error = make(chan error)
 	c.stop = make(chan struct{})
 
+	// This context is bound to the Gateway connection and will be
+	// canceled when it is closed.
 	c.ctx, c.cancel = context.WithCancel(context.Background())
 
+	// Open the Gateway websocket connection.
 	header := make(http.Header)
 	header.Add("Accept-Encoding", "zlib")
 	gwURL := fmt.Sprintf("%s?v=%d&encoding=%s", c.gatewayURL, gatewayVersion, gatewayEncoding)
@@ -65,8 +71,9 @@ func (c *Client) Connect(ctx context.Context) error {
 	// should close the underlying websocket connection, so
 	// we can try to reconnect later. We should also signal
 	// to already started goroutines to stop by closing the
-	// stop channel to prevent them from leaking and mark
-	// this client as not connected.
+	// stop channel to prevent them from leaking, mark this
+	// client as not connected and cancel the connection
+	// context.
 	defer func() {
 		if err != nil {
 			_ = c.conn.Close(websocket.StatusInternalError, "failed to establish connection") // Not much we can do about this, maybe log it?
@@ -121,13 +128,14 @@ func (c *Client) Connect(ctx context.Context) error {
 	}
 
 	// From now, we are connected to the Gateway.
-	// Start heartbeating and listening for Gateway events.
+	// Start the connection manager, heartbeating
+	// and listening for Gateway events.
+	c.wg.Add(1)
+	go c.wait()
+
 	c.wg.Add(3) // listen starts an additional goroutine.
 	go c.heartbeat(time.Duration(hello.HeartbeatInterval) * time.Millisecond)
 	go c.listen()
-
-	c.wg.Add(1)
-	go c.wait()
 
 	return nil
 }
@@ -137,11 +145,14 @@ func (c *Client) Disconnect() {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	if !c.isConnected() {
+	// No-op if we're already disconnected and not trying to reconnect.
+	if !c.isConnected() && !c.isReconnecting() {
 		return
 	}
 
+	// Signal the connection manager that we want to disconnect.
 	close(c.stop)
+	// Properly wait for all goroutines to exit.
 	c.wg.Wait()
 }
 
@@ -157,7 +168,7 @@ func (c *Client) wait() {
 
 	var err error
 	select {
-	// An error occurred while communicating with the Gateway.
+	// An unexpected error occurred while communicating with the Gateway.
 	case err = <-c.error:
 		c.onGatewayError(err)
 
@@ -179,6 +190,9 @@ func (c *Client) wait() {
 // reconnectWithBackoff attempts to reconnect to the Gateway using the Client's
 // backoff strategy.
 func (c *Client) reconnectWithBackoff() {
+	c.reconnecting.Store(true)
+	defer c.reconnecting.Store(false)
+
 	c.logger.Debug("trying to reconnect to the gateway")
 
 	for i := 0; true; i++ {
@@ -187,6 +201,7 @@ func (c *Client) reconnectWithBackoff() {
 
 		if err := c.Connect(ctx); err != nil {
 			cancel()
+
 			duration := c.backoff.forAttempt(i)
 			c.logger.Errorf("failed to reconnect: %v, retrying in %s", err, duration)
 
@@ -195,13 +210,14 @@ func (c *Client) reconnectWithBackoff() {
 				continue // Make a new connection attempt.
 			case <-c.stop:
 				// Client called Disconnect(), stop trying to reconnect.
-				c.logger.Debug("client called Disconnect while trying to reconnect to the gateway, aborting")
+				c.logger.Info("client called Disconnect while trying to reconnect to the gateway, aborting")
 				return
 			}
 		} else {
+			cancel()
+
 			// We could reconnect.
 			c.logger.Info("successfully reconnected to the gateway")
-			cancel()
 			return
 		}
 	}
@@ -218,9 +234,9 @@ func (c *Client) onGatewayError(err error) {
 		c.logger.Errorf("could not properly close websocket connection (error): %v", closeErr)
 	}
 
-	// If an error occurred before the connection is established,
+	// If an error occurred while we are establishing the connection,
 	// the stop channel will already be closed, so return early.
-	if !c.isConnected() {
+	if c.isConnecting() {
 		return
 	}
 
@@ -245,10 +261,20 @@ func (c *Client) isConnected() bool {
 	return c.connected.Load()
 }
 
+// isConnecting reports whether the client is currently connecting to the Gateway.
+func (c *Client) isConnecting() bool {
+	return c.connecting.Load()
+}
+
 // isConnectingToVoice reports whether the client is currently connecting to
 // a voice server.
 func (c *Client) isConnectingToVoice() bool {
 	return c.connectingToVoice.Load()
+}
+
+// isReconnecting reports whether the client is currently reconnecting to the Gateway.
+func (c *Client) isReconnecting() bool {
+	return c.reconnecting.Load()
 }
 
 // resetGatewaySession resets the session ID as well as the sequence number

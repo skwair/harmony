@@ -63,14 +63,16 @@ type Client struct {
 	conn    *websocket.Conn
 	connRMu sync.Mutex // Read mutex.
 
-	// Accessed atomically, acts as a boolean and is set to 1
-	// when the client is connected to the Gateway.
+	// Whether the client is currently connecting to the Gateway.
+	connecting *atomic.Bool
+	// Whether the client is currently connected to the Gateway.
 	connected *atomic.Bool
-
-	// Accessed atomically, acts as a boolean and is set to 1
-	// when the client is connecting to voice.
+	// Whether the client is currently connecting to a voice server.
 	connectingToVoice *atomic.Bool
-	// When connectingToVoice is set to 1, some
+	// Whether the client is currently reconnecting to the Gateway.
+	reconnecting *atomic.Bool
+
+	// When connectingToVoice is true, some
 	// payloads received by the event handler will
 	// be sent through this channel.
 	voicePayloads chan *payload.Payload
@@ -84,14 +86,15 @@ type Client struct {
 
 	userID    string
 	sessionID string
-	// Accessed atomically, sequence number of the last
-	// Dispatch event we received from the Gateway.
+
+	// Sequence number of the last Dispatch event
+	// we received from the Gateway.
 	sequence *atomic.Int64
-	// Accessed atomically, UNIX timestamp in nanoseconds
-	// of the last heartbeat acknowledgement.
+	// UNIX timestamp in nanoseconds of the last
+	// heartbeat acknowledgement.
 	lastHeartbeatACK *atomic.Int64
-	// Accessed atomically, UNIX timestamp in nanoseconds
-	// of the last heartbeat send. Used to calculate RTT.
+	// UNIX timestamp in nanoseconds of the last
+	// heartbeat send. Used to calculate RTT.
 	lastHeartbeatSend *atomic.Int64
 
 	// Those fields are used for synchronisation between
@@ -155,7 +158,9 @@ func NewClient(token string, opts ...ClientOption) (*Client, error) {
 		lastHeartbeatSend:  atomic.NewInt64(0),
 		lastHeartbeatACK:   atomic.NewInt64(0),
 		connected:          atomic.NewBool(false),
+		connecting:         atomic.NewBool(false),
 		connectingToVoice:  atomic.NewBool(false),
+		reconnecting:       atomic.NewBool(false),
 	}
 
 	for _, opt := range opts {
