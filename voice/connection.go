@@ -117,7 +117,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	}
 
 	vc := &Connection{
-		Send:                 make(chan []byte, 2),
+		Send:                 make(chan []byte),
 		Recv:                 make(chan *AudioPacket),
 		payloads:             make(chan *payload.Payload),
 		error:                make(chan error),
