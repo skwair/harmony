@@ -181,9 +181,28 @@ func (c *Client) wait() {
 	c.cancel()
 	c.connected.Store(false)
 
-	// If there was an error, try to reconnect.
-	if err != nil {
+	// If there was an error, maybe try to reconnect.
+	if shouldReconnect(err) {
 		c.reconnectWithBackoff()
+	}
+}
+
+// Determine whether we should try to reconnect based on the error we got.
+// See https://discordapp.com/developers/docs/topics/opcodes-and-status-codes#gateway-gateway-close-event-codes for more information.
+func shouldReconnect(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	switch websocket.CloseStatus(err) {
+	case 4001, 4002, 4003, 4004, 4005, 4010, 4011:
+		return false
+	case 4000, 4007, 4008, 4009:
+		return true
+	case -1: // Not a websocket error.
+		return true
+	default: // New (or undocumented?) close status code.
+		return true
 	}
 }
 

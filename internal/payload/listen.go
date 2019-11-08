@@ -61,10 +61,6 @@ func RecvAll(
 				return
 			}
 
-			// NOTE: maybe treat websocket close errors differently based on their code
-			// for the 4000-4999 range.
-			// See : https://discordapp.com/developers/docs/topics/opcodes-and-status-codes
-
 			errCh <- err
 			return
 		}
