@@ -13,12 +13,12 @@ func (c *Client) listen() {
 	payload.Listen(
 		&c.wg,
 		c.stop,
-		c.error,
+		c.reportErr,
 		c.recvPayloads,
 		c.handleEvent,
 	)
 }
 
 func (c *Client) recvPayloads(ch chan<- *payload.Payload) {
-	payload.RecvAll(&c.wg, ch, c.error, c.stop, c.recvPayload)
+	payload.RecvAll(&c.wg, ch, c.reportErr, c.stop, c.recvPayload)
 }

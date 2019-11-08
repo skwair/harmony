@@ -313,6 +313,7 @@ func (vc *Connection) wait() {
 	}
 
 	close(vc.payloads)
+	close(vc.error)
 
 	if vc.udpConn != nil {
 		if err := vc.udpConn.Close(); err != nil {
@@ -345,6 +346,16 @@ func shouldReconnect(err error) bool {
 		return true
 	default: // New (or undocumented?) close status code.
 		return true
+	}
+}
+
+// reportErr reports the first error that happen on this connection.
+// If an error has already been reported, it does nothing as the error
+// channel will already be closed.
+func (vc *Connection) reportErr(err error) {
+	select {
+	case vc.error <- err:
+	default:
 	}
 }
 

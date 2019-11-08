@@ -10,12 +10,12 @@ func (vc *Connection) listen() {
 	payload.Listen(
 		&vc.wg,
 		vc.stop,
-		vc.error,
+		vc.reportErr,
 		vc.recvPayloads,
 		vc.handleEvent,
 	)
 }
 
 func (vc *Connection) recvPayloads(ch chan<- *payload.Payload) {
-	payload.RecvAll(&vc.wg, ch, vc.error, vc.stop, vc.recvPayload)
+	payload.RecvAll(&vc.wg, ch, vc.reportErr, vc.stop, vc.recvPayload)
 }

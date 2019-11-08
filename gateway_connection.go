@@ -178,6 +178,9 @@ func (c *Client) wait() {
 		c.onDisconnect()
 	}
 
+	close(c.voicePayloads)
+	close(c.error)
+
 	c.cancel()
 	c.connected.Store(false)
 
@@ -239,6 +242,16 @@ func (c *Client) reconnectWithBackoff() {
 			c.logger.Info("successfully reconnected to the gateway")
 			return
 		}
+	}
+}
+
+// reportErr reports the first error that happen on this connection.
+// If an error has already been reported, it does nothing as the error
+// channel will already be closed.
+func (c *Client) reportErr(err error) {
+	select {
+	case c.error <- err:
+	default:
 	}
 }
 

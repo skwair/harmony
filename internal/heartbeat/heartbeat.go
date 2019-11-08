@@ -19,7 +19,7 @@ type Hearbeater func() error
 func Run(
 	wg *sync.WaitGroup,
 	stop chan struct{},
-	errCh chan<- error,
+	errReporter func(err error),
 	every time.Duration,
 	h Hearbeater,
 	lastHeartbeatACK *atomic.Int64,
@@ -36,13 +36,13 @@ func Run(
 		// connection as stale and return an error.
 		t := time.Unix(0, lastHeartbeatACK.Load()).UTC()
 		if !first && time.Now().UTC().Sub(t) > every {
-			errCh <- fmt.Errorf("no heartbeat received since %v (%v ago)", t, time.Now().Sub(t))
+			errReporter(fmt.Errorf("no heartbeat received since %v (%v ago)", t, time.Now().Sub(t)))
 			return
 		}
 
 		// Send the heartbeat payload.
 		if err := h(); err != nil {
-			errCh <- err
+			errReporter(err)
 			return
 		}
 
@@ -65,7 +65,7 @@ func Run(
 func RunUDP(
 	wg *sync.WaitGroup,
 	stop chan struct{},
-	errCh chan<- error,
+	errReporter func(err error),
 	every time.Duration,
 	h Hearbeater,
 	lastUDPHeartbeatACK *atomic.Int64,
@@ -85,7 +85,7 @@ func RunUDP(
 		// before assuming the connection is down?
 		t := time.Unix(0, lastUDPHeartbeatACK.Load()).UTC()
 		if !first && time.Now().UTC().Sub(t) > every {
-			errCh <- fmt.Errorf("no UDP heartbeat received since %v (%v ago)", t, time.Now().Sub(t))
+			errReporter(fmt.Errorf("no UDP heartbeat received since %v (%v ago)", t, time.Now().Sub(t)))
 			return
 		}
 
@@ -97,7 +97,7 @@ func RunUDP(
 				return
 			}
 
-			errCh <- err
+			errReporter(err)
 			return
 		}
 

@@ -14,7 +14,7 @@ func (c *Client) heartbeat(every time.Duration) {
 	heartbeat.Run(
 		&c.wg,
 		c.stop,
-		c.error,
+		c.reportErr,
 		every,
 		c.sendHeartbeatPayload,
 		c.lastHeartbeatACK,

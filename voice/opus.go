@@ -90,7 +90,7 @@ func (vc *Connection) readUDP(ch chan<- *rtpFrame) {
 				break
 			}
 			// NOTE: this might be a bit too extreme ?
-			vc.error <- err
+			vc.reportErr(err)
 			return
 		}
 
@@ -142,14 +142,14 @@ func (vc *Connection) opusSender() {
 	// on encryption more difficult.
 	r, err := rand.Int(rand.Reader, big.NewInt(math.MaxUint16/2))
 	if err != nil {
-		vc.error <- err
+		vc.reportErr(err)
 		return
 	}
 	seq := uint16(r.Uint64())
 	// Same goes for the timestamp field.
 	r, err = rand.Int(rand.Reader, big.NewInt(math.MaxUint32/2))
 	if err != nil {
-		vc.error <- err
+		vc.reportErr(err)
 		return
 	}
 	timestamp := uint32(r.Uint64())
@@ -192,7 +192,7 @@ func (vc *Connection) opusSender() {
 					return
 				}
 
-				vc.error <- err
+				vc.reportErr(err)
 				return
 			}
 

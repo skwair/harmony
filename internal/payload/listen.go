@@ -14,7 +14,7 @@ import (
 func Listen(
 	wg *sync.WaitGroup,
 	stop chan struct{},
-	errCh chan<- error,
+	errReporter func(err error),
 	receiver func(ch chan<- *Payload),
 	handler func(p *Payload) error,
 ) {
@@ -27,7 +27,7 @@ func Listen(
 		select {
 		case p := <-payloads:
 			if err := handler(p); err != nil {
-				errCh <- err
+				errReporter(err)
 				return
 			}
 		case <-stop:
@@ -44,7 +44,7 @@ func Listen(
 func RecvAll(
 	wg *sync.WaitGroup,
 	payloads chan<- *Payload,
-	errCh chan<- error,
+	errReporter func(err error),
 	stop <-chan struct{},
 	receiver func() (*Payload, error),
 ) {
@@ -61,7 +61,7 @@ func RecvAll(
 				return
 			}
 
-			errCh <- err
+			errReporter(err)
 			return
 		}
 

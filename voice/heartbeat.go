@@ -15,7 +15,7 @@ func (vc *Connection) heartbeat(every time.Duration) {
 	heartbeat.Run(
 		&vc.wg,
 		vc.stop,
-		vc.error,
+		vc.reportErr,
 		every,
 		vc.sendHeartbeatPayload,
 		vc.lastHeartbeatACK,
@@ -36,7 +36,7 @@ func (vc *Connection) udpHeartbeat(every time.Duration) {
 	heartbeat.RunUDP(
 		&vc.wg,
 		vc.stop,
-		vc.error,
+		vc.reportErr,
 		time.Second*5,
 		vc.sendUDPHeartbeat,
 		vc.lastUDPHeartbeatACK,
