@@ -60,7 +60,7 @@ func (c *Client) JoinVoiceChannel(ctx context.Context, guildID, channelID string
 
 // LeaveVoiceChannel notifies the Gateway we want the voice channel we are
 // connected to in the given guild.
-func (c *Client) LeaveVoiceChannel(ctx context.Context, guildID string) {
+func (c *Client) LeaveVoiceChannel(ctx context.Context, guildID string) error {
 	conn, ok := c.voiceConnections[guildID]
 	if ok {
 		conn.Close()
@@ -73,8 +73,9 @@ func (c *Client) LeaveVoiceChannel(ctx context.Context, guildID string) {
 		},
 	}
 	if err := c.sendPayload(ctx, gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
-		c.logger.Errorf("could not properly leave voice channel: %v", err)
+		return fmt.Errorf("could not send voice state update payload: %v", err)
 	}
+	return nil
 }
 
 // getStateAndServer will receive exactly two payloads from ch and extract the voice state

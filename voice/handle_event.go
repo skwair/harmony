@@ -29,8 +29,8 @@ func (vc *Connection) handleEvent(p *payload.Payload) error {
 
 	// A client has disconnected from the voice channel.
 	case voiceOpcodeClientDisconnect:
-		// Not sure what to do with this event as it contains no additional info
-		// and the main Gateway connection will receive a Voice State Update.
+		// TODO: add a way to register to those events.
+		// Example payload: {code: 13, data: {"user_id":"220152355228164927"}}
 	}
 
 	return nil
