@@ -3,7 +3,7 @@ package voice
 import "github.com/skwair/harmony/log"
 
 // ConnectionOption is a function that configures a Connection.
-// It is used in EstablishNewConnection.
+// It is used in Connect.
 type ConnectionOption func(*Connection)
 
 // WithLogger can be used to set the logger used by this connection.

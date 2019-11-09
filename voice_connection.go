@@ -48,7 +48,8 @@ func (c *Client) JoinVoiceChannel(ctx context.Context, guildID, channelID string
 		return nil, err
 	}
 
-	conn, err := voice.EstablishNewConnection(ctx, state, server, voice.WithLogger(c.logger))
+	// Establish the voice connection.
+	conn, err := voice.Connect(ctx, state, server, voice.WithLogger(c.logger))
 	if err != nil {
 		return nil, err
 	}

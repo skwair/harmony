@@ -108,10 +108,10 @@ type Connection struct {
 	logger log.Logger
 }
 
-// EstablishNewConnection establishes a new voice connection with the provided
+// Connect establishes a new voice connection with the provided
 // information. This connection should be closed by calling its Close method
 // when no longer needed.
-func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *ServerUpdate, opts ...ConnectionOption) (*Connection, error) {
+func Connect(ctx context.Context, state *StateUpdate, server *ServerUpdate, opts ...ConnectionOption) (*Connection, error) {
 	if state.ChannelID == nil {
 		return nil, errors.New("could not establish voice connection: channel ID in given state is nil")
 	}

@@ -10,8 +10,8 @@ func (vc *Connection) handleEvent(p *payload.Payload) error {
 	switch p.Op {
 	case voiceOpcodeReady, voiceOpcodeSessionDescription, voiceOpcodeHello:
 		// Those events should be sent through the payloads channel if this
-		// voice connection is currently being established so EstablishNewConnection
-		// can receive them.
+		// voice connection is currently being established so Connect can
+		// receive them.
 		if vc.isConnecting() {
 			vc.payloads <- p
 		}
