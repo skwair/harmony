@@ -241,10 +241,10 @@ func (r *CurrentUserResource) Connections(ctx context.Context) ([]Connection, er
 
 // SetStatus sets the current user's status. You need to be connected to the
 // Gateway to call this method, else it will return ErrGatewayNotConnected.
-func (r *CurrentUserResource) SetStatus(ctx context.Context, status *Status) error {
+func (r *CurrentUserResource) SetStatus(status *Status) error {
 	if !r.client.isConnected() {
 		return ErrGatewayNotConnected
 	}
 
-	return r.client.sendPayload(ctx, gatewayOpcodeStatusUpdate, status)
+	return r.client.sendPayload(r.client.ctx, gatewayOpcodeStatusUpdate, status)
 }

@@ -158,7 +158,7 @@ func (vc *Connection) reconnect(ctx context.Context) error {
 	// Making sure Opus receiver and sender are started.
 	vc.opusReadinessWG.Wait()
 
-	if err = vc.sendSilenceFrame(ctx); err != nil {
+	if err = vc.sendSilenceFrame(); err != nil {
 		return err
 	}
 

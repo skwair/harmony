@@ -284,7 +284,7 @@ func EstablishNewConnection(ctx context.Context, state *StateUpdate, server *Ser
 	// Making sure Opus receiver and sender are started.
 	vc.opusReadinessWG.Wait()
 
-	if err = vc.sendSilenceFrame(ctx); err != nil {
+	if err = vc.sendSilenceFrame(); err != nil {
 		return nil, err
 	}
 
@@ -391,14 +391,14 @@ func (vc *Connection) onDisconnect() {
 
 // Must send some audio packets so the voice server starts to send us audio packets.
 // This appears to be a bug from Discord.
-func (vc *Connection) sendSilenceFrame(ctx context.Context) error {
-	if err := vc.SetSpeakingMode(ctx, SpeakingModeVoice); err != nil {
+func (vc *Connection) sendSilenceFrame() error {
+	if err := vc.SetSpeakingMode(SpeakingModeMicrophone); err != nil {
 		return err
 	}
 
 	vc.Send <- SilenceFrame
 
-	if err := vc.SetSpeakingMode(ctx, SpeakingModeOff); err != nil {
+	if err := vc.SetSpeakingMode(SpeakingModeOff); err != nil {
 		return err
 	}
 
