@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"sync"
 	"time"
 
 	"nhooyr.io/websocket"
@@ -51,6 +52,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	// so we need to initialize them each time we attempt a new connection.
 	c.voicePayloads = make(chan *payload.Payload)
 	c.error = make(chan error)
+	c.reportErrorOnce = sync.Once{}
 	c.stop = make(chan struct{})
 
 	// This context is bound to the Gateway connection and will be
@@ -179,7 +181,6 @@ func (c *Client) wait() {
 	}
 
 	close(c.voicePayloads)
-	close(c.error)
 
 	c.cancel()
 	c.connected.Store(false)
@@ -245,14 +246,13 @@ func (c *Client) reconnectWithBackoff() {
 	}
 }
 
-// reportErr reports the first error that happen on this connection.
-// If an error has already been reported, it does nothing as the error
-// channel will already be closed.
+// reportErr reports the first fatal error encountered while connected to
+// the Gateway. Calls after the first one are no-ops.
 func (c *Client) reportErr(err error) {
-	select {
-	case c.error <- err:
-	default:
-	}
+	c.reportErrorOnce.Do(func() {
+		c.error <- err
+		close(c.error)
+	})
 }
 
 // onGatewayError is called when an error occurs while the connection to

@@ -82,10 +82,14 @@ type Connection struct {
 	// wg keeps track of all goroutines that are
 	// started when establishing a voice connection.
 	wg sync.WaitGroup
-	// The first fatal error encountered when connected
-	// to a voice server will be reported to this channel.
+	// The first fatal error encountered while connected
+	// to a voice server will be sent through this channel.
 	error chan error
-	// Closing this channel will stop the voice connection.
+	// Used to ensure we only report the first error.
+	reportErrorOnce sync.Once
+
+	// Closing this channel will gracefully shutdown the
+	// voice connection.
 	stop chan struct{}
 
 	// Shared context used for sending and receiving websocket
@@ -313,7 +317,6 @@ func (vc *Connection) wait() {
 	}
 
 	close(vc.payloads)
-	close(vc.error)
 
 	if vc.udpConn != nil {
 		if err := vc.udpConn.Close(); err != nil {
@@ -349,14 +352,13 @@ func shouldReconnect(err error) bool {
 	}
 }
 
-// reportErr reports the first error that happen on this connection.
-// If an error has already been reported, it does nothing as the error
-// channel will already be closed.
+// reportErr reports the first fatal error encountered while a voice
+// connection is up. Calls after the first one are no-ops.
 func (vc *Connection) reportErr(err error) {
-	select {
-	case vc.error <- err:
-	default:
-	}
+	vc.reportErrorOnce.Do(func() {
+		vc.error <- err
+		close(vc.error)
+	})
 }
 
 // onError is called when an error occurs while the connection to

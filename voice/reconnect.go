@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"sync"
 	"time"
 
 	"nhooyr.io/websocket"
@@ -55,6 +56,7 @@ func (vc *Connection) reconnectWithBackoff() {
 func (vc *Connection) reconnect(ctx context.Context) error {
 	vc.payloads = make(chan *payload.Payload)
 	vc.error = make(chan error)
+	vc.reportErrorOnce = sync.Once{}
 	vc.stop = make(chan struct{})
 
 	vc.ctx, vc.cancel = context.WithCancel(context.Background())

@@ -97,12 +97,18 @@ type Client struct {
 	// heartbeat send. Used to calculate RTT.
 	lastHeartbeatSend *atomic.Int64
 
-	// Those fields are used for synchronisation between
-	// the listen, receive, heartbeat and wait goroutines
-	// when the connection to the gateway is up.
-	wg    sync.WaitGroup
+	// wg keeps track of all goroutines necessary to
+	// maintain a connection to the Gateway.
+	wg sync.WaitGroup
+	// The first fatal error encountered while connected
+	// to the Gateway will be sent through this channel.
 	error chan error
-	stop  chan struct{}
+	// Used to ensure we only report the first error.
+	reportErrorOnce sync.Once
+
+	// Closing this channel will gracefully shutdown the
+	// Gateway connection.
+	stop chan struct{}
 
 	// Shared context used for sending and receiving websocket
 	// payloads. Will be canceled when the client disconnects
@@ -110,6 +116,7 @@ type Client struct {
 	ctx    context.Context
 	cancel context.CancelFunc
 
+	// Registered event handlers for this Client.
 	handlersMu sync.RWMutex
 	handlers   map[string]handler
 
