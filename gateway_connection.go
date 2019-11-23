@@ -44,7 +44,7 @@ func (c *Client) Connect(ctx context.Context) error {
 		// when creating a Client with the WithSharding option.
 		c.gatewayURL, err = c.Gateway(ctx)
 		if err != nil {
-			return fmt.Errorf("could not get gateway URL: %v", err)
+			return fmt.Errorf("could not get gateway URL: %w", err)
 		}
 	}
 
@@ -89,7 +89,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	// interval we must use when we connect to the websocket.
 	p, err := c.recvPayload()
 	if err != nil {
-		return fmt.Errorf("could not receive payload from gateway: %v", err)
+		return fmt.Errorf("could not receive payload from gateway: %w", err)
 	}
 	if p.Op != 10 {
 		return fmt.Errorf("expected Opcode 10 Hello; got Opcode %d", p.Op)
@@ -224,6 +224,11 @@ func (c *Client) reconnectWithBackoff() {
 
 		if err := c.Connect(ctx); err != nil {
 			cancel()
+
+			if !shouldReconnect(err) {
+				c.logger.Error("invalid Gateway session, can not recover: %v", err)
+				return
+			}
 
 			duration := c.backoff.forAttempt(i)
 			c.logger.Errorf("failed to reconnect: %v, retrying in %s", err, duration)

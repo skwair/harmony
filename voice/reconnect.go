@@ -3,7 +3,6 @@ package voice
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -13,8 +12,6 @@ import (
 
 	"github.com/skwair/harmony/internal/payload"
 )
-
-var errInvalidSession = errors.New("invalid voice session")
 
 func (vc *Connection) reconnectWithBackoff() {
 	vc.reconnecting.Store(true)
@@ -28,11 +25,10 @@ func (vc *Connection) reconnectWithBackoff() {
 		if err := vc.reconnect(ctx); err != nil {
 			cancel()
 
-			if err == errInvalidSession {
-				vc.logger.Error("invalid session, can not recover")
+			if !shouldReconnect(err) {
+				vc.logger.Error("invalid voice session, can not recover: %v", err)
 				return
 			}
-
 			duration := time.Second * 2
 			vc.logger.Errorf("failed to reconnect to voice server: %v, retrying in %s", err, duration)
 
@@ -106,9 +102,7 @@ func (vc *Connection) reconnect(ctx context.Context) error {
 	// Opcode 8 Hello payload, indicating the heartbeat interval we should use.
 	p, err := vc.recvPayload()
 	if err != nil {
-		if websocket.CloseStatus(err) == 4006 {
-			return errInvalidSession
-		}
+		return fmt.Errorf("could not receive Hello payload: %w", err)
 	}
 	if p.Op != voiceOpcodeHello {
 		return fmt.Errorf("expected Opcode 8 Hello; got Opcode %d", p.Op)
@@ -135,9 +129,7 @@ func (vc *Connection) reconnect(ctx context.Context) error {
 	// We should receive an Opcode 9 Resumed payload to acknowledge the resume.
 	p, err = vc.recvPayload()
 	if err != nil {
-		if websocket.CloseStatus(err) == 4006 {
-			return errInvalidSession
-		}
+		return fmt.Errorf("could not receive Resumed payload: %w", err)
 	}
 	if p.Op != voiceOpcodeResumed {
 		return fmt.Errorf("expected Opcode 9 Resumed; got Opcode %d", p.Op)

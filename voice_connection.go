@@ -74,7 +74,7 @@ func (c *Client) LeaveVoiceChannel(ctx context.Context, guildID string) error {
 		},
 	}
 	if err := c.sendPayload(ctx, gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
-		return fmt.Errorf("could not send voice state update payload: %v", err)
+		return fmt.Errorf("could not send voice state update payload: %w", err)
 	}
 	return nil
 }
