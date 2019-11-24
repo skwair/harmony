@@ -152,7 +152,30 @@ func (c *Client) Disconnect() {
 		return
 	}
 
-	// Signal the connection manager that we want to disconnect.
+	// First, try to properly leave all voice channel we are connected to.
+	// NOTE: maybe adjust this timeout to the number of voice connections
+	// we have. Something like min 10s, max 120s with 1s/conn.
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var wg sync.WaitGroup
+
+	for guildID := range c.voiceConnections {
+		wg.Add(1)
+
+		go func(guildID string) {
+			defer wg.Done()
+
+			if err := c.LeaveVoiceChannel(ctx, guildID); err != nil {
+				c.logger.Errorf("could not properly disconnect from voice channel: %v", err)
+			}
+		}(guildID)
+	}
+
+	// Wait for all voice connections to be closed.
+	wg.Wait()
+
+	// Then, signal the connection manager that we want to disconnect.
 	close(c.stop)
 	// Properly wait for all goroutines to exit.
 	c.wg.Wait()
