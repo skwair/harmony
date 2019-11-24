@@ -255,7 +255,12 @@ func (c *Client) reconnectWithBackoff() {
 // the Gateway. Calls after the first one are no-ops.
 func (c *Client) reportErr(err error) {
 	c.reportErrorOnce.Do(func() {
-		c.error <- err
+		select {
+		case c.error <- err:
+
+		// Discard the error if we are already closing the connection.
+		case <-c.stop:
+		}
 		close(c.error)
 	})
 }

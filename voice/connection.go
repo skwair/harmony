@@ -356,7 +356,12 @@ func shouldReconnect(err error) bool {
 // connection is up. Calls after the first one are no-ops.
 func (vc *Connection) reportErr(err error) {
 	vc.reportErrorOnce.Do(func() {
-		vc.error <- err
+		select {
+		case vc.error <- err:
+
+		// Discard the error if we are already closing the connection.
+		case <-vc.stop:
+		}
 		close(vc.error)
 	})
 }
