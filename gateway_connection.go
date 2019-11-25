@@ -3,7 +3,6 @@ package harmony
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -17,11 +16,6 @@ import (
 const (
 	gatewayVersion  = 6
 	gatewayEncoding = "json"
-)
-
-var (
-	// ErrAlreadyConnected is returned by Connect when a connection to the Gateway already exists.
-	ErrAlreadyConnected = errors.New("already connected to the Gateway")
 )
 
 // Connect connects and identifies the client to the Discord Gateway.

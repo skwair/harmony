@@ -118,8 +118,8 @@ func (vc *Connection) reconnect(ctx context.Context) error {
 
 	// Send the resume payload to notify the voice server this is not a new connection.
 	r := resume{
-		ServerID:  vc.guildID,
-		SessionID: vc.sessionID,
+		ServerID:  vc.State().GuildID,
+		SessionID: vc.State().SessionID,
 		Token:     vc.token,
 	}
 	if err = vc.sendPayload(ctx, voiceOpcodeResume, r); err != nil {

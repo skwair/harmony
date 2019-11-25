@@ -108,7 +108,7 @@ func (vc *Connection) sendPayload(ctx context.Context, op int, d interface{}) er
 		return err
 	}
 	p := &payload.Payload{Op: op, D: b}
-	vc.logger.Debugf("sent voice payload (guild=%q): %s", vc.guildID, p)
+	vc.logger.Debugf("sent voice payload (guild=%q): %s", vc.State().GuildID, p)
 	return payload.Send(ctx, vc.conn, p)
 }
 
@@ -119,7 +119,7 @@ func (vc *Connection) recvPayload() (*payload.Payload, error) {
 		return nil, err
 	}
 
-	vc.logger.Debugf("received voice payload (guild=%q): %s", vc.guildID, p)
+	vc.logger.Debugf("received voice payload (guild=%q): %s", vc.State().GuildID, p)
 
 	return p, nil
 }

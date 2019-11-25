@@ -315,6 +315,17 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		if err = json.Unmarshal(data, &vs); err != nil {
 			return err
 		}
+
+		// If this update concerns one of our voice connections
+		// and it's not a voice channel leave, then make sure
+		// to update its state.
+		if vs.UserID == c.userID && vs.ChannelID != nil {
+			conn, ok := c.voiceConnections[vs.GuildID]
+			if ok {
+				conn.SetState(&vs.State)
+			}
+		}
+
 		if c.withStateTracking {
 			c.State.updateGuildVoiceStates(&vs)
 		}

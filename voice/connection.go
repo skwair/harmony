@@ -38,10 +38,14 @@ type Connection struct {
 	// containing Opus encoded audio data.
 	Recv chan *AudioPacket
 
-	// User and session this connection is established with.
-	userID, sessionID string
-	// guild and channel IDs this voice connection is attached to.
-	guildID, channelID string
+	// Current state of this voice connection.
+	// This is set when initially establishing
+	// the connection and should be kept up to
+	// date with the SetState method as voice
+	// server update events are received on the
+	// main Gateway connection.
+	stateMu sync.RWMutex
+	state   *State
 
 	// Token used to identify to the voice server.
 	token string
@@ -126,10 +130,7 @@ func Connect(ctx context.Context, state *StateUpdate, server *ServerUpdate, opts
 		payloads:             make(chan *payload.Payload),
 		error:                make(chan error),
 		stop:                 make(chan struct{}),
-		userID:               state.UserID,
-		sessionID:            state.SessionID,
-		guildID:              state.GuildID,
-		channelID:            *state.ChannelID,
+		state:                &state.State,
 		token:                server.Token,
 		logger:               log.NewStd(os.Stderr, log.LevelError),
 		lastHeartbeatACK:     atomic.NewInt64(0),
@@ -197,9 +198,9 @@ func Connect(ctx context.Context, state *StateUpdate, server *ServerUpdate, opts
 
 	// Identify on the websocket connection. This is the first payload we must sent to the server.
 	i := &voiceIdentify{
-		ServerID:  vc.guildID,
-		UserID:    vc.userID,
-		SessionID: vc.sessionID,
+		ServerID:  vc.State().GuildID,
+		UserID:    vc.State().UserID,
+		SessionID: vc.State().SessionID,
 		Token:     vc.token,
 	}
 	vc.logger.Debug("identifying to the voice server")
@@ -432,6 +433,22 @@ func (vc *Connection) Close() {
 // need to report errors related to this voice connection.
 func (vc *Connection) Logger() log.Logger {
 	return vc.logger
+}
+
+// State returns the current state of this voice connection.
+func (vc *Connection) State() *State {
+	vc.stateMu.RLock()
+	defer vc.stateMu.RUnlock()
+
+	return vc.state
+}
+
+// SetState updates the state for this voice connections.
+func (vc *Connection) SetState(s *State) {
+	vc.stateMu.Lock()
+	defer vc.stateMu.Unlock()
+
+	vc.state = s
 }
 
 // isConnecting returns whether this voice connection is currently connecting
