@@ -2,6 +2,7 @@ package harmony
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/skwair/harmony/voice"
 )
@@ -335,6 +336,16 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		if err = json.Unmarshal(data, &vs); err != nil {
 			return err
 		}
+
+		if conn, ok := c.voiceConnections[vs.GuildID]; ok {
+			go func() {
+				if err := conn.UpdateServer(&vs); err != nil {
+					fmt.Println("ERROR:", err)
+				}
+				fmt.Println("--------------> successfully updated voice server! <--------------")
+			}()
+		}
+
 		c.handle(eventVoiceServerUpdate, &vs)
 
 	case eventWebhooksUpdate:

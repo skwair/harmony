@@ -5,13 +5,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"net"
-	"sync"
 	"time"
 
 	"nhooyr.io/websocket"
-
-	"github.com/skwair/harmony/internal/payload"
 )
+
+// Determine whether we should try to reconnect based on the error we got.
+// See https://discordapp.com/developers/docs/topics/opcodes-and-status-codes#voice-voice-close-event-codes for more information.
+func shouldReconnect(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	switch websocket.CloseStatus(err) {
+	case 4003, 4004, 4005, 4006, 4011, 4012, 4014, 4016:
+		return false
+	case 4015:
+		return true
+	case -1: // Not a websocket error.
+		return true
+	default: // New (or undocumented?) close status code.
+		return true
+	}
+}
 
 func (vc *Connection) reconnectWithBackoff() {
 	vc.reconnecting.Store(true)
@@ -50,12 +66,7 @@ func (vc *Connection) reconnectWithBackoff() {
 }
 
 func (vc *Connection) reconnect(ctx context.Context) error {
-	vc.payloads = make(chan *payload.Payload)
-	vc.error = make(chan error)
-	vc.reportErrorOnce = sync.Once{}
-	vc.stop = make(chan struct{})
-
-	vc.ctx, vc.cancel = context.WithCancel(context.Background())
+	vc.reset()
 
 	// Start by re-opening the voice websocket connection.
 	var err error
@@ -79,8 +90,8 @@ func (vc *Connection) reconnect(ctx context.Context) error {
 	// This is used to notify the event handler that some
 	// specific payloads should be sent through to vc.payloads
 	// while we are reconnecting to the voice server.
-	vc.connectingToVoice.Store(true)
-	defer vc.connectingToVoice.Store(false)
+	vc.connecting.Store(true)
+	defer vc.connecting.Store(false)
 
 	// Then re-establish the voice data UDP connection.
 	vc.udpConn, err = net.DialUDP("udp", nil, vc.dataEndpoint)

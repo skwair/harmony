@@ -17,13 +17,13 @@ const (
 // SetSpeakingMode sends an Opcode 5 Speaking payload. This does nothing
 // if the user is already in the given state.
 func (vc *Connection) SetSpeakingMode(mode SpeakingMode) error {
-	vc.mu.Lock()
-	defer vc.mu.Unlock()
-
 	// Return early if the user is already in the asked state.
+	vc.speakingModeMu.Lock()
 	if mode == vc.speakingMode {
+		vc.speakingModeMu.Unlock()
 		return nil
 	}
+	vc.speakingModeMu.Unlock()
 
 	p := struct {
 		Speaking uint32 `json:"speaking"`
@@ -39,7 +39,9 @@ func (vc *Connection) SetSpeakingMode(mode SpeakingMode) error {
 		return err
 	}
 
+	vc.speakingModeMu.Lock()
 	vc.speakingMode = mode
+	vc.speakingModeMu.Unlock()
 
 	return nil
 }
