@@ -146,8 +146,8 @@ func (vc *Connection) reconnect(ctx context.Context) error {
 		return fmt.Errorf("expected Opcode 9 Resumed; got Opcode %d", p.Op)
 	}
 
-	vc.wg.Add(2) // listen starts an additional goroutine.
-	go vc.listen()
+	vc.wg.Add(1)
+	go vc.listenAndHandlePayloads()
 
 	vc.wg.Add(1)
 	go vc.wait()

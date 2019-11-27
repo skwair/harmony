@@ -3,7 +3,6 @@ package heartbeat
 import (
 	"fmt"
 	"net"
-	"sync"
 	"time"
 
 	"go.uber.org/atomic"
@@ -13,19 +12,15 @@ import (
 type Hearbeater func() error
 
 // Run periodically calls the given heartbeater to send a heartbeat payload.
-// It should be called in a separate goroutine. It will decrement the given
-// wait group when done, can be stopped by closing the stop channel and will
-// report any error that occurs through the provided errCh.
+// It can be stopped by closing the stop channel and will report any error
+// that occurs using the given errReporter.
 func Run(
-	wg *sync.WaitGroup,
-	stop chan struct{},
-	errReporter func(err error),
 	every time.Duration,
 	h Hearbeater,
 	lastHeartbeatACK *atomic.Int64,
+	stop chan struct{},
+	errReporter func(err error),
 ) {
-	defer wg.Done()
-
 	ticker := time.NewTicker(every)
 	defer ticker.Stop()
 
@@ -59,19 +54,15 @@ func Run(
 }
 
 // RunUDP periodically calls the given heartbeater to send a heartbeat packet.
-// It should be called in a separate goroutine. It will decrement the given
-// wait group when done, can be stopped by closing the stop channel and will
-// report any error that occurs through the provided errCh.
+// It can be stopped by closing the stop channel and will report any error that
+// occurs using the given errReporter.
 func RunUDP(
-	wg *sync.WaitGroup,
-	stop chan struct{},
-	errReporter func(err error),
 	every time.Duration,
 	h Hearbeater,
 	lastUDPHeartbeatACK *atomic.Int64,
+	stop chan struct{},
+	errReporter func(err error),
 ) {
-	defer wg.Done()
-
 	ticker := time.NewTicker(every)
 	defer ticker.Stop()
 

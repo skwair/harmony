@@ -83,8 +83,8 @@ func (vc *Connection) connect(ctx context.Context, server *ServerUpdate) error {
 		}
 	}()
 
-	vc.wg.Add(2) // listen starts an additional goroutine.
-	go vc.listen()
+	vc.wg.Add(1)
+	go vc.listenAndHandlePayloads()
 
 	vc.wg.Add(1)
 	go vc.wait()
@@ -263,7 +263,8 @@ func (vc *Connection) sendSilenceFrame() error {
 // onError is called when an error occurs while the connection to
 // the voice server is up. It closes the underlying websocket connection
 // with a 1006 code, logs the error and finally signals to all other
-// goroutines (heartbeat, listen, etc.) to stop by closing the stop channel.
+// goroutines (heartbeat, listenAndHandlePayloads, etc.) to stop by
+// closing the stop channel.
 func (vc *Connection) onError(err error) {
 	vc.logger.Errorf("voice connection error: %v", err)
 

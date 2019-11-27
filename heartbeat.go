@@ -8,16 +8,17 @@ import (
 
 // heartbeat periodically sends a heartbeat payload to the Gateway.
 func (c *Client) heartbeat(every time.Duration) {
+	defer c.wg.Done()
+
 	c.logger.Debug("starting gateway heartbeater")
 	defer c.logger.Debug("stopped gateway heartbeater")
 
 	heartbeat.Run(
-		&c.wg,
-		c.stop,
-		c.reportErr,
 		every,
 		c.sendHeartbeatPayload,
 		c.lastHeartbeatACK,
+		c.stop,
+		c.reportErr,
 	)
 }
 

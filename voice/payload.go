@@ -123,3 +123,14 @@ func (vc *Connection) recvPayload() (*payload.Payload, error) {
 
 	return p, nil
 }
+
+// listenAndHandlePayloads listens for payloads sent by the voice server and
+// handles them as they are received.
+func (vc *Connection) listenAndHandlePayloads() {
+	defer vc.wg.Done()
+
+	vc.logger.Debug("starting voice connection event listener")
+	defer vc.logger.Debug("stopped voice connection event listener")
+
+	payload.ListenAndHandle(vc.recvPayload, vc.handleEvent, vc.reportErr)
+}

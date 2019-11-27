@@ -118,9 +118,8 @@ func (c *Client) Connect(ctx context.Context) error {
 			return err
 		}
 		// The Gateway should replay events we missed since we were disconnected
-		// and then send us a Resumed payload. All of this is handled by the listen
-		// goroutine.
-		// NOTE: maybe we should reconnect to voice if we had active connections here.
+		// and then send us a Resumed payload. All of this is handled by the
+		// listenAndHandlePayloads goroutine.
 	}
 
 	// From now, we are connected to the Gateway.
@@ -129,9 +128,11 @@ func (c *Client) Connect(ctx context.Context) error {
 	c.wg.Add(1)
 	go c.wait()
 
-	c.wg.Add(3) // listen starts an additional goroutine.
+	c.wg.Add(1)
 	go c.heartbeat(time.Duration(hello.HeartbeatInterval) * time.Millisecond)
-	go c.listen()
+
+	c.wg.Add(1)
+	go c.listenAndHandlePayloads()
 
 	return nil
 }
@@ -285,7 +286,8 @@ func (c *Client) reportErr(err error) {
 // onGatewayError is called when an error occurs while the connection to
 // the Gateway is up. It closes the underlying websocket connection
 // with a 1006 code, logs the error and finally signals to all other
-// goroutines (heartbeat, listen, etc.) to stop by closing the stop channel.
+// goroutines (heartbeat, listenAndHandlePayloads, etc.) to stop by
+// closing the stop channel.
 func (c *Client) onGatewayError(err error) {
 	c.logger.Errorf("gateway connection error: %v", err)
 

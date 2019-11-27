@@ -30,3 +30,14 @@ func (c *Client) recvPayload() (*payload.Payload, error) {
 
 	return p, nil
 }
+
+// listenAndHandlePayloads listens for payloads sent by the Discord Gateway
+// and handles them as they are received.
+func (c *Client) listenAndHandlePayloads() {
+	defer c.wg.Done()
+
+	c.logger.Debug("starting gateway event listener")
+	defer c.logger.Debug("stopped gateway event listener")
+
+	payload.ListenAndHandle(c.recvPayload, c.handleEvent, c.reportErr)
+}
