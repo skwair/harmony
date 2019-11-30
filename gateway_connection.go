@@ -203,7 +203,7 @@ func (c *Client) wait() {
 	c.cancel()
 	c.connected.Store(false)
 
-	// If there was an error, maybe try to reconnect.
+	// If there was an error, try to reconnect depending on its code.
 	if shouldReconnect(err) {
 		c.reconnectWithBackoff()
 	}

@@ -45,7 +45,8 @@ func (vc *Connection) reconnectWithBackoff() {
 				vc.logger.Error("invalid voice session, can not recover: %v", err)
 				return
 			}
-			duration := time.Second * 2
+
+			duration := 2 * time.Second
 			vc.logger.Errorf("failed to reconnect to voice server: %v, retrying in %s", err, duration)
 
 			select {

@@ -2,7 +2,6 @@ package harmony
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/skwair/harmony/voice"
 )
@@ -340,12 +339,15 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 			return err
 		}
 
+		// If this update concerns a voice connections managed
+		// by the Client, make sure to update it accordingly
+		// so it can connect to the new voice server.
 		if conn, ok := c.voiceConnections[vs.GuildID]; ok {
 			go func() {
 				if err := conn.UpdateServer(&vs); err != nil {
-					fmt.Println("ERROR:", err)
+					c.logger.Error("could not update voice server (guild=%q): %v", vs.GuildID, err)
 				}
-				fmt.Println("--------------> successfully updated voice server! <--------------")
+				c.logger.Debug("successfully update voice server (guild=%q)", vs.GuildID)
 			}()
 		}
 

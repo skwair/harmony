@@ -17,9 +17,12 @@ import (
 	"github.com/skwair/harmony/log"
 )
 
-// Connect establishes a new voice connection with the provided
-// information. This connection should be closed by calling its Close method
-// when no longer needed.
+// Connect establishes a new voice connection with the provided information. It will automatically try to
+// reconnect and resume if network failures occur. Further StateUpdate and ServerUpdate should be forwarded
+// to the returned connection using its SetState and UpdateServer method. Not doing so will likely result in
+// out-of-sync voice connections that can be in incoherent state or that do not handle voice server update
+// events.
+// This connection should be closed by calling its Close method when no longer needed.
 func Connect(ctx context.Context, state *StateUpdate, server *ServerUpdate, opts ...ConnectionOption) (*Connection, error) {
 	if state.ChannelID == nil {
 		return nil, errors.New("could not establish voice connection: channel ID in given state is nil")
@@ -54,6 +57,7 @@ func Connect(ctx context.Context, state *StateUpdate, server *ServerUpdate, opts
 	return vc, nil
 }
 
+// connect performs the complete voice connection handshake to the given voice server.
 func (vc *Connection) connect(ctx context.Context, server *ServerUpdate) error {
 	// This is used to notify the event handler that some
 	// specific payloads should be sent through to vc.payloads

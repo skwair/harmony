@@ -4,6 +4,7 @@ import (
 	"context"
 	"net"
 	"sync"
+	"time"
 
 	"go.uber.org/atomic"
 	"nhooyr.io/websocket"
@@ -134,6 +135,8 @@ func (vc *Connection) SetState(s *State) {
 }
 
 // UpdateServer updates the voice server this connection is using.
+// This closes the connection to the old server and establishes a new
+// connection to the updated server.
 func (vc *Connection) UpdateServer(server *ServerUpdate) error {
 	vc.mu.Lock()
 	defer vc.mu.Unlock()
@@ -151,7 +154,10 @@ func (vc *Connection) UpdateServer(server *ServerUpdate) error {
 
 	vc.reset()
 
-	return vc.connect(context.TODO(), server)
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	return vc.connect(ctx, server)
 }
 
 // reset resets the voice connection so a new connect or reconnect attempt can be issued.
