@@ -317,9 +317,12 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 			return err
 		}
 
-		// If this update concerns one of our voice connections
-		// and it's not a voice channel leave, then make sure
-		// to update its state.
+		// If this update concerns a voice connections managed
+		// by the Client and it's not a channel leave, make
+		// sure to update its state so it stays coherent.
+		// Failing to do so would make this connection try to
+		// reconnect to a wrong channel or with a wrong state
+		// (deafen/muted) if it had to reconnect.
 		if vs.UserID == c.userID && vs.ChannelID != nil {
 			conn, ok := c.voiceConnections[vs.GuildID]
 			if ok {

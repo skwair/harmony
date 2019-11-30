@@ -66,6 +66,12 @@ func (vc *Connection) reconnectWithBackoff() {
 }
 
 func (vc *Connection) reconnect(ctx context.Context) error {
+	// This is used to notify the event handler that some
+	// specific payloads should be sent through to vc.payloads
+	// while we are reconnecting to the voice server.
+	vc.connecting.Store(true)
+	defer vc.connecting.Store(false)
+
 	vc.reset()
 
 	// Start by re-opening the voice websocket connection.
@@ -86,12 +92,6 @@ func (vc *Connection) reconnect(ctx context.Context) error {
 			vc.cancel()
 		}
 	}()
-
-	// This is used to notify the event handler that some
-	// specific payloads should be sent through to vc.payloads
-	// while we are reconnecting to the voice server.
-	vc.connecting.Store(true)
-	defer vc.connecting.Store(false)
 
 	// Then re-establish the voice data UDP connection.
 	vc.udpConn, err = net.DialUDP("udp", nil, vc.dataEndpoint)

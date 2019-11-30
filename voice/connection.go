@@ -141,6 +141,14 @@ func (vc *Connection) UpdateServer(server *ServerUpdate) error {
 	close(vc.stop)
 	vc.wg.Wait()
 
+	// Explicitly set the speaking mode to off in the
+	// event where some audio is being sent while updating
+	// the voice server. This will allow the connect method
+	// to correctly send the initial silence frame.
+	vc.speakingModeMu.Lock()
+	vc.speakingMode = SpeakingModeOff
+	vc.speakingModeMu.Unlock()
+
 	vc.reset()
 
 	return vc.connect(context.TODO(), server)
