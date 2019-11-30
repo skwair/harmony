@@ -345,9 +345,9 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		if conn, ok := c.voiceConnections[vs.GuildID]; ok {
 			go func() {
 				if err := conn.UpdateServer(&vs); err != nil {
-					c.logger.Error("could not update voice server (guild=%q): %v", vs.GuildID, err)
+					c.logger.Errorf("could not update voice server (guild=%q): %v", vs.GuildID, err)
 				}
-				c.logger.Debug("successfully update voice server (guild=%q)", vs.GuildID)
+				c.logger.Debugf("successfully update voice server (guild=%q)", vs.GuildID)
 			}()
 		}
 
