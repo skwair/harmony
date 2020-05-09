@@ -52,6 +52,54 @@ type ServerUpdate struct {
 	Endpoint string `json:"endpoint"`
 }
 
+// voiceIdentify is the payload sent to identify to a voice server.
+type voiceIdentify struct {
+	ServerID  string `json:"server_id"`
+	UserID    string `json:"user_id"`
+	SessionID string `json:"session_id"`
+	Token     string `json:"token"`
+}
+
+// voiceReady payload is received when the client successfully identified
+// with the voice server.
+type voiceReady struct {
+	SSRC  uint32   `json:"ssrc"`
+	IP    string   `json:"ip"`
+	Port  int      `json:"port"`
+	Modes []string `json:"modes"`
+}
+
+// selectProtocol is sent by the client through the voice
+// websocket to start the voice UDP connection.
+type selectProtocol struct {
+	Protocol string              `json:"protocol"`
+	Data     *selectProtocolData `json:"data"`
+}
+
+type selectProtocolData struct {
+	Address string `json:"address"`
+	Port    uint16 `json:"port"`
+	Mode    string `json:"mode"`
+}
+
+// sessionDescription is received when the client selected the UDP
+// voice protocol. It contains the key to encrypt voice data.
+type sessionDescription struct {
+	Mode           string `json:"mode"`
+	SecretKey      []byte `json:"secret_key"`
+	VideoCodec     string `json:"video_codec"`
+	AudioCodec     string `json:"audio_codec"`
+	MediaSessionID string `json:"media_session_id"`
+}
+
+// resume is sent by the client to notify a voice server it is trying
+// to resume a connection which was unexpectedly ended.
+type resume struct {
+	ServerID  string `json:"server_id"`
+	SessionID string `json:"session_id"`
+	Token     string `json:"token"`
+}
+
 // sendPayload sends a single Payload to the Voice server with
 // the given op and data.
 func (vc *Connection) sendPayload(ctx context.Context, op int, d interface{}) error {
@@ -60,7 +108,7 @@ func (vc *Connection) sendPayload(ctx context.Context, op int, d interface{}) er
 		return err
 	}
 	p := &payload.Payload{Op: op, D: b}
-	vc.logger.Debugf("sent voice payload (channel=%q): %s", vc.channelID, p)
+	vc.logger.Debugf("sent voice payload (guild=%q): %s", vc.State().GuildID, p)
 	return payload.Send(ctx, vc.conn, p)
 }
 
@@ -71,7 +119,18 @@ func (vc *Connection) recvPayload() (*payload.Payload, error) {
 		return nil, err
 	}
 
-	vc.logger.Debugf("received voice payload (channel=%q): %s", vc.channelID, p)
+	vc.logger.Debugf("received voice payload (guild=%q): %s", vc.State().GuildID, p)
 
 	return p, nil
+}
+
+// listenAndHandlePayloads listens for payloads sent by the voice server and
+// handles them as they are received.
+func (vc *Connection) listenAndHandlePayloads() {
+	defer vc.wg.Done()
+
+	vc.logger.Debug("starting voice connection event listener")
+	defer vc.logger.Debug("stopped voice connection event listener")
+
+	payload.ListenAndHandle(vc.recvPayload, vc.handleEvent, vc.reportErr)
 }

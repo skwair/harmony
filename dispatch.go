@@ -315,6 +315,20 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		if err = json.Unmarshal(data, &vs); err != nil {
 			return err
 		}
+
+		// If this update concerns a voice connection managed
+		// by the Client and it's not a channel leave, make
+		// sure to update its state so it stays coherent.
+		// Failing to do so would make this connection try to
+		// reconnect to a wrong channel or with a wrong state
+		// (deafen/muted) if it had to reconnect.
+		if vs.UserID == c.userID && vs.ChannelID != nil {
+			conn, ok := c.voiceConnections[vs.GuildID]
+			if ok {
+				conn.SetState(&vs.State)
+			}
+		}
+
 		if c.withStateTracking {
 			c.State.updateGuildVoiceStates(&vs)
 		}
@@ -324,6 +338,19 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		if err = json.Unmarshal(data, &vs); err != nil {
 			return err
 		}
+
+		// If this update concerns a voice connections managed
+		// by the Client, make sure to update it accordingly
+		// so it can connect to the new voice server.
+		if conn, ok := c.voiceConnections[vs.GuildID]; ok {
+			go func() {
+				if err := conn.UpdateServer(&vs); err != nil {
+					c.logger.Errorf("could not update voice server (guild=%q): %v", vs.GuildID, err)
+				}
+				c.logger.Debugf("successfully update voice server (guild=%q)", vs.GuildID)
+			}()
+		}
+
 		c.handle(eventVoiceServerUpdate, &vs)
 
 	case eventWebhooksUpdate:

@@ -21,7 +21,7 @@ type Ready struct {
 func (c *Client) ready() error {
 	p, err := c.recvPayload()
 	if err != nil {
-		return fmt.Errorf("could not receive ready payload from gateway: %v", err)
+		return fmt.Errorf("could not receive ready payload from gateway: %w", err)
 	}
 	if p.Op != 0 || p.T != eventReady {
 		return fmt.Errorf("expected Opcode 0 Ready; got Opcode %d %s", p.Op, p.T)

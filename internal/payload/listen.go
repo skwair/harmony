@@ -1,77 +1,42 @@
 package payload
 
 import (
-	"sync"
-
 	"nhooyr.io/websocket"
 )
 
-// Listen uses the given receiver to receive payloads and passes them to the
-// given handler as they arrive. It should be called in a separate goroutine.
-// It will decrement the given wait group when done, can be stopped
-// by closing the stop channel and will report any error that occurs with
-// the errCh channel.
-func Listen(
-	wg *sync.WaitGroup,
-	stop chan struct{},
-	errCh chan<- error,
-	receiver func(ch chan<- *Payload),
-	handler func(p *Payload) error,
-) {
-	defer wg.Done()
+// ReceiverFunc is a function that receives a single Payload.
+type ReceiverFunc func() (*Payload, error)
 
-	payloads := make(chan *Payload)
-	go receiver(payloads)
+// HandlerFunc is a function that handles a Payload.
+type HandlerFunc func(p *Payload) error
 
+// ListenAndHandle loops on payloads received using the given receiver and
+// handles them with the given handler as they arrive.
+// If an error happens during the process, ListenAndHandle will report it
+// using the given errReporter and return.
+// It silently stops when the provided receiver's underlying connection is
+// closed.
+func ListenAndHandle(r ReceiverFunc, h HandlerFunc, errReporter func(err error)) {
 	for {
-		select {
-		case p := <-payloads:
-			if err := handler(p); err != nil {
-				errCh <- err
-				return
-			}
-		case <-stop:
-			return
-		}
-	}
-}
-
-// RecvAll uses the receiver to receive payloads and send them
-// through payloads as they arrive. It should be called in a separate
-// goroutine. It will decrement the given wait group when done, can be
-// stopped by closing the stop channel and will report any error that
-// occurs with the errCh channel.
-func RecvAll(
-	wg *sync.WaitGroup,
-	payloads chan<- *Payload,
-	errCh chan<- error,
-	stop <-chan struct{},
-	receiver func() (*Payload, error),
-) {
-	defer wg.Done()
-
-	for {
-		p, err := receiver()
+		p, err := r()
 		if err != nil {
 			// Silently break out of this loop because the connection
 			// was closed (either intentionally by calling Disconnect
 			// or because we encountered an error).
+			// NOTE: this is probably useless now that only the first error
+			// is reported. It will be discarded if an error has already been
+			// reported.
 			if websocket.CloseStatus(err) == websocket.StatusNormalClosure ||
 				websocket.CloseStatus(err) == websocket.StatusInternalError {
 				return
 			}
 
-			// NOTE: maybe treat websocket close errors differently based on their code
-			// for the 4000-4999 range.
-			// See : https://discordapp.com/developers/docs/topics/opcodes-and-status-codes
-
-			errCh <- err
+			errReporter(err)
 			return
 		}
 
-		select {
-		case payloads <- p:
-		case <-stop:
+		if err := h(p); err != nil {
+			errReporter(err)
 			return
 		}
 	}

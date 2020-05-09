@@ -505,12 +505,12 @@ type requestGuildMembers struct {
 // limit is the maximum number of members to send or 0 to request all members matched.
 // You need to be connected to the Gateway to call this method, else it will
 // return ErrGatewayNotConnected.
-func (r *GuildResource) RequestGuildMembers(ctx context.Context, query string, limit int) error {
+func (r *GuildResource) RequestGuildMembers(query string, limit int) error {
 	if !r.client.isConnected() {
 		return ErrGatewayNotConnected
 	}
 
-	return r.client.sendPayload(ctx, gatewayOpcodeRequestGuildMembers, &requestGuildMembers{
+	return r.client.sendPayload(r.client.ctx, gatewayOpcodeRequestGuildMembers, &requestGuildMembers{
 		GuildID: r.guildID,
 		Query:   query,
 		Limit:   limit,

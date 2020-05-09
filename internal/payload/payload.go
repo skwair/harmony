@@ -84,6 +84,10 @@ func Recv(ctx context.Context, connRMu *sync.Mutex, conn *websocket.Conn) (*Payl
 	if err = json.NewDecoder(rc).Decode(&p); err != nil {
 		return nil, err
 	}
-	rc.Close()
+
+	if err = rc.Close(); err != nil {
+		return nil, err
+	}
+
 	return &p, nil
 }

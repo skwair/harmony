@@ -28,7 +28,7 @@ func OpusEncoder(conn *voice.Connection) (pcmIn chan []int16, err error) {
 	if err != nil {
 		return nil, err
 	}
-	pcmIn = make(chan []int16, 512)
+	pcmIn = make(chan []int16)
 
 	go func() {
 		for {

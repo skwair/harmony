@@ -11,6 +11,8 @@ import (
 )
 
 // JoinVoiceChannel will create a new voice connection to the given voice channel.
+// If you already have an existing connection and want to switch to a different channel
+// instead, use the SwitchVoiceChannel method.
 // This method is safe to call from multiple goroutines, but connections will happen
 // sequentially.
 // To properly leave the voice channel, call LeaveVoiceChannel.
@@ -20,6 +22,11 @@ func (c *Client) JoinVoiceChannel(ctx context.Context, guildID, channelID string
 
 	if !c.isConnected() {
 		return nil, ErrGatewayNotConnected
+	}
+
+	// Check if we already have a voice connection in this guild.
+	if _, ok := c.voiceConnections[guildID]; ok {
+		return nil, ErrAlreadyConnectedToVoice
 	}
 
 	// This is used to notify the already started event handler that
@@ -48,7 +55,8 @@ func (c *Client) JoinVoiceChannel(ctx context.Context, guildID, channelID string
 		return nil, err
 	}
 
-	conn, err := voice.EstablishNewConnection(ctx, state, server, voice.WithLogger(c.logger))
+	// Establish the voice connection.
+	conn, err := voice.Connect(ctx, state, server, voice.WithLogger(c.logger))
 	if err != nil {
 		return nil, err
 	}
@@ -58,9 +66,34 @@ func (c *Client) JoinVoiceChannel(ctx context.Context, guildID, channelID string
 	return conn, nil
 }
 
+// SwitchVoiceChannel can be used to switch from a voice channel to another. It requires an
+// active voice connection in the guild. You can get one with JoinVoiceChannel.
+func (c *Client) SwitchVoiceChannel(ctx context.Context, guildID string, channelID string) error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	conn, ok := c.voiceConnections[guildID]
+	if !ok {
+		return ErrNotConnectedToVoice
+	}
+
+	vsu := &voice.StateUpdate{
+		State: voice.State{
+			GuildID:   guildID,
+			ChannelID: &channelID,
+			SelfMute:  conn.State().SelfMute,
+			SelfDeaf:  conn.State().SelfDeaf,
+		},
+	}
+	if err := c.sendPayload(ctx, gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
+		return err
+	}
+	return nil
+}
+
 // LeaveVoiceChannel notifies the Gateway we want the voice channel we are
 // connected to in the given guild.
-func (c *Client) LeaveVoiceChannel(ctx context.Context, guildID string) {
+func (c *Client) LeaveVoiceChannel(ctx context.Context, guildID string) error {
 	conn, ok := c.voiceConnections[guildID]
 	if ok {
 		conn.Close()
@@ -73,8 +106,9 @@ func (c *Client) LeaveVoiceChannel(ctx context.Context, guildID string) {
 		},
 	}
 	if err := c.sendPayload(ctx, gatewayOpcodeVoiceStateUpdate, vsu); err != nil {
-		c.logger.Errorf("could not properly leave voice channel: %v", err)
+		return fmt.Errorf("could not send voice state update payload: %w", err)
 	}
+	return nil
 }
 
 // getStateAndServer will receive exactly two payloads from ch and extract the voice state

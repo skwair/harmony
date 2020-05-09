@@ -12,8 +12,16 @@ import (
 var (
 	// ErrGatewayNotConnected is returned when the client is not connected to the Gateway.
 	ErrGatewayNotConnected = errors.New("gateway is not connected")
+	// ErrAlreadyConnected is returned by Connect when a connection to the Gateway already exists.
+	ErrAlreadyConnected = errors.New("already connected to the Gateway")
 	// ErrInvalidSend is returned by Send when no files are provided.
 	ErrInvalidSend = errors.New("no content, embed nor file provided")
+	// ErrAlreadyConnectedToVoice is returned when trying to join a voice channel in
+	// a guild where you are already have an active voice connection.
+	ErrAlreadyConnectedToVoice = errors.New("already connected to a voice channel in this guild, consider using the SwitchVoiceChannel method")
+	// ErrNotConnectedToVoice is returned when trying to switch to a different voice
+	// channel in a guild where you are not yet connected to a voice channel.
+	ErrNotConnectedToVoice = errors.New("not connected to a voice channel in this guild, use the JoinVoiceChannel method first")
 )
 
 // APIError is a generic error returned by the Discord HTTP API.

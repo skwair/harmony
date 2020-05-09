@@ -13,6 +13,3 @@ const (
 	voiceOpcodeResumed            = 9
 	voiceOpcodeClientDisconnect   = 13
 )
-
-// TODO: handle voice connection resumes.
-var _ = voiceOpcodeResume // Make use of this constant so the CI doesn't complain.

@@ -24,21 +24,21 @@ func (b backoff) forAttempt(n int) time.Duration {
 		return b.baseDelay
 	}
 
-	backoff, max := float64(b.baseDelay), float64(b.maxDelay)
-	for backoff < max && n > 0 {
-		backoff *= b.factor
+	bckf, max := float64(b.baseDelay), float64(b.maxDelay)
+	for bckf < max && n > 0 {
+		bckf *= b.factor
 		n--
 	}
 
-	if backoff > max {
-		backoff = max
+	if bckf > max {
+		bckf = max
 	}
 
-	backoff *= 1 + b.jitter*(rand.Float64()*2-1)
+	bckf *= 1 + b.jitter*(rand.Float64()*2-1)
 
-	if backoff < 0 {
+	if bckf < 0 {
 		return 0
 	}
 
-	return time.Duration(backoff)
+	return time.Duration(bckf)
 }

@@ -3,7 +3,6 @@ package heartbeat
 import (
 	"fmt"
 	"net"
-	"sync"
 	"time"
 
 	"go.uber.org/atomic"
@@ -13,19 +12,15 @@ import (
 type Hearbeater func() error
 
 // Run periodically calls the given heartbeater to send a heartbeat payload.
-// It should be called in a separate goroutine. It will decrement the given
-// wait group when done, can be stopped by closing the stop channel and will
-// report any error that occurs through the provided errCh.
+// It can be stopped by closing the stop channel and will report any error
+// that occurs using the given errReporter.
 func Run(
-	wg *sync.WaitGroup,
-	stop chan struct{},
-	errCh chan<- error,
 	every time.Duration,
 	h Hearbeater,
 	lastHeartbeatACK *atomic.Int64,
+	stop chan struct{},
+	errReporter func(err error),
 ) {
-	defer wg.Done()
-
 	ticker := time.NewTicker(every)
 	defer ticker.Stop()
 
@@ -36,13 +31,13 @@ func Run(
 		// connection as stale and return an error.
 		t := time.Unix(0, lastHeartbeatACK.Load()).UTC()
 		if !first && time.Now().UTC().Sub(t) > every {
-			errCh <- fmt.Errorf("no heartbeat received since %v (%v ago)", t, time.Now().Sub(t))
+			errReporter(fmt.Errorf("no heartbeat received since %v (%v ago)", t, time.Now().Sub(t)))
 			return
 		}
 
 		// Send the heartbeat payload.
 		if err := h(); err != nil {
-			errCh <- err
+			errReporter(err)
 			return
 		}
 
@@ -59,19 +54,15 @@ func Run(
 }
 
 // RunUDP periodically calls the given heartbeater to send a heartbeat packet.
-// It should be called in a separate goroutine. It will decrement the given
-// wait group when done, can be stopped by closing the stop channel and will
-// report any error that occurs through the provided errCh.
+// It can be stopped by closing the stop channel and will report any error that
+// occurs using the given errReporter.
 func RunUDP(
-	wg *sync.WaitGroup,
-	stop chan struct{},
-	errCh chan<- error,
 	every time.Duration,
 	h Hearbeater,
 	lastUDPHeartbeatACK *atomic.Int64,
+	stop chan struct{},
+	errReporter func(err error),
 ) {
-	defer wg.Done()
-
 	ticker := time.NewTicker(every)
 	defer ticker.Stop()
 
@@ -85,7 +76,7 @@ func RunUDP(
 		// before assuming the connection is down?
 		t := time.Unix(0, lastUDPHeartbeatACK.Load()).UTC()
 		if !first && time.Now().UTC().Sub(t) > every {
-			errCh <- fmt.Errorf("no UDP heartbeat received since %v (%v ago)", t, time.Now().Sub(t))
+			errReporter(fmt.Errorf("no UDP heartbeat received since %v (%v ago)", t, time.Now().Sub(t)))
 			return
 		}
 
@@ -97,7 +88,7 @@ func RunUDP(
 				return
 			}
 
-			errCh <- err
+			errReporter(err)
 			return
 		}
 
