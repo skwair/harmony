@@ -4,6 +4,7 @@
 - 02.embed: demonstrates how to create a bot that replies with some rich embedded content when someone types the `!embed` command.
 - 03.files: shows how to send files when someone sends the `!file` command.
 - 04.auditlog: shows how to interact with the audit log of a guild.
+- 05.voice: a more complex example showcasing how to send voice data with a bot. Available commands: `!play`, `!stop`, `!leave`.
 
 # Creating a Discord bot
 
@@ -48,3 +49,7 @@ Then you can simply run the bot by executing the binary. For the `01.pingpong` e
 ./01.pingpong
 2021/07/06 19:01:50 Bot is running, press ctrl+C to exit.
 ```
+
+# License
+
+Royalty Free Music used in `05.voice` is from Bensound.
