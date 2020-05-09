@@ -316,7 +316,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 			return err
 		}
 
-		// If this update concerns a voice connections managed
+		// If this update concerns a voice connection managed
 		// by the Client and it's not a channel leave, make
 		// sure to update its state so it stays coherent.
 		// Failing to do so would make this connection try to

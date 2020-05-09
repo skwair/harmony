@@ -6,14 +6,14 @@ import (
 
 	"github.com/skwair/harmony"
 	"github.com/skwair/harmony/embed"
-	"github.com/skwair/harmony/voice/voiceutil"
+	"github.com/skwair/harmony/voice"
 )
 
 func (b *bot) handleCommand(ctx context.Context, m *harmony.Message) {
 	switch m.Content {
 	case "!play":
 		// First, find the voice channel the user is in.
-		channelID := voiceutil.FindUser(b.client.State.Guild(m.GuildID).VoiceStates, m.Author.ID)
+		channelID := findUser(b.client.State.Guild(m.GuildID).VoiceStates, m.Author.ID)
 		if channelID == "" {
 			b.sendError(ctx, m.ChannelID, "user must be in a voice channel")
 			return
@@ -70,6 +70,18 @@ func (b *bot) handleCommand(ctx context.Context, m *harmony.Message) {
 			return
 		}
 	}
+}
+
+// findUser tries to find the given user among the given voice states.
+// Returns the voice channel ID the user is in if found, empty string if not.
+func findUser(states []voice.State, userID string) string {
+	for _, state := range states {
+		if state.UserID == userID && state.ChannelID != nil {
+			return *state.ChannelID
+		}
+	}
+
+	return ""
 }
 
 // createNewPlayer creates a new player in the voice channel the given userID is.

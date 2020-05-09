@@ -149,7 +149,7 @@ func (p *Player) stop() {
 }
 
 // Destroy destroys the Player, freeing any allocated resources.
-// No-op
+// No-op if the player is already destroyed.
 func (p *Player) Destroy() {
 	p.mu.Lock()
 	defer p.mu.Unlock()
