@@ -8,7 +8,7 @@ import (
 // Settings describes a channel creation or update.
 type Settings struct {
 	Name      *optional.String `json:"name,omitempty"` // 2-100 characters.
-	Type      *optional.String `json:"type"`
+	Type      *optional.Int    `json:"type"`
 	Topic     *optional.String `json:"topic"` // 0-1000 characters.
 	Bitrate   *optional.Int    `json:"bitrate,omitempty"`
 	UserLimit *optional.Int    `json:"user_limit,omitempty"`
@@ -47,7 +47,7 @@ func WithName(name string) Setting {
 // WithType sets the name of a channel.
 func WithType(t Type) Setting {
 	return func(s *Settings) {
-		s.Type = optional.NewString(string(t))
+		s.Type = optional.NewInt(int(t))
 	}
 }
 
