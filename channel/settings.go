@@ -5,10 +5,11 @@ import (
 	"github.com/skwair/harmony/permission"
 )
 
-// Settings describes a channel creation.
+// Settings describes a channel creation or update.
 type Settings struct {
 	Name      *optional.String `json:"name,omitempty"` // 2-100 characters.
-	Topic     *optional.String `json:"topic"`          // 0-1000 characters.
+	Type      *optional.Int    `json:"type"`
+	Topic     *optional.String `json:"topic"` // 0-1000 characters.
 	Bitrate   *optional.Int    `json:"bitrate,omitempty"`
 	UserLimit *optional.Int    `json:"user_limit,omitempty"`
 	// RateLimitPerUser is the amount of seconds a user has to wait before sending
@@ -40,6 +41,13 @@ func NewSettings(opts ...Setting) *Settings {
 func WithName(name string) Setting {
 	return func(s *Settings) {
 		s.Name = optional.NewString(name)
+	}
+}
+
+// WithType sets the name of a channel.
+func WithType(t Type) Setting {
+	return func(s *Settings) {
+		s.Type = optional.NewInt(int(t))
 	}
 }
 
