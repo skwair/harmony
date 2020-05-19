@@ -8,7 +8,7 @@
 
 <img align="right" height="200" src=".github/discord-gopher.png">
 
-Harmony is a peaceful [Go](https://golang.org) module for interacting with [Discord](http://discordapp.com)'s API.
+Harmony is a peaceful [Go](https://golang.org) module for interacting with [Discord](https://discord.com)'s API.
 
 Although this package is usable, it still is under active development so please don't use it for anything other than experiments, yet.
 
@@ -51,11 +51,12 @@ func main() {
         log.Fatal(err)
     }
 
-    // Get information about the current user.
+    // Get information about the current user (the bot itself).
     u, err := client.CurrentUser().Get(context.Background())
     if err != nil {
         log.Fatal(err)
     }
+
     fmt.Println(u)
 }
 ```
@@ -96,7 +97,7 @@ Harmony exposes its API differently. It uses a [resource-based](https://godoc.or
 
 Another key difference is in the "event handler" mechanism. Instead of having a single [method](https://github.com/bwmarrin/discordgo/blob/dd99dea7adba674baa401e52362d6e330b50acf8/event.go#L120) that takes an `interface{}` as a parameter and guesses for which event you registered a handler based on its concrete type, this library provides a dedicated method for each event type, making it clear what signature your handler must have and ensuring it at compile time, not at runtime.
 
-Each action that results in an entry in the audit log has a `...WithReason` form, allowing to set a reason for the change (see the `X-Audit-Log-Reason` [header](https://discordapp.com/developers/docs/resources/audit-log#audit-logs) documentation for more information).
+Each action that results in an entry in the audit log has a `...WithReason` form, allowing to set a reason for the change (see the `X-Audit-Log-Reason` [header](https://discord.com/developers/docs/resources/audit-log#audit-logs) documentation for more information).
 
 Finally, this library has a full support of the [context](https://golang.org/pkg/context/) package, allowing the use of timeouts, deadlines and cancellation when interacting with Discord's API.
 

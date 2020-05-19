@@ -71,13 +71,13 @@ type Message struct {
 // endpoint requires the 'VIEW_CHANNEL' permission to be present on the current user. If the
 // current user is missing the 'READ_MESSAGE_HISTORY' permission in the channel then this will
 // return no messages (since they cannot read the message history).
-// The query parameter is a message ID prefixed with one of the following character :
+// The query parameter is a message ID prefixed with one of the following character:
 //	- '>' for fetching messages after
 //	- '<' for fetching messages before
 //	- '~' for fetching messages around
 // For example, to retrieve 50 messages around (25 before, 25 after) a message having the
 // ID 221588207995121520, set query to "~221588207995121520".
-// Limit is a positive integer between 1 and 100 that default to 50 if set to 0.
+// Limit is a positive integer between 1 and 100 that defaults to 50 if set to 0.
 func (r *ChannelResource) Messages(ctx context.Context, query string, limit int) ([]Message, error) {
 	if query == "" {
 		return nil, errors.New("empty query")

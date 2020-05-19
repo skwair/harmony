@@ -6,7 +6,7 @@ import (
 )
 
 // CreationTimeOf returns the creation time of the given Discord ID (userID, guildID, channelID).
-// For more information, see : https://discordapp.com/developers/docs/reference#snowflakes.
+// For more information, see : https://discord.com/developers/docs/reference#snowflakes.
 func CreationTimeOf(id string) (time.Time, error) {
 	i, err := strconv.ParseInt(id, 10, 64)
 	if err != nil {

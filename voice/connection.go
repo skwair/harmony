@@ -18,7 +18,7 @@ const (
 )
 
 // Five silence frames should be sent when there is a break in the sent data.
-// See https://discordapp.com/developers/docs/topics/voice-connections#voice-data-interpolation for more information.
+// See https://discord.com/developers/docs/topics/voice-connections#voice-data-interpolation for more information.
 var SilenceFrame = []byte{0xf8, 0xff, 0xfe}
 
 // Connection represents a Discord voice connection.

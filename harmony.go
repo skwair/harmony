@@ -1,6 +1,6 @@
 /*
 Package harmony provides an interface to the Discord API
-(https://discordapp.com/developers/docs/intro).
+(https://discord.com/developers/docs/intro).
 
 Getting started
 
