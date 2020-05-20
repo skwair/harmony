@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	defaultBaseURL        = "https://discordapp.com/api/v6"
+	defaultBaseURL        = "https://discord.com/api/v6"
 	defaultLargeThreshold = 250
 )
 

@@ -3,7 +3,7 @@ package audit
 type changeKey string
 
 // Possible change key values, as defined here:
-// https://discordapp.com/developers/docs/resources/audit-log#audit-log-change-object-audit-log-change-key
+// https://discord.com/developers/docs/resources/audit-log#audit-log-change-object-audit-log-change-key
 const (
 	changeKeyName                       changeKey = "name"
 	changeKeyIconHash                   changeKey = "icon_hash"

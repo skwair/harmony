@@ -57,8 +57,8 @@ func (b *bot) onNewMessage(m *harmony.Message) {
 	if m.Content == "!embed" {
 		e := embed.New().
 			Title("title ~~(did you know you can have markdown here too?)~~").
-			Description("this supports [named links](https://discordapp.com) on top of the previously shown subset of markdown. ```\nyes, even code blocks```").
-			URL("https://discordapp.com").
+			Description("this supports [named links](https://discord.com) on top of the previously shown subset of markdown. ```\nyes, even code blocks```").
+			URL("https://discord.com").
 			Color(0x2491ec). // Hexadecimal color code.
 			Timestamp(time.Now()).
 			Footer(embed.NewFooter().
@@ -68,7 +68,7 @@ func (b *bot) onNewMessage(m *harmony.Message) {
 			Image(embed.NewImage("https://cdn.discordapp.com/embed/avatars/0.png")).
 			Author(embed.NewAuthor().
 				Name("author name").
-				URL("https://discordapp.com").
+				URL("https://discord.com").
 				IconURL("https://cdn.discordapp.com/embed/avatars/0.png").
 				Build()).
 			Fields(

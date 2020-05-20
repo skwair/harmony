@@ -304,7 +304,7 @@ func (r *ChannelResource) NewWebhook(ctx context.Context, name, avatar string) (
 // NewWebhookWithReason creates a new webhook for the channel. Requires the 'MANAGE_WEBHOOKS'
 // permission.
 // name must contain between 2 and 32 characters. avatar is an avatar data string,
-// see https://discordapp.com/developers/docs/resources/user#avatar-data for more info.
+// see https://discord.com/developers/docs/resources/user#avatar-data for more info.
 // It can be left empty to have the default avatar.
 // The given reason will be set in the audit log entry for this action.
 func (r *ChannelResource) NewWebhookWithReason(ctx context.Context, name, avatar, reason string) (*Webhook, error) {

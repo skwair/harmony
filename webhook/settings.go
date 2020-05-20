@@ -6,7 +6,7 @@ import "github.com/skwair/harmony/optional"
 type Settings struct {
 	Name *optional.String `json:"name,omitempty"`
 	// Avatar is a data URI scheme that support JPG, GIF, and PNG formats, see
-	// https://discordapp.com/developers/docs/resources/user#avatar-data
+	// https://discord.com/developers/docs/resources/user#avatar-data
 	// for more information.
 	Avatar    *optional.String `json:"avatar,omitempty"`
 	ChannelID *optional.String `json:"channel_id,omitempty"`

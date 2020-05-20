@@ -6,7 +6,7 @@ import "github.com/skwair/harmony/permission"
 type EntryType int
 
 // Possible entry type values, as defined here:
-// https://discordapp.com/developers/docs/resources/audit-log#audit-log-entry-object-audit-log-events
+// https://discord.com/developers/docs/resources/audit-log#audit-log-entry-object-audit-log-events
 const (
 	EntryTypeGuildUpdate            EntryType = 1
 	EntryTypeChannelCreate          EntryType = 10

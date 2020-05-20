@@ -173,7 +173,7 @@ func (vc *Connection) opusSender() {
 
 			// Generate the nonce from the rtpHeader. Since the RTP header is only 12 bytes
 			// long, it will leave the 12 trailing bytes of the nonce null, as specified by
-			// https://discordapp.com/developers/docs/topics/voice-connections#encrypting-and-sending-voice.
+			// https://discord.com/developers/docs/topics/voice-connections#encrypting-and-sending-voice.
 			copy(nonce[:], rtpHeader)
 
 			buf := secretbox.Seal(rtpHeader, data, &nonce, &vc.secret)

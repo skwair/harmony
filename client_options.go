@@ -39,7 +39,7 @@ func WithBaseURL(url string) ClientOption {
 }
 
 // WithSharding allows you to specify a sharding configuration when connecting to the Gateway.
-// See https://discordapp.com/developers/docs/topics/gateway#sharding for more details.
+// See https://discord.com/developers/docs/topics/gateway#sharding for more details.
 // Defaults to nothing, sharding is not enabled.
 func WithSharding(current, total int) ClientOption {
 	return func(c *Client) {
@@ -69,7 +69,7 @@ func WithStateTracking(y bool) ClientOption {
 
 // WithLargeThreshold allows you to set the large threshold when connecting to the Gateway.
 // This threshold will dictate the number of offline guild members are returned with a guild.
-// See: https://discordapp.com/developers/docs/topics/gateway#request-guild-members for more details.
+// See: https://discord.com/developers/docs/topics/gateway#request-guild-members for more details.
 // Defaults to 250.
 func WithLargeThreshold(t int) ClientOption {
 	return func(c *Client) {

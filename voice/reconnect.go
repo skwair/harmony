@@ -11,7 +11,7 @@ import (
 )
 
 // Determine whether we should try to reconnect based on the error we got.
-// See https://discordapp.com/developers/docs/topics/opcodes-and-status-codes#voice-voice-close-event-codes for more information.
+// See https://discord.com/developers/docs/topics/opcodes-and-status-codes#voice-voice-close-event-codes for more information.
 func shouldReconnect(err error) bool {
 	if err == nil {
 		return false

@@ -58,7 +58,7 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 			// If we could not resume a session in time, we will receive an
 			// Invalid Session payload and are expected to wait a bit before
 			// sending a fresh Identify payload.
-			// https://discordapp.com/developers/docs/topics/gateway#resuming.
+			// https://discord.com/developers/docs/topics/gateway#resuming.
 			time.Sleep(time.Duration(rand.Intn(5)+1) * time.Second)
 
 			c.resetGatewaySession()

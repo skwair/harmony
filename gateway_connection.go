@@ -210,7 +210,7 @@ func (c *Client) wait() {
 }
 
 // Determine whether we should try to reconnect based on the error we got.
-// See https://discordapp.com/developers/docs/topics/opcodes-and-status-codes#gateway-gateway-close-event-codes for more information.
+// See https://discord.com/developers/docs/topics/opcodes-and-status-codes#gateway-gateway-close-event-codes for more information.
 func shouldReconnect(err error) bool {
 	if err == nil {
 		return false
