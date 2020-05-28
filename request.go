@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/skwair/harmony/internal/endpoint"
+	"github.com/skwair/harmony/log"
 )
 
 // requestPayload is a payload that is sent to Discord's REST API.
@@ -84,8 +85,10 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *r
 
 	c.limiter.Wait(e.Key)
 
-	b, _ := httputil.DumpRequestOut(req, true)
-	c.logger.Debug("--> ", string(b))
+	if c.logger.Level() == log.LevelDebug {
+		b, _ := httputil.DumpRequestOut(req, true)
+		c.logger.Debug("--> ", string(b))
+	}
 
 	before := time.Now()
 
@@ -94,8 +97,10 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *r
 		return nil, err
 	}
 
-	b, _ = httputil.DumpResponse(resp, true)
-	c.logger.Debug("<-- ", time.Since(before), "\n", string(b))
+	if c.logger.Level() == log.LevelDebug {
+		b, _ := httputil.DumpResponse(resp, true)
+		c.logger.Debug("<-- ", time.Since(before), "\n", string(b))
+	}
 
 	c.limiter.Update(e.Key, resp.Header)
 
