@@ -35,7 +35,7 @@ func ListenAndHandle(r ReceiverFunc, h HandlerFunc, errReporter func(err error))
 			return
 		}
 
-		if err := h(p); err != nil {
+		if err = h(p); err != nil {
 			errReporter(err)
 			return
 		}

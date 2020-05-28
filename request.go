@@ -54,15 +54,13 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *r
 		req *http.Request
 	)
 	if p.hasBody() {
-		req, err = http.NewRequest(e.Method, c.baseURL+e.URL, bytes.NewReader(p.body))
+		req, err = http.NewRequestWithContext(ctx, e.Method, c.baseURL+e.URL, bytes.NewReader(p.body))
 	} else {
-		req, err = http.NewRequest(e.Method, c.baseURL+e.URL, nil)
+		req, err = http.NewRequestWithContext(ctx, e.Method, c.baseURL+e.URL, nil)
 	}
 	if err != nil {
 		return nil, err
 	}
-
-	req = req.WithContext(ctx)
 
 	// Add custom headers provided. This has to be done
 	// before adding other mandatory headers to make
@@ -111,8 +109,8 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *r
 	return resp, nil
 }
 
-// rateLimit is the JSON body Discord sends when we are rate limited.
-type rateLimit struct {
+// rateLimitResp is the JSON body Discord sends when we are rate limited.
+type rateLimitResp struct {
 	Message    string `json:"message"`
 	RetryAfter int    `json:"retry_after"`
 	Global     bool   `json:"global"`
@@ -163,11 +161,13 @@ func doReqNoAuthWithHeader(ctx context.Context, e *endpoint.Endpoint, p *request
 	// NOTE: maybe use HTTP headers (if set) instead of having to
 	// parse some JSON.
 	if resp.StatusCode == http.StatusTooManyRequests {
-		var r rateLimit
+		var r rateLimitResp
 		if err = json.NewDecoder(resp.Body).Decode(&r); err != nil {
 			return nil, err
 		}
+
 		time.Sleep(time.Millisecond * time.Duration(r.RetryAfter))
+
 		return doReqNoAuthWithHeader(ctx, e, p, h)
 	}
 

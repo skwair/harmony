@@ -23,15 +23,15 @@ var SilenceFrame = []byte{0xf8, 0xff, 0xfe}
 
 // Connection represents a Discord voice connection.
 type Connection struct {
-	// General lock for long operations that should
-	// not happen concurrently like Close or SetSpeakingMode.
-	mu sync.Mutex
-
 	// Send is used to send Opus encoded audio packets.
 	Send chan []byte
 	// Recv is used to receive audio packets
 	// containing Opus encoded audio data.
 	Recv chan *AudioPacket
+
+	// General lock for long operations that should
+	// not happen concurrently like Close or SetSpeakingMode.
+	mu sync.Mutex
 
 	// Current state of this voice connection.
 	// This is set when initially establishing

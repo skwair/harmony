@@ -234,7 +234,7 @@ func (vc *Connection) wait() {
 	close(vc.payloads)
 
 	if vc.udpConn != nil {
-		if err := vc.udpConn.Close(); err != nil {
+		if err = vc.udpConn.Close(); err != nil {
 			vc.logger.Errorf("failed to properly close voice UDP connection: %v", err)
 		}
 	}

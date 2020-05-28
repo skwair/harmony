@@ -29,9 +29,9 @@ func Run(
 		// If we haven't received a heartbeat ACK since the
 		// last heartbeat we sent, we should consider the
 		// connection as stale and return an error.
-		t := time.Unix(0, lastHeartbeatACK.Load()).UTC()
-		if !first && time.Now().UTC().Sub(t) > every {
-			errReporter(fmt.Errorf("no heartbeat received since %v (%v ago)", t, time.Since(t)))
+		lastACK := time.Unix(0, lastHeartbeatACK.Load())
+		if !first && time.Since(lastACK) > every {
+			errReporter(fmt.Errorf("no heartbeat received since %v (%v ago)", lastACK, time.Since(lastACK)))
 			return
 		}
 
@@ -74,9 +74,9 @@ func RunUDP(
 		// NOTE: since we're dealing with UDP, this might
 		// not be the best idea. Maybe consider adding a threshold
 		// before assuming the connection is down?
-		t := time.Unix(0, lastUDPHeartbeatACK.Load()).UTC()
-		if !first && time.Now().UTC().Sub(t) > every {
-			errReporter(fmt.Errorf("no UDP heartbeat received since %v (%v ago)", t, time.Since(t)))
+		lastACK := time.Unix(0, lastUDPHeartbeatACK.Load())
+		if !first && time.Since(lastACK) > every {
+			errReporter(fmt.Errorf("no UDP heartbeat received since %v (%v ago)", lastACK, time.Since(lastACK)))
 			return
 		}
 
