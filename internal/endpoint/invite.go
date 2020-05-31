@@ -5,7 +5,7 @@ import "net/http"
 func GetInvite(code, query string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/invites/" + code + "?" + query,
+		Path:   "/invites/" + code + "?" + query,
 		Key:    "/invites",
 	}
 }
@@ -13,7 +13,7 @@ func GetInvite(code, query string) *Endpoint {
 func DeleteInvite(code string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
-		URL:    "/invites/" + code,
+		Path:   "/invites/" + code,
 		Key:    "/invites",
 	}
 }

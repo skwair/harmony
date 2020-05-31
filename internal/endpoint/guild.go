@@ -5,7 +5,7 @@ import "net/http"
 func CreateGuild() *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPost,
-		URL:    "/guilds",
+		Path:   "/guilds",
 		Key:    "/guilds",
 	}
 }
@@ -13,7 +13,7 @@ func CreateGuild() *Endpoint {
 func GetGuild(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID,
+		Path:   "/guilds/" + guildID,
 		Key:    "/guilds/" + guildID,
 	}
 }
@@ -21,7 +21,7 @@ func GetGuild(guildID string) *Endpoint {
 func ModifyGuild(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPatch,
-		URL:    "/guilds/" + guildID,
+		Path:   "/guilds/" + guildID,
 		Key:    "/guilds/" + guildID,
 	}
 }
@@ -29,7 +29,7 @@ func ModifyGuild(guildID string) *Endpoint {
 func DeleteGuild(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
-		URL:    "/guilds/" + guildID,
+		Path:   "/guilds/" + guildID,
 		Key:    "/guilds/" + guildID,
 	}
 }
@@ -37,7 +37,7 @@ func DeleteGuild(guildID string) *Endpoint {
 func GetGuildChannels(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID + "/channels",
+		Path:   "/guilds/" + guildID + "/channels",
 		Key:    "/guilds/" + guildID + "/channels",
 	}
 }
@@ -45,7 +45,7 @@ func GetGuildChannels(guildID string) *Endpoint {
 func CreateGuildChannel(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPost,
-		URL:    "/guilds/" + guildID + "/channels",
+		Path:   "/guilds/" + guildID + "/channels",
 		Key:    "/guilds/" + guildID + "/channels",
 	}
 }
@@ -53,7 +53,7 @@ func CreateGuildChannel(guildID string) *Endpoint {
 func ModifyChannelPositions(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPatch,
-		URL:    "/guilds/" + guildID + "/channels",
+		Path:   "/guilds/" + guildID + "/channels",
 		Key:    "/guilds/" + guildID + "/channels",
 	}
 }
@@ -61,7 +61,7 @@ func ModifyChannelPositions(guildID string) *Endpoint {
 func GetGuildMember(guildID, userID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID + "/members/" + userID,
+		Path:   "/guilds/" + guildID + "/members/" + userID,
 		Key:    "/guilds/" + guildID + "/members",
 	}
 }
@@ -69,7 +69,7 @@ func GetGuildMember(guildID, userID string) *Endpoint {
 func ListGuildMembers(guildID, query string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID + "/members?" + query,
+		Path:   "/guilds/" + guildID + "/members?" + query,
 		Key:    "/guilds/" + guildID + "/members",
 	}
 }
@@ -77,7 +77,7 @@ func ListGuildMembers(guildID, query string) *Endpoint {
 func AddGuildMember(guildID, userID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPut,
-		URL:    "/guilds/" + guildID + "/members/" + userID,
+		Path:   "/guilds/" + guildID + "/members/" + userID,
 		Key:    "/guilds/" + guildID + "/members",
 	}
 }
@@ -85,7 +85,7 @@ func AddGuildMember(guildID, userID string) *Endpoint {
 func RemoveGuildMember(guildID, userID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
-		URL:    "/guilds/" + guildID + "/members/" + userID,
+		Path:   "/guilds/" + guildID + "/members/" + userID,
 		Key:    "/guilds/" + guildID + "/members",
 	}
 }
@@ -93,7 +93,7 @@ func RemoveGuildMember(guildID, userID string) *Endpoint {
 func ModifyGuildMember(guildID, userID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPatch,
-		URL:    "/guilds/" + guildID + "/members/" + userID,
+		Path:   "/guilds/" + guildID + "/members/" + userID,
 		Key:    "/guilds/" + guildID + "/members",
 	}
 }
@@ -101,7 +101,7 @@ func ModifyGuildMember(guildID, userID string) *Endpoint {
 func ModifyCurrentUserNick(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPatch,
-		URL:    "/guilds/" + guildID + "/members/@me/nick",
+		Path:   "/guilds/" + guildID + "/members/@me/nick",
 		Key:    "/guilds/" + guildID + "/members/@me/nick",
 	}
 }
@@ -109,7 +109,7 @@ func ModifyCurrentUserNick(guildID string) *Endpoint {
 func GetGuildBans(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID + "/bans",
+		Path:   "/guilds/" + guildID + "/bans",
 		Key:    "/guilds/" + guildID + "/bans",
 	}
 }
@@ -121,7 +121,7 @@ func CreateGuildBan(guildID, userID, query string) *Endpoint {
 
 	return &Endpoint{
 		Method: http.MethodPut,
-		URL:    "/guilds/" + guildID + "/bans/" + userID + query,
+		Path:   "/guilds/" + guildID + "/bans/" + userID + query,
 		Key:    "/guilds/" + guildID + "/bans",
 	}
 }
@@ -129,7 +129,7 @@ func CreateGuildBan(guildID, userID, query string) *Endpoint {
 func RemoveGuildBan(guildID, userID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
-		URL:    "/guilds/" + guildID + "/bans/" + userID,
+		Path:   "/guilds/" + guildID + "/bans/" + userID,
 		Key:    "/guilds/" + guildID + "/bans",
 	}
 }
@@ -137,7 +137,7 @@ func RemoveGuildBan(guildID, userID string) *Endpoint {
 func GetGuildPruneCount(guildID, query string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID + "/prune?" + query,
+		Path:   "/guilds/" + guildID + "/prune?" + query,
 		Key:    "/guilds/" + guildID + "/prune",
 	}
 }
@@ -145,7 +145,7 @@ func GetGuildPruneCount(guildID, query string) *Endpoint {
 func BeginGuildPrune(guildID, query string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPost,
-		URL:    "/guilds/" + guildID + "/prune?" + query,
+		Path:   "/guilds/" + guildID + "/prune?" + query,
 		Key:    "/guilds/" + guildID + "/prune",
 	}
 }
@@ -153,7 +153,7 @@ func BeginGuildPrune(guildID, query string) *Endpoint {
 func GetGuildVoiceRegions(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID + "/regions",
+		Path:   "/guilds/" + guildID + "/regions",
 		Key:    "/guilds/" + guildID + "/regions",
 	}
 }
@@ -161,7 +161,7 @@ func GetGuildVoiceRegions(guildID string) *Endpoint {
 func GetGuildInvites(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID + "/invites",
+		Path:   "/guilds/" + guildID + "/invites",
 		Key:    "/guilds/" + guildID + "/invites",
 	}
 }
@@ -169,7 +169,7 @@ func GetGuildInvites(guildID string) *Endpoint {
 func GetGuildIntegrations(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID + "/integrations",
+		Path:   "/guilds/" + guildID + "/integrations",
 		Key:    "/guilds/" + guildID + "/integrations",
 	}
 }
@@ -177,7 +177,7 @@ func GetGuildIntegrations(guildID string) *Endpoint {
 func CreateGuildIntegration(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPost,
-		URL:    "/guilds/" + guildID + "/integrations",
+		Path:   "/guilds/" + guildID + "/integrations",
 		Key:    "/guilds/" + guildID + "/integrations",
 	}
 }
@@ -185,7 +185,7 @@ func CreateGuildIntegration(guildID string) *Endpoint {
 func ModifyGuildIntegration(guildID, integrationID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPatch,
-		URL:    "/guilds/" + guildID + "/integrations/" + integrationID,
+		Path:   "/guilds/" + guildID + "/integrations/" + integrationID,
 		Key:    "/guilds/" + guildID + "/integrations",
 	}
 }
@@ -193,7 +193,7 @@ func ModifyGuildIntegration(guildID, integrationID string) *Endpoint {
 func DeleteGuildIntegration(guildID, integrationID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
-		URL:    "/guilds/" + guildID + "/integrations/" + integrationID,
+		Path:   "/guilds/" + guildID + "/integrations/" + integrationID,
 		Key:    "/guilds/" + guildID + "/integrations",
 	}
 }
@@ -201,7 +201,7 @@ func DeleteGuildIntegration(guildID, integrationID string) *Endpoint {
 func SyncGuildIntegration(guildID, integrationID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPost,
-		URL:    "/guilds/" + guildID + "/integrations/" + integrationID + "/sync",
+		Path:   "/guilds/" + guildID + "/integrations/" + integrationID + "/sync",
 		Key:    "/guilds/" + guildID + "/integrations",
 	}
 }
@@ -209,7 +209,7 @@ func SyncGuildIntegration(guildID, integrationID string) *Endpoint {
 func GetGuildEmbed(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID + "/embed",
+		Path:   "/guilds/" + guildID + "/embed",
 		Key:    "/guilds/" + guildID + "/embed",
 	}
 }
@@ -217,7 +217,7 @@ func GetGuildEmbed(guildID string) *Endpoint {
 func ModifyGuildEmbed(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPatch,
-		URL:    "/guilds/" + guildID + "/embed",
+		Path:   "/guilds/" + guildID + "/embed",
 		Key:    "/guilds/" + guildID + "/embed",
 	}
 }
@@ -225,7 +225,7 @@ func ModifyGuildEmbed(guildID string) *Endpoint {
 func GetGuildVanityURL(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID + "/vanity-url",
+		Path:   "/guilds/" + guildID + "/vanity-url",
 		Key:    "/guilds/" + guildID + "/vanity-url",
 	}
 }
