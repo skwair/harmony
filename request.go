@@ -103,7 +103,7 @@ func (c *Client) doReqWithHeader(ctx context.Context, e *endpoint.Endpoint, p *r
 	c.limiter.Update(e.Key, resp.Header)
 
 	// Make sure we agree on time with the server, otherwise rate limit would be inaccurate.
-	date, err := time.Parse(time.RFC1123, resp.Header.Get("Date"))
+	date, err := http.ParseTime(resp.Header.Get("Date"))
 	if err != nil {
 		return nil, fmt.Errorf("could not parse date header: %w", err)
 	}
