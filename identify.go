@@ -15,6 +15,7 @@ type identify struct {
 	Shard              *[2]int           `json:"shard,omitempty"`
 	Presence           *Status           `json:"presence,omitempty"`
 	GuildSubscriptions bool              `json:"guild_subscriptions"`
+	Intents            GatewayIntent     `json:"intents"`
 }
 
 // Status is sent by the client to indicate a presence or status update.
@@ -36,6 +37,7 @@ func (c *Client) identify(ctx context.Context) error {
 		Compress:           true,
 		LargeThreshold:     c.largeThreshold,
 		GuildSubscriptions: c.guildSubscriptions,
+		Intents:            c.intents,
 	}
 
 	if c.shard[1] != 0 {
