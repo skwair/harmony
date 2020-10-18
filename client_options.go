@@ -48,13 +48,24 @@ func WithSharding(current, total int) ClientOption {
 	}
 }
 
-// WithGuildSubscription allows to set whether the client should identify to the Gateway with
+// WithGuildSubscriptions allows to set whether the client should identify to the Gateway with
 // guild subscription enabled or not. Guild subscriptions are guild member presence updates
 // and typing events.
 // Defaults to true.
-func WithGuildSubscription(y bool) ClientOption {
+// While not deprecated, Guild Subscriptions have been superseded by Gateway Intents. It is recommended
+// to use WithGatewayIntents for better results.
+func WithGuildSubscriptions(y bool) ClientOption {
 	return func(c *Client) {
 		c.guildSubscriptions = y
+	}
+}
+
+// WithGatewayIntents allows to customize which Gateway Intents the client should subscribe to.
+// See https://discord.com/developers/docs/topics/gateway#gateway-intents for more information.
+// By default, the client subscribes to all unprivileged events.
+func WithGatewayIntents(i GatewayIntent) ClientOption {
+	return func(c *Client) {
+		c.intents = i
 	}
 }
 

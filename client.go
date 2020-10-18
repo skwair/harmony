@@ -83,6 +83,8 @@ type Client struct {
 	shard [2]int
 	// See WithGuildSubscriptions for more information.
 	guildSubscriptions bool
+	// See WithGatewayIntents for more information.
+	intents GatewayIntent
 
 	userID    string
 	sessionID string
@@ -156,6 +158,7 @@ func NewClient(token string, opts ...ClientOption) (*Client, error) {
 		limiter:            rate.NewLimiter(),
 		largeThreshold:     defaultLargeThreshold,
 		guildSubscriptions: true,
+		intents:            GatewayIntentUnprivileged,
 		handlers:           make(map[string]handler),
 		backoff:            defaultBackoff,
 		withStateTracking:  true,

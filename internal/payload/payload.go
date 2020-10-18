@@ -52,7 +52,7 @@ func (p *Payload) String() string {
 	return s.String()
 }
 
-// Send sends the given Payload, ensuring no concurrent call to conn.WriteJSON can occur.
+// Send sends the given Payload on the given connection.
 func Send(ctx context.Context, conn *websocket.Conn, p *Payload) error {
 	return wsjson.Write(ctx, conn, p)
 }
