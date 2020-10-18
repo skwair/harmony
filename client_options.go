@@ -62,7 +62,7 @@ func WithGuildSubscriptions(y bool) ClientOption {
 
 // WithGatewayIntents allows to customize which Gateway Intents the client should subscribe to.
 // See https://discord.com/developers/docs/topics/gateway#gateway-intents for more information.
-// By default, the client subscribes to all events.
+// By default, the client subscribes to all unprivileged events.
 func WithGatewayIntents(i GatewayIntent) ClientOption {
 	return func(c *Client) {
 		c.intents = i
