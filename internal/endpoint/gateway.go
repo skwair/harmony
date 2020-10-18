@@ -5,7 +5,7 @@ import "net/http"
 func Gateway() *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/gateway",
+		Path:   "/gateway",
 		Key:    "/gateway",
 	}
 }
@@ -13,7 +13,7 @@ func Gateway() *Endpoint {
 func GatewayBot() *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/gateway/bot",
+		Path:   "/gateway/bot",
 		Key:    "/gateway/bot",
 	}
 }

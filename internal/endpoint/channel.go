@@ -5,7 +5,7 @@ import "net/http"
 func GetChannel(chID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/channels/" + chID,
+		Path:   "/channels/" + chID,
 		Key:    "/channels/" + chID,
 	}
 }
@@ -13,7 +13,7 @@ func GetChannel(chID string) *Endpoint {
 func ModifyChannel(chID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPatch,
-		URL:    "/channels/" + chID,
+		Path:   "/channels/" + chID,
 		Key:    "/channels/" + chID,
 	}
 }
@@ -21,7 +21,7 @@ func ModifyChannel(chID string) *Endpoint {
 func DeleteChannel(chID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
-		URL:    "/channels/" + chID,
+		Path:   "/channels/" + chID,
 		Key:    "/channels/" + chID,
 	}
 }
@@ -33,7 +33,7 @@ func GetChannelMessages(chID, query string) *Endpoint {
 
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/channels/" + chID + "/messages" + query,
+		Path:   "/channels/" + chID + "/messages" + query,
 		Key:    "/channels/" + chID + "/messages",
 	}
 }
@@ -41,7 +41,7 @@ func GetChannelMessages(chID, query string) *Endpoint {
 func GetChannelMessage(chID, msgID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/channels/" + chID + "/messages/" + msgID,
+		Path:   "/channels/" + chID + "/messages/" + msgID,
 		Key:    "/channels/" + chID + "/messages",
 	}
 }
@@ -49,7 +49,7 @@ func GetChannelMessage(chID, msgID string) *Endpoint {
 func EditChannelPermissions(chID, targetID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPut,
-		URL:    "/channels/" + chID + "/permissions/" + targetID,
+		Path:   "/channels/" + chID + "/permissions/" + targetID,
 		Key:    "/channels/" + chID + "/permissions",
 	}
 }
@@ -57,7 +57,7 @@ func EditChannelPermissions(chID, targetID string) *Endpoint {
 func DeleteChannelPermission(chID, targetID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
-		URL:    "/channels/" + chID + "/permissions/" + targetID,
+		Path:   "/channels/" + chID + "/permissions/" + targetID,
 		Key:    "/channels/" + chID + "/permissions",
 	}
 }
@@ -65,7 +65,7 @@ func DeleteChannelPermission(chID, targetID string) *Endpoint {
 func GetChannelInvites(chID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/channels/" + chID + "/invites",
+		Path:   "/channels/" + chID + "/invites",
 		Key:    "/channels/" + chID + "/invites",
 	}
 }
@@ -73,7 +73,7 @@ func GetChannelInvites(chID string) *Endpoint {
 func CreateChannelInvite(chID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPost,
-		URL:    "/channels/" + chID + "/invites",
+		Path:   "/channels/" + chID + "/invites",
 		Key:    "/channels/" + chID + "/invites",
 	}
 }
@@ -81,7 +81,7 @@ func CreateChannelInvite(chID string) *Endpoint {
 func GroupDMAddRecipient(chID, recipientID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPut,
-		URL:    "/channels/" + chID + "/recipients/" + recipientID,
+		Path:   "/channels/" + chID + "/recipients/" + recipientID,
 		Key:    "/channels/" + chID + "/recipients",
 	}
 }
@@ -89,7 +89,7 @@ func GroupDMAddRecipient(chID, recipientID string) *Endpoint {
 func GroupDMRemoveRecipient(chID, recipientID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
-		URL:    "/channels/" + chID + "/recipients/" + recipientID,
+		Path:   "/channels/" + chID + "/recipients/" + recipientID,
 		Key:    "/channels/" + chID + "/recipients",
 	}
 }
@@ -97,7 +97,7 @@ func GroupDMRemoveRecipient(chID, recipientID string) *Endpoint {
 func TriggerTypingIndicator(chID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPost,
-		URL:    "/channels/" + chID + "/typing",
+		Path:   "/channels/" + chID + "/typing",
 		Key:    "/channels/" + chID + "/typing",
 	}
 }

@@ -5,7 +5,7 @@ import "net/http"
 func CreateReaction(chID, msgID, emoji string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPut,
-		URL:    "/channels/" + chID + "/messages/" + msgID + "/reactions/" + emoji + "/@me",
+		Path:   "/channels/" + chID + "/messages/" + msgID + "/reactions/" + emoji + "/@me",
 		Key:    "/channels/" + chID + "/messages",
 	}
 }
@@ -13,7 +13,7 @@ func CreateReaction(chID, msgID, emoji string) *Endpoint {
 func DeleteOwnReaction(chID, msgID, emoji string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
-		URL:    "/channels/" + chID + "/messages/" + msgID + "/reactions/" + emoji + "/@me",
+		Path:   "/channels/" + chID + "/messages/" + msgID + "/reactions/" + emoji + "/@me",
 		Key:    "/channels/" + chID + "/messages",
 	}
 }
@@ -21,7 +21,7 @@ func DeleteOwnReaction(chID, msgID, emoji string) *Endpoint {
 func DeleteUserReaction(chID, msgID, userID, emoji string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
-		URL:    "/channels/" + chID + "/messages/" + msgID + "/reactions/" + emoji + "/" + userID,
+		Path:   "/channels/" + chID + "/messages/" + msgID + "/reactions/" + emoji + "/" + userID,
 		Key:    "/channels/" + chID + "/messages",
 	}
 }
@@ -29,7 +29,7 @@ func DeleteUserReaction(chID, msgID, userID, emoji string) *Endpoint {
 func DeleteAllReactions(chID, msgID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
-		URL:    "/channels/" + chID + "/messages/" + msgID + "/reactions",
+		Path:   "/channels/" + chID + "/messages/" + msgID + "/reactions",
 		Key:    "/channels/" + chID + "/messages",
 	}
 }
@@ -41,7 +41,7 @@ func GetReactions(chID, msgID, emoji, query string) *Endpoint {
 
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/channels/" + chID + "/messages/" + msgID + "/reactions/" + emoji + query,
+		Path:   "/channels/" + chID + "/messages/" + msgID + "/reactions/" + emoji + query,
 		Key:    "/channels/" + chID + "/messages",
 	}
 }

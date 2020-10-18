@@ -9,7 +9,7 @@ func GetAuditLog(guildID, query string) *Endpoint {
 
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/guilds/" + guildID + "/audit-logs" + query,
+		Path:   "/guilds/" + guildID + "/audit-logs" + query,
 		Key:    "/guilds/" + guildID + "/audit-logs",
 	}
 }

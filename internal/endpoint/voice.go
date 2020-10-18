@@ -5,7 +5,7 @@ import "net/http"
 func GetVoiceRegions() *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		URL:    "/voice/regions",
+		Path:   "/voice/regions",
 		Key:    "/voice/regions",
 	}
 }
