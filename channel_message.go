@@ -464,6 +464,22 @@ func (r *ChannelResource) RemoveAllReactions(ctx context.Context, messageID stri
 	return nil
 }
 
+// RemoveAllReactionsForEmoji removes all reactions for the given emoji on a message. This endpoint requires
+// the 'MANAGE_MESSAGES' permission to be present on the current user.
+func (r *ChannelResource) RemoveAllReactionsForEmoji(ctx context.Context, messageID, emoji string) error {
+	e := endpoint.DeleteAllReactionsForEmoji(r.channelID, messageID, url.PathEscape(emoji))
+	resp, err := r.client.doReq(ctx, e, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusNoContent {
+		return apiError(resp)
+	}
+	return nil
+}
+
 // Pins returns all pinned messages in the channel as an array of messages.
 func (r *ChannelResource) Pins(ctx context.Context) ([]Message, error) {
 	e := endpoint.GetPinnedMessages(r.channelID)

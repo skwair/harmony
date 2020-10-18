@@ -142,11 +142,21 @@ func TestHarmony(t *testing.T) {
 		if err = client.Channel(txtCh.ID).AddReaction(context.TODO(), lastMsgID, "👎"); err != nil {
 			t.Fatalf("could not add reaction to last message: %v", err)
 		}
+
+		if err = client.Channel(txtCh.ID).AddReaction(context.TODO(), lastMsgID, "🖐️"); err != nil {
+			t.Fatalf("could not add reaction to last message: %v", err)
+		}
 	})
 
 	t.Run("remove reaction", func(t *testing.T) {
 		if err = client.Channel(txtCh.ID).RemoveReaction(context.TODO(), lastMsgID, "👎"); err != nil {
 			t.Fatalf("could not remove reaction to last message: %v", err)
+		}
+	})
+
+	t.Run("remove all reactions for emoji", func(t *testing.T) {
+		if err = client.Channel(txtCh.ID).RemoveAllReactionsForEmoji(context.TODO(), lastMsgID, "🖐"); err != nil {
+			t.Fatalf("could not remove all reactions for emoji: %v", err)
 		}
 	})
 

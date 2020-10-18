@@ -34,6 +34,14 @@ func DeleteAllReactions(chID, msgID string) *Endpoint {
 	}
 }
 
+func DeleteAllReactionsForEmoji(chID, msgID, emoji string) *Endpoint {
+	return &Endpoint{
+		Method: http.MethodDelete,
+		Path:   "/channels/" + chID + "/messages/" + msgID + "/reactions/" + emoji,
+		Key:    "/channels/" + chID + "/messages",
+	}
+}
+
 func GetReactions(chID, msgID, emoji, query string) *Endpoint {
 	if query != "" {
 		query = "?" + query
