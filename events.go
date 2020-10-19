@@ -186,16 +186,20 @@ func (c *Client) OnGuildEmojisUpdate(f func(emojis *GuildEmojis)) {
 	c.registerHandler(eventGuildEmojisUpdate, guildEmojisUpdateHandler(f))
 }
 
-type guildIntegrationUpdateHandler func(string)
+type GuildIntegrationUpdate struct {
+	GuildID string `json:"guild_id"`
+}
+
+type guildIntegrationUpdateHandler func(*GuildIntegrationUpdate)
 
 // handle implements the handler interface.
 func (h guildIntegrationUpdateHandler) handle(v interface{}) {
-	h(v.(string))
+	h(v.(*GuildIntegrationUpdate))
 }
 
 // HandleGuildIntegrationsUpdate registers the handler function for the "GUILD_INTEGRATIONS_UPDATE" event.
 // Fired when a guild integration is updated.
-func (c *Client) OnGuildIntegrationsUpdate(f func(guildID string)) {
+func (c *Client) OnGuildIntegrationsUpdate(f func(u *GuildIntegrationUpdate)) {
 	c.registerHandler(eventGuildIntegrationsUpdate, guildIntegrationUpdateHandler(f))
 }
 
