@@ -154,11 +154,11 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		c.handle(eventGuildEmojisUpdate, &ge)
 
 	case eventGuildIntegrationsUpdate:
-		var guildID string
-		if err = json.Unmarshal(data, &guildID); err != nil {
+		var giu GuildIntegrationUpdate
+		if err = json.Unmarshal(data, &giu); err != nil {
 			return err
 		}
-		c.handle(eventGuildIntegrationsUpdate, &guildID)
+		c.handle(eventGuildIntegrationsUpdate, &giu)
 
 	case eventGuildMemberAdd:
 		var m GuildMemberAdd
