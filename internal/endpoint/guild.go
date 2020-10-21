@@ -206,19 +206,19 @@ func SyncGuildIntegration(guildID, integrationID string) *Endpoint {
 	}
 }
 
-func GetGuildEmbed(guildID string) *Endpoint {
+func GetGuildWidget(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
-		Path:   "/guilds/" + guildID + "/embed",
-		Key:    "/guilds/" + guildID + "/embed",
+		Path:   "/guilds/" + guildID + "/widget",
+		Key:    "/guilds/" + guildID + "/widget",
 	}
 }
 
-func ModifyGuildEmbed(guildID string) *Endpoint {
+func ModifyGuildWidget(guildID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodPatch,
-		Path:   "/guilds/" + guildID + "/embed",
-		Key:    "/guilds/" + guildID + "/embed",
+		Path:   "/guilds/" + guildID + "/widget",
+		Key:    "/guilds/" + guildID + "/widget",
 	}
 }
 

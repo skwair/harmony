@@ -3,6 +3,7 @@ package harmony
 import (
 	"encoding/json"
 
+	"github.com/skwair/harmony/discord"
 	"github.com/skwair/harmony/voice"
 )
 
@@ -68,7 +69,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventInvalidSession:
 
 	case eventChannelCreate:
-		var ch Channel
+		var ch discord.Channel
 		if err = json.Unmarshal(data, &ch); err != nil {
 			return err
 		}
@@ -77,7 +78,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		}
 		c.handle(eventChannelCreate, &ch)
 	case eventChannelUpdate:
-		var ch Channel
+		var ch discord.Channel
 		if err = json.Unmarshal(data, &ch); err != nil {
 			return err
 		}
@@ -86,7 +87,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		}
 		c.handle(eventChannelUpdate, &ch)
 	case eventChannelDelete:
-		var ch Channel
+		var ch discord.Channel
 		if err = json.Unmarshal(data, &ch); err != nil {
 			return err
 		}
@@ -106,7 +107,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		c.handle(eventChannelPinsUpdate, &pins)
 
 	case eventGuildCreate:
-		var g Guild
+		var g discord.Guild
 		if err = json.Unmarshal(data, &g); err != nil {
 			return err
 		}
@@ -115,7 +116,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		}
 		c.handle(eventGuildCreate, &g)
 	case eventGuildUpdate:
-		var g Guild
+		var g discord.Guild
 		if err = json.Unmarshal(data, &g); err != nil {
 			return err
 		}
@@ -124,7 +125,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		}
 		c.handle(eventGuildUpdate, &g)
 	case eventGuildDelete:
-		var g UnavailableGuild
+		var g discord.UnavailableGuild
 		if err = json.Unmarshal(data, &g); err != nil {
 			return err
 		}
@@ -249,13 +250,13 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		c.handle(eventGuildInviteDelete, &gid)
 
 	case eventMessageCreate:
-		var msg Message
+		var msg discord.Message
 		if err = json.Unmarshal(data, &msg); err != nil {
 			return err
 		}
 		c.handle(eventMessageCreate, &msg)
 	case eventMessageUpdate:
-		var msg Message
+		var msg discord.Message
 		if err = json.Unmarshal(data, &msg); err != nil {
 			return err
 		}
@@ -305,7 +306,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		c.handle(eventMessageReactionRemoveEmoji, &m)
 
 	case eventPresenceUpdate:
-		var p Presence
+		var p discord.Presence
 		if err = json.Unmarshal(data, &p); err != nil {
 			return err
 		}
@@ -322,7 +323,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		c.handle(eventTypingStart, &ts)
 
 	case eventUserUpdate:
-		var u User
+		var u discord.User
 		if err = json.Unmarshal(data, &u); err != nil {
 			return err
 		}

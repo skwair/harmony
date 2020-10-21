@@ -3,17 +3,19 @@ package harmony
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/skwair/harmony/discord"
 )
 
 // Ready is the Event fired by the Gateway after the client sent
 // a valid Identify payload.
 type Ready struct {
-	V               int            `json:"v"` // Gateway version.
-	User            *User          `json:"user"`
-	PrivateChannels []Channel      `json:"private_channels"`
-	Guilds          []PartialGuild `json:"guilds"`
-	SessionID       string         `json:"session_id"`
-	Trace           []string       `json:"_trace"`
+	V               int                    `json:"v"` // Gateway version.
+	User            *discord.User          `json:"user"`
+	PrivateChannels []discord.Channel      `json:"private_channels"`
+	Guilds          []discord.PartialGuild `json:"guilds"`
+	SessionID       string                 `json:"session_id"`
+	Trace           []string               `json:"_trace"`
 }
 
 // ready expects to receive a Ready payload from the Gateway and will set the
@@ -28,7 +30,7 @@ func (c *Client) ready() error {
 	}
 
 	var rdy Ready
-	if err := json.Unmarshal(p.D, &rdy); err != nil {
+	if err = json.Unmarshal(p.D, &rdy); err != nil {
 		return err
 	}
 	c.sessionID = rdy.SessionID

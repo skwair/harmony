@@ -7,10 +7,8 @@ import (
 	"testing"
 
 	"github.com/skwair/harmony"
-	"github.com/skwair/harmony/channel"
-	"github.com/skwair/harmony/invite"
-	"github.com/skwair/harmony/permission"
-	"github.com/skwair/harmony/role"
+	"github.com/skwair/harmony/discord"
+	"github.com/skwair/harmony/optional"
 )
 
 func TestHarmony(t *testing.T) {
@@ -45,13 +43,13 @@ func TestHarmony(t *testing.T) {
 		}
 	}
 
-	var txtCh *harmony.Channel
+	var txtCh *discord.Channel
 
 	t.Run("create channels", func(t *testing.T) {
 		// Create a new channel category.
-		settings := channel.NewSettings(
-			channel.WithName("test-category"),
-			channel.WithType(channel.TypeGuildCategory),
+		settings := discord.NewChannelSettings(
+			discord.WithChannelName("test-category"),
+			discord.WithChannelType(discord.ChannelTypeGuildCategory),
 		)
 		cat, err := client.Guild(guildID).NewChannel(context.TODO(), settings)
 		if err != nil {
@@ -59,10 +57,10 @@ func TestHarmony(t *testing.T) {
 		}
 
 		// Create a new text channel in this category.
-		settings = channel.NewSettings(
-			channel.WithName("test-text-channel"),
-			channel.WithType(channel.TypeGuildText),
-			channel.WithParent(cat.ID), // Set this channel as a child of the new category.
+		settings = discord.NewChannelSettings(
+			discord.WithChannelName("test-text-channel"),
+			discord.WithChannelType(discord.ChannelTypeGuildText),
+			discord.WithChannelParent(cat.ID),
 		)
 		txtCh, err = client.Guild(guildID).NewChannel(context.TODO(), settings)
 		if err != nil {
@@ -70,10 +68,10 @@ func TestHarmony(t *testing.T) {
 		}
 	})
 
-	t.Run("create a channel invite", func(t *testing.T) {
-		settings := invite.NewSettings(
-			invite.WithMaxUses(1),
-		)
+	t.Run("create and delete a channel invite", func(t *testing.T) {
+		settings := &discord.InviteSettings{
+			MaxUses: optional.NewInt(1),
+		}
 
 		i, err := client.Channel(txtCh.ID).NewInvite(context.TODO(), settings)
 		if err != nil {
@@ -82,6 +80,10 @@ func TestHarmony(t *testing.T) {
 
 		if i.MaxUses != 1 {
 			t.Fatalf("expected to new invite to have %d max uses; got %d", 1, i.MaxUses)
+		}
+
+		if _, err = client.Invite(i.Code).Delete(context.TODO()); err != nil {
+			t.Fatalf("could not delete invitation: %v", err)
 		}
 	})
 
@@ -160,7 +162,7 @@ func TestHarmony(t *testing.T) {
 		}
 	})
 
-	currentUserID := client.State.CurrentUser().ID
+	currentUserID := client.State.Me().ID
 
 	t.Run("get reactions", func(t *testing.T) {
 		users, err := client.Channel(txtCh.ID).Reactions(context.TODO(), lastMsgID, "👍", 0, "", "")
@@ -231,18 +233,18 @@ func TestHarmony(t *testing.T) {
 		}
 	})
 
-	var testRole *harmony.Role
+	var testRole *discord.Role
 
 	t.Run("new role", func(t *testing.T) {
-		perms := permission.ReadMessageHistory | permission.SendMessages
+		perms := discord.PermissionReadMessageHistory | discord.PermissionSendMessages
 
-		settings := role.NewSettings(
-			role.WithName("test-role"),
-			role.WithColor(0x336677),
-			role.WithHoist(true),
-			role.WithMentionable(true),
-			role.WithPermissions(perms),
-		)
+		settings := &discord.RoleSettings{
+			Name:        optional.NewString("test-role"),
+			Color:       optional.NewInt(0x336677),
+			Hoist:       optional.NewBool(true),
+			Mentionable: optional.NewBool(true),
+			Permissions: optional.NewInt(perms),
+		}
 		testRole, err = client.Guild(guildID).NewRole(context.TODO(), settings)
 		if err != nil {
 			t.Fatalf("could not create new role: %v", err)

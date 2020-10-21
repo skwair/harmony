@@ -2,7 +2,7 @@ package endpoint
 
 import "net/http"
 
-func GetApplicationInfo() *Endpoint {
+func GetApplication() *Endpoint {
 	return &Endpoint{
 		Method: http.MethodGet,
 		Path:   "/oauth2/applications/@me",

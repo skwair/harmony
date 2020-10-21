@@ -63,11 +63,11 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 	case gatewayOpcodeHello:
 		// Handled by Connect()
 
-	case gatewayOpcodeHeartbeatACK:
+	case gatewayOpcodeHeartbeatAck:
 		if c.withStateTracking {
-			c.State.setRTT(time.Since(time.Unix(0, c.lastHeartbeatSend.Load())))
+			c.State.setRTT(time.Since(time.Unix(0, c.lastHeartbeatSent.Load())))
 		}
-		c.lastHeartbeatACK.Store(time.Now().UnixNano())
+		c.lastHeartbeatAck.Store(time.Now().UnixNano())
 	}
 	return nil
 }

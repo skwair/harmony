@@ -17,9 +17,9 @@ func (vc *Connection) handleEvent(p *payload.Payload) error {
 		}
 
 	// Heartbeat ACK.
-	case voiceOpcodeHeartbeatACK:
+	case voiceOpcodeHeartbeatAck:
 		// TODO: Check nonce ?
-		vc.lastHeartbeatACK.Store(time.Now().UnixNano())
+		vc.lastHeartbeatAck.Store(time.Now().UnixNano())
 
 	// Resume acknowledged by the voice server.
 	case voiceOpcodeResumed:

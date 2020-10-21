@@ -17,7 +17,8 @@ type Hearbeater func() error
 func Run(
 	every time.Duration,
 	h Hearbeater,
-	lastHeartbeatACK *atomic.Int64,
+	lastHeartbeatAck *atomic.Int64,
+	lastHeartbeatSent *atomic.Int64,
 	stop chan struct{},
 	errReporter func(err error),
 ) {
@@ -29,9 +30,10 @@ func Run(
 		// If we haven't received a heartbeat ACK since the
 		// last heartbeat we sent, we should consider the
 		// connection as stale and return an error.
-		lastACK := time.Unix(0, lastHeartbeatACK.Load())
-		if !first && time.Since(lastACK) > every {
-			errReporter(fmt.Errorf("no heartbeat received since %v (%v ago)", lastACK, time.Since(lastACK)))
+		lastAck := time.Unix(0, lastHeartbeatAck.Load())
+		lastSent := time.Unix(0, lastHeartbeatSent.Load())
+		if !first && lastSent.After(lastAck) {
+			errReporter(fmt.Errorf("no heartbeat received since %v (%v ago)", lastAck, time.Since(lastAck)))
 			return
 		}
 
@@ -40,6 +42,8 @@ func Run(
 			errReporter(err)
 			return
 		}
+
+		lastHeartbeatSent.Store(time.Now().UnixNano())
 
 		if first {
 			first = false
@@ -59,7 +63,8 @@ func Run(
 func RunUDP(
 	every time.Duration,
 	h Hearbeater,
-	lastUDPHeartbeatACK *atomic.Int64,
+	lastUDPHeartbeatAck *atomic.Int64,
+	lastUDPHeartbeatSent *atomic.Int64,
 	stop chan struct{},
 	errReporter func(err error),
 ) {
@@ -74,9 +79,10 @@ func RunUDP(
 		// NOTE: since we're dealing with UDP, this might
 		// not be the best idea. Maybe consider adding a threshold
 		// before assuming the connection is down?
-		lastACK := time.Unix(0, lastUDPHeartbeatACK.Load())
-		if !first && time.Since(lastACK) > every {
-			errReporter(fmt.Errorf("no UDP heartbeat received since %v (%v ago)", lastACK, time.Since(lastACK)))
+		lastAck := time.Unix(0, lastUDPHeartbeatAck.Load())
+		lastSent := time.Unix(0, lastUDPHeartbeatSent.Load())
+		if !first && lastSent.After(lastAck) {
+			errReporter(fmt.Errorf("no UDP heartbeat received since %v (%v ago)", lastAck, time.Since(lastAck)))
 			return
 		}
 
@@ -91,6 +97,8 @@ func RunUDP(
 			errReporter(err)
 			return
 		}
+
+		lastUDPHeartbeatSent.Store(time.Now().UnixNano())
 
 		if first {
 			first = false

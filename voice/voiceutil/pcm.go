@@ -1,9 +1,8 @@
 package voiceutil
 
 import (
-	opus "layeh.com/gopus"
-
 	"github.com/skwair/harmony/voice"
+	opus "layeh.com/gopus"
 )
 
 const (

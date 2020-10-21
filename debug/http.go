@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/skwair/harmony"
+	"github.com/skwair/harmony/discord"
 )
 
 type httpDebugger struct {
@@ -18,7 +19,7 @@ func NewHTTP(state *harmony.State) {
 	http.HandleFunc("/debug/state/all", d.all)
 }
 
-func (d *httpDebugger) index(w http.ResponseWriter, r *http.Request) {
+func (d *httpDebugger) index(w http.ResponseWriter, _ *http.Request) {
 	state := struct {
 		UsersCount             int `json:"users_count"`
 		GuildsCount            int `json:"guilds_count"`
@@ -45,18 +46,18 @@ func (d *httpDebugger) index(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (d *httpDebugger) all(w http.ResponseWriter, r *http.Request) {
+func (d *httpDebugger) all(w http.ResponseWriter, _ *http.Request) {
 	state := struct {
-		CurrentUser       *harmony.User                        `json:"current_user"`
-		Users             map[string]*harmony.User             `json:"users"`
-		Guilds            map[string]*harmony.Guild            `json:"guilds"`
-		Presences         map[string]*harmony.Presence         `json:"presences"`
-		Channels          map[string]*harmony.Channel          `json:"channels"`
-		DMs               map[string]*harmony.Channel          `json:"dms"`
-		Groups            map[string]*harmony.Channel          `json:"groups"`
-		UnavailableGuilds map[string]*harmony.UnavailableGuild `json:"unavailable_guilds"`
+		CurrentUser       *discord.User                        `json:"current_user"`
+		Users             map[string]*discord.User             `json:"users"`
+		Guilds            map[string]*discord.Guild            `json:"guilds"`
+		Presences         map[string]*discord.Presence         `json:"presences"`
+		Channels          map[string]*discord.Channel          `json:"channels"`
+		DMs               map[string]*discord.Channel          `json:"dms"`
+		Groups            map[string]*discord.Channel          `json:"groups"`
+		UnavailableGuilds map[string]*discord.UnavailableGuild `json:"unavailable_guilds"`
 	}{
-		CurrentUser:       d.state.CurrentUser(),
+		CurrentUser:       d.state.Me(),
 		Users:             d.state.Users(),
 		Guilds:            d.state.Guilds(),
 		Presences:         d.state.Presences(),

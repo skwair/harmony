@@ -1,4 +1,4 @@
-[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/skwair/harmony)
+[![GoDoc](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/skwair/harmony)
 [![License MIT](https://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat-square)](LICENSE)
 [![Discord](https://img.shields.io/badge/Discord-online-7289DA.svg?style=flat-square)](https://discord.gg/3sVFWQC)
 [![Build Status](https://travis-ci.org/skwair/harmony.svg?branch=master)](https://travis-ci.org/skwair/harmony)
@@ -8,7 +8,7 @@
 
 <img align="right" height="200" src=".github/discord-gopher.png">
 
-Harmony is a peaceful [Go](https://golang.org) module for interacting with [Discord](https://discord.com)'s API.
+Harmony is a peaceful [Go](https://go.dev) module for interacting with [Discord](https://discord.com)'s API.
 
 Although this package is usable, it still is under active development so please don't use it for anything other than experiments, yet.
 
@@ -52,7 +52,7 @@ func main() {
     }
 
     // Get information about the current user (the bot itself).
-    u, err := client.CurrentUser().Get(context.Background())
+    u, err := client.User("@me").Get(context.Background())
     if err != nil {
         log.Fatal(err)
     }
@@ -69,7 +69,7 @@ For now, only some end to end tests are provided with this module. To run them, 
 
 1. Create a Discord test server
 
-From a Discord client and with you main account, simply create a new server. Then, right click on the new server and get it's ID.
+From a Discord client and with you main account, simply create a new server. Then, right click on the new server and get its ID.
 
 > Note that for the UI to have the `Copy ID` option when right clicking on the server, you will need to enable developer mode. You can find this option in `User settings > Appearance > Advanced > Developer Mode`.
 
@@ -95,7 +95,7 @@ go test -v -race ./...
 
 Harmony exposes its API differently. It uses a [resource-based](https://godoc.org/github.com/skwair/harmony#hdr-Using_the_HTTP_API) approach which organizes methods by topic, greatly reducing the number of methods on the main `Client` type. The goal by doing this is to have a more friendly API which is easier to navigate.
 
-Another key difference is in the "event handler" mechanism. Instead of having a single [method](https://github.com/bwmarrin/discordgo/blob/dd99dea7adba674baa401e52362d6e330b50acf8/event.go#L120) that takes an `interface{}` as a parameter and guesses for which event you registered a handler based on its concrete type, this library provides a dedicated method for each event type, making it clear what signature your handler must have and ensuring it at compile time, not at runtime.
+Another key difference is in the "event handler" mechanism. Instead of having a single [method](https://github.com/bwmarrin/discordgo/blob/7ab242d361c0dd43613f8c188e4978b4d18a8c89/event.go#L120) that takes an `interface{}` as a parameter and guesses which event you registered a handler for based on its concrete type, this library provides a dedicated method for each event type, making it clear what signature your handler must have and ensuring it at compile time, not at runtime.
 
 Each action that results in an entry in the audit log has a `...WithReason` form, allowing to set a reason for the change (see the `X-Audit-Log-Reason` [header](https://discord.com/developers/docs/resources/audit-log#audit-logs) documentation for more information).
 

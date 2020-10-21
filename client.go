@@ -8,28 +8,21 @@ import (
 	"sync"
 	"time"
 
-	"go.uber.org/atomic"
-	"nhooyr.io/websocket"
-
+	"github.com/skwair/harmony/discord"
+	"github.com/skwair/harmony/internal/backoff"
 	"github.com/skwair/harmony/internal/payload"
-	"github.com/skwair/harmony/internal/rate"
+	"github.com/skwair/harmony/internal/rest"
 	"github.com/skwair/harmony/log"
 	"github.com/skwair/harmony/voice"
+	"go.uber.org/atomic"
+	"nhooyr.io/websocket"
 )
 
-const (
-	defaultBaseURL        = "https://discord.com/api/v6"
-	defaultLargeThreshold = 250
-)
+const defaultLargeThreshold = 250
 
 var (
 	// defaultBackoff is the backoff strategy used by default when trying to reconnect to the Gateway.
-	defaultBackoff = backoff{
-		baseDelay: 1 * time.Second,
-		maxDelay:  120 * time.Second,
-		factor:    1.6,
-		jitter:    0.2,
-	}
+	defaultBackoff = backoff.NewExponential(1*time.Second, 120*time.Second, 1.6, 0.2)
 )
 
 // Client is used to communicate with Discord's API.
@@ -50,13 +43,10 @@ type Client struct {
 	token string
 
 	gatewayURL string
-	baseURL    string // Base URL of the Discord API.
 
 	// Underlying HTTP client used to call Discord's REST API.
-	client *http.Client
-
-	// Rate limiter used to throttle outgoing HTTP requests.
-	limiter *rate.Limiter
+	httpClient *http.Client
+	restClient *rest.Client
 
 	// Underlying websocket used to communicate with
 	// Discord's real-time API.
@@ -84,7 +74,7 @@ type Client struct {
 	// See WithGuildSubscriptions for more information.
 	guildSubscriptions bool
 	// See WithGatewayIntents for more information.
-	intents GatewayIntent
+	intents discord.GatewayIntent
 
 	userID    string
 	sessionID string
@@ -94,10 +84,10 @@ type Client struct {
 	sequence *atomic.Int64
 	// UNIX timestamp in nanoseconds of the last
 	// heartbeat acknowledgement.
-	lastHeartbeatACK *atomic.Int64
+	lastHeartbeatAck *atomic.Int64
 	// UNIX timestamp in nanoseconds of the last
-	// heartbeat send. Used to calculate RTT.
-	lastHeartbeatSend *atomic.Int64
+	// heartbeat sent.
+	lastHeartbeatSent *atomic.Int64
 
 	// wg keeps track of all goroutines necessary to
 	// maintain a connection to the Gateway.
@@ -122,9 +112,9 @@ type Client struct {
 	handlersMu sync.RWMutex
 	handlers   map[string]handler
 
-	// Backoff strategy used when trying to reconnect to
+	// Exponential strategy used when trying to reconnect to
 	// the Gateway after an error.
-	backoff backoff
+	backoff *backoff.Exponential
 
 	// If true (the default value), the State
 	// will be populated and updated as events
@@ -153,20 +143,18 @@ func NewClient(token string, opts ...ClientOption) (*Client, error) {
 	c := &Client{
 		name:               "Harmony",
 		token:              "Bot " + token,
-		baseURL:            defaultBaseURL,
-		client:             http.DefaultClient,
-		limiter:            rate.NewLimiter(),
+		httpClient:         http.DefaultClient,
 		largeThreshold:     defaultLargeThreshold,
 		guildSubscriptions: true,
-		intents:            GatewayIntentUnprivileged,
+		intents:            discord.GatewayIntentUnprivileged,
 		handlers:           make(map[string]handler),
 		backoff:            defaultBackoff,
 		withStateTracking:  true,
 		voiceConnections:   make(map[string]*voice.Connection),
-		logger:             log.NewStd(os.Stderr, log.LevelError),
+		logger:             log.NewStd(os.Stderr, log.LevelInfo),
 		sequence:           atomic.NewInt64(0),
-		lastHeartbeatSend:  atomic.NewInt64(0),
-		lastHeartbeatACK:   atomic.NewInt64(0),
+		lastHeartbeatSent:  atomic.NewInt64(0),
+		lastHeartbeatAck:   atomic.NewInt64(0),
 		connected:          atomic.NewBool(false),
 		connecting:         atomic.NewBool(false),
 		connectingToVoice:  atomic.NewBool(false),
@@ -176,6 +164,13 @@ func NewClient(token string, opts ...ClientOption) (*Client, error) {
 	for _, opt := range opts {
 		opt(c)
 	}
+
+	c.restClient = rest.NewClient(
+		c.httpClient,
+		c.token,
+		c.name,
+		c.logger,
+	)
 
 	if c.withStateTracking {
 		c.State = newState()

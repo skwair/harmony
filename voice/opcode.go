@@ -7,7 +7,7 @@ const (
 	voiceOpcodeHeartbeat          = 3
 	voiceOpcodeSessionDescription = 4
 	voiceOpcodeSpeaking           = 5
-	voiceOpcodeHeartbeatACK       = 6
+	voiceOpcodeHeartbeatAck       = 6
 	voiceOpcodeResume             = 7
 	voiceOpcodeHello              = 8
 	voiceOpcodeResumed            = 9

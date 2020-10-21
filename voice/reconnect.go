@@ -18,9 +18,9 @@ func shouldReconnect(err error) bool {
 	}
 
 	switch websocket.CloseStatus(err) {
-	case 4003, 4004, 4005, 4006, 4011, 4012, 4014, 4016:
+	case 4001, 4003, 4004, 4005, 4006, 4011, 4012, 4014, 4016:
 		return false
-	case 4015:
+	case 4009, 4015:
 		return true
 	case -1: // Not a websocket error.
 		return true
