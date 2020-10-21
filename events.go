@@ -460,6 +460,26 @@ func (c *Client) OnMessageReactionRemoveAll(f func(r *MessageReactionRemoveAll))
 	c.registerHandler(eventMessageReactionRemoveAll, messageReactionRemoveAllHandler(f))
 }
 
+type MessageReactionRemoveEmoji struct {
+	GuildID   string `json:"guild_id"`
+	ChannelID string `json:"channel_id"`
+	MessageID string `json:"message_id"`
+	Emoji     *Emoji `json:"emoji"`
+}
+
+type messageReactionRemoveEmojiHandler func(*MessageReactionRemoveEmoji)
+
+// handle implements the handler interface.
+func (h messageReactionRemoveEmojiHandler) handle(v interface{}) {
+	h(v.(*MessageReactionRemoveEmoji))
+}
+
+// HandleMessageReactionRemoveEmoji registers the handler function for the "MESSAGE_REACTION_REMOVE_ALL" event.
+// Fired when a user explicitly removes all reactions from a message.
+func (c *Client) OnMessageReactionRemoveEmoji(f func(r *MessageReactionRemoveEmoji)) {
+	c.registerHandler(eventMessageReactionRemoveEmoji, messageReactionRemoveEmojiHandler(f))
+}
+
 type presenceUpdateHandler func(*Presence)
 
 // handle implements the handler interface.

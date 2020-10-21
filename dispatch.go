@@ -7,42 +7,43 @@ import (
 )
 
 const (
-	eventHello                    = "HELLO"
-	eventReady                    = "READY"
-	eventResumed                  = "RESUMED"
-	eventInvalidSession           = "INVALID_SESSION"
-	eventChannelCreate            = "CHANNEL_CREATE"
-	eventChannelUpdate            = "CHANNEL_UPDATE"
-	eventChannelDelete            = "CHANNEL_DELETE"
-	eventChannelPinsUpdate        = "CHANNEL_PINS_UPDATE"
-	eventGuildCreate              = "GUILD_CREATE"
-	eventGuildUpdate              = "GUILD_UPDATE"
-	eventGuildDelete              = "GUILD_DELETE"
-	eventGuildBanAdd              = "GUILD_BAN_ADD"
-	eventGuildBanRemove           = "GUILD_BAN_REMOVE"
-	eventGuildEmojisUpdate        = "GUILD_EMOJIS_UPDATE"
-	eventGuildIntegrationsUpdate  = "GUILD_INTEGRATIONS_UPDATE"
-	eventGuildMemberAdd           = "GUILD_MEMBER_ADD"
-	eventGuildMemberRemove        = "GUILD_MEMBER_REMOVE"
-	eventGuildMemberUpdate        = "GUILD_MEMBER_UPDATE"
-	eventGuildMembersChunk        = "GUILD_MEMBERS_CHUNK"
-	eventGuildRoleCreate          = "GUILD_ROLE_CREATE"
-	eventGuildRoleUpdate          = "GUILD_ROLE_UPDATE"
-	eventGuildRoleDelete          = "GUILD_ROLE_DELETE"
-	eventMessageCreate            = "MESSAGE_CREATE"
-	eventMessageUpdate            = "MESSAGE_UPDATE"
-	eventMessageDelete            = "MESSAGE_DELETE"
-	eventMessageDeleteBulk        = "MESSAGE_DELETE_BULK"
-	eventMessageAck               = "MESSAGE_ACK"
-	eventMessageReactionAdd       = "MESSAGE_REACTION_ADD"
-	eventMessageReactionRemove    = "MESSAGE_REACTION_REMOVE"
-	eventMessageReactionRemoveAll = "MESSAGE_REACTION_REMOVE_ALL"
-	eventPresenceUpdate           = "PRESENCE_UPDATE"
-	eventTypingStart              = "TYPING_START"
-	eventUserUpdate               = "USER_UPDATE"
-	eventVoiceStateUpdate         = "VOICE_STATE_UPDATE"
-	eventVoiceServerUpdate        = "VOICE_SERVER_UPDATE"
-	eventWebhooksUpdate           = "WEBHOOKS_UPDATE"
+	eventHello                      = "HELLO"
+	eventReady                      = "READY"
+	eventResumed                    = "RESUMED"
+	eventInvalidSession             = "INVALID_SESSION"
+	eventChannelCreate              = "CHANNEL_CREATE"
+	eventChannelUpdate              = "CHANNEL_UPDATE"
+	eventChannelDelete              = "CHANNEL_DELETE"
+	eventChannelPinsUpdate          = "CHANNEL_PINS_UPDATE"
+	eventGuildCreate                = "GUILD_CREATE"
+	eventGuildUpdate                = "GUILD_UPDATE"
+	eventGuildDelete                = "GUILD_DELETE"
+	eventGuildBanAdd                = "GUILD_BAN_ADD"
+	eventGuildBanRemove             = "GUILD_BAN_REMOVE"
+	eventGuildEmojisUpdate          = "GUILD_EMOJIS_UPDATE"
+	eventGuildIntegrationsUpdate    = "GUILD_INTEGRATIONS_UPDATE"
+	eventGuildMemberAdd             = "GUILD_MEMBER_ADD"
+	eventGuildMemberRemove          = "GUILD_MEMBER_REMOVE"
+	eventGuildMemberUpdate          = "GUILD_MEMBER_UPDATE"
+	eventGuildMembersChunk          = "GUILD_MEMBERS_CHUNK"
+	eventGuildRoleCreate            = "GUILD_ROLE_CREATE"
+	eventGuildRoleUpdate            = "GUILD_ROLE_UPDATE"
+	eventGuildRoleDelete            = "GUILD_ROLE_DELETE"
+	eventMessageCreate              = "MESSAGE_CREATE"
+	eventMessageUpdate              = "MESSAGE_UPDATE"
+	eventMessageDelete              = "MESSAGE_DELETE"
+	eventMessageDeleteBulk          = "MESSAGE_DELETE_BULK"
+	eventMessageAck                 = "MESSAGE_ACK"
+	eventMessageReactionAdd         = "MESSAGE_REACTION_ADD"
+	eventMessageReactionRemove      = "MESSAGE_REACTION_REMOVE"
+	eventMessageReactionRemoveAll   = "MESSAGE_REACTION_REMOVE_ALL"
+	eventMessageReactionRemoveEmoji = "MESSAGE_REACTION_REMOVE_EMOJI"
+	eventPresenceUpdate             = "PRESENCE_UPDATE"
+	eventTypingStart                = "TYPING_START"
+	eventUserUpdate                 = "USER_UPDATE"
+	eventVoiceStateUpdate           = "VOICE_STATE_UPDATE"
+	eventVoiceServerUpdate          = "VOICE_SERVER_UPDATE"
+	eventWebhooksUpdate             = "WEBHOOKS_UPDATE"
 )
 
 // NOTE: consider using a map[string]sync.Pool to cache event objects.
@@ -282,6 +283,12 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 			return err
 		}
 		c.handle(eventMessageReactionRemoveAll, &mr)
+	case eventMessageReactionRemoveEmoji:
+		var m MessageReactionRemoveEmoji
+		if err = json.Unmarshal(data, &m); err != nil {
+			return err
+		}
+		c.handle(eventMessageReactionRemoveEmoji, &m)
 
 	case eventPresenceUpdate:
 		var p Presence
