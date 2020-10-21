@@ -29,6 +29,8 @@ const (
 	eventGuildRoleCreate            = "GUILD_ROLE_CREATE"
 	eventGuildRoleUpdate            = "GUILD_ROLE_UPDATE"
 	eventGuildRoleDelete            = "GUILD_ROLE_DELETE"
+	eventGuildInviteCreate          = "INVITE_CREATE"
+	eventGuildInviteDelete          = "INVITE_DELETE"
 	eventMessageCreate              = "MESSAGE_CREATE"
 	eventMessageUpdate              = "MESSAGE_UPDATE"
 	eventMessageDelete              = "MESSAGE_DELETE"
@@ -233,6 +235,18 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 			c.State.guildRoleRemove(&gr)
 		}
 		c.handle(eventGuildRoleDelete, &gr)
+	case eventGuildInviteCreate:
+		var gic GuildInviteCreate
+		if err = json.Unmarshal(data, &gic); err != nil {
+			return err
+		}
+		c.handle(eventGuildInviteCreate, &gic)
+	case eventGuildInviteDelete:
+		var gid GuildInviteDelete
+		if err = json.Unmarshal(data, &gid); err != nil {
+			return err
+		}
+		c.handle(eventGuildInviteDelete, &gid)
 
 	case eventMessageCreate:
 		var msg Message
