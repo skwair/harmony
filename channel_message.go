@@ -358,6 +358,27 @@ func (c *Client) editMessage(ctx context.Context, channelID, messageID string, e
 	return &msg, nil
 }
 
+// Crosspost a message in a News Channel to following channels.
+func (r *ChannelResource) CrossPostMessage(ctx context.Context, messageID string) (*Message, error) {
+	e := endpoint.CrossPostMessage(r.channelID, messageID)
+
+	resp, err := r.client.doReq(ctx, e, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, apiError(resp)
+	}
+
+	var msg Message
+	if err = json.NewDecoder(resp.Body).Decode(&msg); err != nil {
+		return nil, err
+	}
+	return &msg, nil
+}
+
 // Reaction is a reaction on a Discord message.
 type Reaction struct {
 	Count int    `json:"count"`
