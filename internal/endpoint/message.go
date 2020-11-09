@@ -18,6 +18,14 @@ func EditMessage(chID, msgID string) *Endpoint {
 	}
 }
 
+func CrossPostMessage(chID, msgID string) *Endpoint {
+	return &Endpoint{
+		Method: http.MethodPost,
+		Path:   "/channels/" + chID + "/messages/" + msgID + "/crosspost",
+		Key:    "/channels/" + chID + "/messages",
+	}
+}
+
 func DeleteMessage(chID, msgID string) *Endpoint {
 	return &Endpoint{
 		Method: http.MethodDelete,
