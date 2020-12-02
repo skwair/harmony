@@ -1,7 +1,6 @@
 package harmony
 
 import (
-	"context"
 	"encoding/json"
 	"math/rand"
 	"time"
@@ -35,13 +34,7 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 
 	// Gateway is asking us to reconnect.
 	case gatewayOpcodeReconnect:
-		c.Disconnect()
-
-		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-		defer cancel()
-		if err := c.Connect(ctx); err != nil {
-			return err
-		}
+		return errMustReconnect
 
 	// Gateway is telling us our session ID is invalid.
 	case gatewayOpcodeInvalidSession:

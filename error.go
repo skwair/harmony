@@ -22,6 +22,9 @@ var (
 	// ErrNotConnectedToVoice is returned when trying to switch to a different voice
 	// channel in a guild where you are not yet connected to a voice channel.
 	ErrNotConnectedToVoice = errors.New("not connected to a voice channel in this guild, use the JoinVoiceChannel method first")
+
+	// errMustReconnect is an internal error used to signal that we need to reconnect to the Gateway.
+	errMustReconnect = errors.New("must reconnect to the Gateway")
 )
 
 // APIError is a generic error returned by the Discord HTTP API.
