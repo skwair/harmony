@@ -3,6 +3,7 @@ package harmony
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"sync"
@@ -214,6 +215,10 @@ func (c *Client) wait() {
 func shouldReconnect(err error) bool {
 	if err == nil {
 		return false
+	}
+
+	if errors.Is(err, errMustReconnect) {
+		return true
 	}
 
 	switch websocket.CloseStatus(err) {
