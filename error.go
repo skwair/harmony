@@ -94,7 +94,7 @@ func apiError(resp *http.Response) error {
 		return err
 	}
 
-	apiErr := APIError{HTTPCode: resp.StatusCode}
+	apiErr := &APIError{HTTPCode: resp.StatusCode}
 	if err = json.Unmarshal(b, &apiErr); err != nil {
 		return err
 	}
