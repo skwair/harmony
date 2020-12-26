@@ -6,8 +6,8 @@ import (
 	"os"
 
 	"github.com/skwair/harmony"
+	"github.com/skwair/harmony/discord/audit"
 	"github.com/skwair/harmony/resource/guild"
-	"github.com/skwair/harmony/resource/guild/audit"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 		return
 	}
 
-	log, err := client.Guild(guildID).AuditLog(context.Background(), guild.WithAuditLimit(25))
+	log, err := client.Guild(guildID).AuditLog(context.Background(), guild.WithAuditLogLimit(25))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return

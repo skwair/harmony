@@ -182,7 +182,7 @@ func (r *Resource) RemoveMemberRole(ctx context.Context, userID, roleID string) 
 // The given reason will be set in the audit log entry for this action.
 func (r *Resource) RemoveMemberRoleWithReason(ctx context.Context, userID, roleID, reason string) error {
 	e := endpoint.RemoveGuildMemberRole(r.guildID, userID, roleID)
-	resp, err := r.client.Do(ctx, e, nil)
+	resp, err := r.client.DoWithHeader(ctx, e, nil, rest.ReasonHeader(reason))
 	if err != nil {
 		return err
 	}

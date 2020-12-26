@@ -99,6 +99,10 @@ func (r *Resource) Guilds(ctx context.Context) ([]discord.PartialGuild, error) {
 
 // LeaveGuild make the current user leave a guild given its ID.
 func (r *Resource) LeaveGuild(ctx context.Context, id string) error {
+	if r.userID != "@me" {
+		return discord.ErrNotCurrentUser
+	}
+
 	e := endpoint.LeaveGuild(id)
 	resp, err := r.client.Do(ctx, e, nil)
 	if err != nil {

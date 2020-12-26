@@ -8,8 +8,8 @@ import (
 	"strconv"
 
 	"github.com/skwair/harmony/discord"
+	"github.com/skwair/harmony/discord/audit"
 	"github.com/skwair/harmony/internal/endpoint"
-	"github.com/skwair/harmony/resource/guild/audit"
 )
 
 type auditLogQuery struct {
@@ -22,33 +22,33 @@ type auditLogQuery struct {
 // AuditLogOption allows to customize a query to the audit log.
 type AuditLogOption func(*auditLogQuery)
 
-// WithAuditUserID sets the user ID of the audit log query.
+// WithAuditLogUserID sets the user ID of the audit log query.
 // It make the query only return audit log entries that have been
 // creating for actions performed by this user.
-func WithAuditUserID(id string) AuditLogOption {
+func WithAuditLogUserID(id string) AuditLogOption {
 	return func(q *auditLogQuery) {
 		q.userID = id
 	}
 }
 
-// WithAuditEntryType sets the entry type the query must return.
-func WithAuditEntryType(typ audit.EntryType) AuditLogOption {
+// WithAuditLogEntryType sets the entry type the query must return.
+func WithAuditLogEntryType(typ audit.EntryType) AuditLogOption {
 	return func(q *auditLogQuery) {
 		q.entryType = typ
 	}
 }
 
-// WithAuditBefore is used to paginate the audit log. The before parameter is the
+// WithAuditLogBefore is used to paginate the audit log. The before parameter is the
 // ID of the last audit log entry of our previous query.
-func WithAuditBefore(before string) AuditLogOption {
+func WithAuditLogBefore(before string) AuditLogOption {
 	return func(q *auditLogQuery) {
 		q.before = before
 	}
 }
 
-// WithAuditLimit sets the limit the audit log query should return.
+// WithAuditLogLimit sets the limit the audit log query should return.
 // It must be between 1 and 100 and defaults to 50 if not specified.
-func WithAuditLimit(limit int) AuditLogOption {
+func WithAuditLogLimit(limit int) AuditLogOption {
 	return func(q *auditLogQuery) {
 		q.limit = limit
 	}
