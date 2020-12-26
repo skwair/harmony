@@ -187,11 +187,17 @@ func (r *GuildResource) AddMemberRoleWithReason(ctx context.Context, userID, rol
 	return nil
 }
 
-// RemoveMemberRole removes a role from a guild member. Requires the
-// 'MANAGE_ROLES' permission. Fires a Guild Member Update Gateway event.
+// RemoveMemberRole is like RemoveMemberRoleWithReason but with no particular reason.
 func (r *GuildResource) RemoveMemberRole(ctx context.Context, userID, roleID string) error {
+	return r.RemoveMemberRoleWithReason(ctx, userID, roleID, "")
+}
+
+// RemoveMemberRoleWithReason removes a role from a guild member. Requires the
+// 'MANAGE_ROLES' permission. Fires a Guild Member Update Gateway event.
+// The given reason will be set in the audit log entry for this action.
+func (r *GuildResource) RemoveMemberRoleWithReason(ctx context.Context, userID, roleID, reason string) error {
 	e := endpoint.RemoveGuildMemberRole(r.guildID, userID, roleID)
-	resp, err := r.client.doReq(ctx, e, nil)
+	resp, err := r.client.doReqWithHeader(ctx, e, nil, reasonHeader(reason))
 	if err != nil {
 		return err
 	}
