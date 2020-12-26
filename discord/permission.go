@@ -26,13 +26,12 @@ const (
 	PermissionDeafenMembers      = 0x00800000 // Allows for deafening of members in a voice channel.
 	PermissionMoveMembers        = 0x01000000 // Allows for moving of members between voice channels.
 	PermissionUseVAD             = 0x02000000 // Allows for using voice-activity-detection in a voice channel.
-	PermissionPRIORITY_SPEAKER   = 0x00000100 // Allows for using priority speaker in a voice channel.
+	PermissionPrioritySpeaker    = 0x00000100 // Allows for using priority speaker in a voice channel.
 	PermissionChangeNickname     = 0x04000000 // Allows for modification of own nickname.
 	PermissionManageNicknames    = 0x08000000 // Allows for modification of other users nicknames.
 	PermissionManageRoles        = 0x10000000 // Allows management and editing of roles.
 	PermissionManageWebhooks     = 0x20000000 // Allows management and editing of webhooks.
 	PermissionManageEmojis       = 0x40000000 // Allows management and editing of emojis.
-	PermissionAll                = 0x7FF7FCFF // Equivalent to all permissions, OR'd.
 )
 
 // PermissionOverwrite describes a specific permission that overwrites
@@ -52,7 +51,7 @@ func PermissionsContains(permissions, permission int) bool {
 // computeBasePermissions returns the base permissions a member has in a given guild.
 func computeBasePermissions(g *Guild, m *GuildMember) (permissions int) {
 	if g.OwnerID == m.User.ID {
-		return PermissionAll
+		return PermissionAdministrator
 	}
 
 	// Role '@everyone' has the same ID as the guild ID
@@ -68,7 +67,7 @@ func computeBasePermissions(g *Guild, m *GuildMember) (permissions int) {
 	}
 
 	if PermissionsContains(permissions, PermissionAdministrator) {
-		return PermissionAll
+		return PermissionAdministrator
 	}
 	return permissions
 }
@@ -76,7 +75,7 @@ func computeBasePermissions(g *Guild, m *GuildMember) (permissions int) {
 func computeOverwrites(ch *Channel, m *GuildMember, basePermissions int) (permissions int) {
 	// Administrator can not be overridden.
 	if PermissionsContains(basePermissions, PermissionAdministrator) {
-		return PermissionAll
+		return PermissionAdministrator
 	}
 
 	permissions = basePermissions
