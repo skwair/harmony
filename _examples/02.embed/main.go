@@ -14,7 +14,7 @@ import (
 )
 
 // NOTE: the structure of this bot is detailed in the
-// first example : 01.pingpong.
+// first example: 01.pingpong.
 
 type bot struct {
 	client *harmony.Client
@@ -53,7 +53,7 @@ func main() {
 func (b *bot) onNewMessage(m *discord.Message) {
 	// If the new message's content is "!embed",
 	// reply with a complex message containing embedded content.
-	// This message corresponds to what you can see here :
+	// This message corresponds to what you can see here:
 	// https://leovoel.github.io/embed-visualizer
 	if m.Content == "!embed" {
 		e := &discord.MessageEmbed{

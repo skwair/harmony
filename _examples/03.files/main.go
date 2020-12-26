@@ -13,7 +13,7 @@ import (
 )
 
 // NOTE: the structure of this bot is detailed in the
-// first example : 01.pingpong.
+// first example: 01.pingpong.
 
 type bot struct {
 	client *harmony.Client

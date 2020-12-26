@@ -9,7 +9,6 @@ import (
 
 	"github.com/skwair/harmony"
 	"github.com/skwair/harmony/discord"
-	"github.com/skwair/harmony/log"
 	"github.com/skwair/harmony/voice"
 )
 
@@ -27,7 +26,7 @@ func main() {
 		return
 	}
 
-	client, err := harmony.NewClient(token, harmony.WithLogger(log.NewStd(os.Stdout, log.LevelDebug)))
+	client, err := harmony.NewClient(token)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return

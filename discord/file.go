@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"strings"
 )
 
 // File represents a file that can be sent with Send and the WithFiles option.
@@ -58,7 +59,7 @@ func FileFromURL(url, name string) (*File, error) {
 
 	ct := resp.Header.Get("Content-Type")
 	if !stringsContains(supportedContentTypes, ct) {
-		return nil, fmt.Errorf("unsupported Content-Type: %q", ct)
+		return nil, fmt.Errorf("unsupported Content-Type: %q (supported content types are: %s)", ct, strings.Join(supportedContentTypes, ", "))
 	}
 
 	if name == "" {
