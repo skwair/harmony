@@ -4,20 +4,24 @@ Package harmony provides an interface to the Discord API
 
 Getting started
 
-The first thing you do is to create a Client. NewClient returns a new Client
-configured with sain defaults which should work just fine in most cases.
+The first thing you do with Harmony is to create a Client. NewClient does
+just that by returning a new Client pre-configured with sain defaults which
+should work fine in most cases.
 However, should you need a more specific configuration, you can always
 tweak it with optional `ClientOption`s. See the documentation of NewClient
 and the ClientOption type for more information on how to do so.
 
-	client := harmony.NewClient("your.bot.token")
+	client, err := harmony.NewClient("your.bot.token")
+	if err != nil {
+		// Handle error
+	}
 
 Once you have a Client, you can start interacting with the Discord API,
 but some methods (such as event handlers) won't be available until you
 connect to Discord's Gateway. You can do so by simply calling the Connect
 method of the Client:
 
-	if err = client.Connect(context.TODO()); err != nil {
+	if err := client.Connect(context.TODO()); err != nil {
 		// Handle error
 	}
 	defer client.Disconnect() // Gracefully disconnect
@@ -40,7 +44,8 @@ list of resources you can interact with:
 
 Every interaction you can have with a resource can be accessed via
 methods attached to it. For example, if you wish to send a message
-to a channel:
+to a channel, first access to the desired channel resource, then send
+the message:
 
 	msg, err := client.Channel("channel-id").SendMessage("content of the message")
 	if err != nil {
@@ -49,7 +54,7 @@ to a channel:
 	// msg is the message sent
 
 Endpoints that do not fall into one of those resource (creating a Guild
-for example, or getting valid Voice Regions) are available on the Client.
+for example, or getting valid Voice Regions) are directly  available on the Client.
 
 Registering event handlers
 
@@ -73,12 +78,14 @@ sent by Discord's Gateway. As events are received by the client, this state
 is constantly updated so it always have the newest data available.
 
 This session state acts as a cache to avoid making requests over the HTTP API
-each time. If you need to get information about the current user:
+each time. If you need to get information about the current user, you can simply
+query the current state like so:
 
 	user := client.State.Me()
 
 Because this state might become memory hungry for bots that are in a very
-large number of servers, it can be disabled with the WithStateTracking option
-while creating the harmony client.
+large number of servers, you can fine-tune events you want to track with the
+WithGatewayIntents option. State can also be completely disabled using the
+WithStateTracking option while creating the harmony client.
 */
 package harmony
