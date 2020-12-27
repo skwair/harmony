@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/skwair/harmony"
 	"github.com/skwair/harmony/discord"
@@ -69,9 +70,10 @@ func TestHarmony(t *testing.T) {
 	})
 
 	t.Run("create and delete a channel invite", func(t *testing.T) {
-		settings := &discord.InviteSettings{
-			MaxUses: optional.NewInt(1),
-		}
+		settings := discord.NewInviteSettings(
+			discord.WithMaxUses(1),
+			discord.WithMaxAge(time.Hour),
+		)
 
 		i, err := client.Channel(txtCh.ID).NewInvite(context.TODO(), settings)
 		if err != nil {
@@ -79,7 +81,10 @@ func TestHarmony(t *testing.T) {
 		}
 
 		if i.MaxUses != 1 {
-			t.Fatalf("expected to new invite to have %d max uses; got %d", 1, i.MaxUses)
+			t.Fatalf("expected new invite to have %d max uses; got %d", 1, i.MaxUses)
+		}
+		if i.MaxAge != 3600 {
+			t.Fatalf("expacted new invite to have a max age of %d; got %d", 3600, i.MaxAge)
 		}
 
 		if _, err = client.Invite(i.Code).Delete(context.TODO()); err != nil {

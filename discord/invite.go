@@ -35,3 +35,46 @@ type InviteSettings struct {
 	Temporary *optional.Bool `json:"temporary,omitempty"`
 	Unique    *optional.Bool `json:"unique,omitempty"`
 }
+
+// InviteSetting is a function that configures a channel.
+type InviteSetting func(*InviteSettings)
+
+// NewInviteSettings returns new InviteSettings to modify a a channel.
+func NewInviteSettings(opts ...InviteSetting) *InviteSettings {
+	s := &InviteSettings{}
+
+	for _, opt := range opts {
+		opt(s)
+	}
+
+	return s
+}
+
+// WithMaxAge sets the delay before an invitation expires.
+func WithMaxAge(age time.Duration) InviteSetting {
+	return func(s *InviteSettings) {
+		s.MaxAge = optional.NewInt(int(age.Seconds()))
+	}
+}
+
+// WithMaxUses sets the maximum number of uses of an invitation.
+func WithMaxUses(uses int) InviteSetting {
+	return func(s *InviteSettings) {
+		s.MaxUses = optional.NewInt(uses)
+	}
+}
+
+// WithTemporary sets the maximum number of uses of an invitation.
+func WithTemporary(yes bool) InviteSetting {
+	return func(s *InviteSettings) {
+		s.Temporary = optional.NewBool(yes)
+	}
+}
+
+// WithUnique determines if we should try to reuse a similar existing invite or
+// not (useful for creating many unique one time use invites).
+func WithUnique(yes bool) InviteSetting {
+	return func(s *InviteSettings) {
+		s.Unique = optional.NewBool(yes)
+	}
+}
