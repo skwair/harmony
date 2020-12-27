@@ -18,14 +18,14 @@ type Ready struct {
 	Trace           []string               `json:"_trace"`
 }
 
-// ready expects to receive a Ready payload from the Gateway and will set the
+// recvReady expects to receive a Ready payload from the Gateway and will set the
 // session ID of the client if it receive it, else an error is returned.
-func (c *Client) ready() error {
+func (c *Client) recvReady() error {
 	p, err := c.recvPayload()
 	if err != nil {
 		return fmt.Errorf("could not receive ready payload from gateway: %w", err)
 	}
-	if p.Op != 0 || p.T != eventReady {
+	if p.Op != gatewayOpcodeDispatch || p.T != eventReady {
 		return fmt.Errorf("expected Opcode 0 Ready; got Opcode %d %s", p.Op, p.T)
 	}
 

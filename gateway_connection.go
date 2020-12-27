@@ -87,7 +87,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not receive payload from gateway: %w", err)
 	}
-	if p.Op != 10 {
+	if p.Op != gatewayOpcodeHello {
 		return fmt.Errorf("expected Opcode 10 Hello; got Opcode %d", p.Op)
 	}
 
@@ -111,7 +111,7 @@ func (c *Client) Connect(ctx context.Context) error {
 		}
 
 		// The Gateway should send us a Ready event if we successfully authenticated.
-		if err = c.ready(); err != nil {
+		if err = c.recvReady(); err != nil {
 			return err
 		}
 	} else {
@@ -124,9 +124,8 @@ func (c *Client) Connect(ctx context.Context) error {
 		// listenAndHandlePayloads goroutine.
 	}
 
-	// From now, we are connected to the Gateway.
-	// Start the connection manager, heartbeating
-	// and listening for Gateway events.
+	// From now, we are connected to the Gateway, or resuming a session.
+	// Start the connection manager, heartbeating and listening for Gateway events.
 	c.wg.Add(1)
 	go c.wait()
 

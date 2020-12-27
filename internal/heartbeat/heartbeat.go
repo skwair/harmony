@@ -50,9 +50,9 @@ func Run(
 		}
 
 		select {
+		case <-ticker.C:
 		case <-stop:
 			return
-		case <-ticker.C:
 		}
 	}
 }
@@ -105,9 +105,9 @@ func RunUDP(
 		}
 
 		select {
+		case <-ticker.C:
 		case <-stop:
 			return
-		case <-ticker.C:
 		}
 	}
 }
