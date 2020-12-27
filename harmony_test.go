@@ -9,7 +9,6 @@ import (
 
 	"github.com/skwair/harmony"
 	"github.com/skwair/harmony/discord"
-	"github.com/skwair/harmony/optional"
 )
 
 func TestHarmony(t *testing.T) {
@@ -71,8 +70,8 @@ func TestHarmony(t *testing.T) {
 
 	t.Run("create and delete a channel invite", func(t *testing.T) {
 		settings := discord.NewInviteSettings(
-			discord.WithMaxUses(1),
-			discord.WithMaxAge(time.Hour),
+			discord.WithInviteMaxUses(1),
+			discord.WithInviteMaxAge(time.Hour),
 		)
 
 		i, err := client.Channel(txtCh.ID).NewInvite(context.TODO(), settings)
@@ -243,13 +242,13 @@ func TestHarmony(t *testing.T) {
 	t.Run("new role", func(t *testing.T) {
 		perms := discord.PermissionReadMessageHistory | discord.PermissionSendMessages
 
-		settings := &discord.RoleSettings{
-			Name:        optional.NewString("test-role"),
-			Color:       optional.NewInt(0x336677),
-			Hoist:       optional.NewBool(true),
-			Mentionable: optional.NewBool(true),
-			Permissions: optional.NewInt(perms),
-		}
+		settings := discord.NewRoleSettings(
+			discord.WithRoleName("test-role"),
+			discord.WithRoleColor(0x336677),
+			discord.WithRoleHoist(true),
+			discord.WithRoleMentionable(true),
+			discord.WithRolePermissions(perms),
+		)
 		testRole, err = client.Guild(guildID).NewRole(context.TODO(), settings)
 		if err != nil {
 			t.Fatalf("could not create new role: %v", err)
