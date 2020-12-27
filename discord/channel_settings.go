@@ -23,7 +23,7 @@ type ChannelSettings struct {
 // ChannelSetting is a function that configures a channel.
 type ChannelSetting func(*ChannelSettings)
 
-// NewChannelSettings returns new ChannelSettings to modify a a channel.
+// NewChannelSettings returns new ChannelSettings to create or modify a channel.
 func NewChannelSettings(opts ...ChannelSetting) *ChannelSettings {
 	s := &ChannelSettings{}
 

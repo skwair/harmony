@@ -2,8 +2,6 @@ package discord
 
 import (
 	"time"
-
-	"github.com/skwair/harmony/optional"
 )
 
 // Invite represents a code that when used, adds a user to a guild or group DM channel.
@@ -26,55 +24,4 @@ type InviteMetadata struct {
 	Temporary bool      `json:"temporary"`
 	CreatedAt time.Time `json:"created_at"`
 	Revoked   bool      `json:"revoked"`
-}
-
-// InviteSettings describes how to create a channel invite. All fields are optional.
-type InviteSettings struct {
-	MaxAge    *optional.Int  `json:"max_age,omitempty"`
-	MaxUses   *optional.Int  `json:"max_uses,omitempty"`
-	Temporary *optional.Bool `json:"temporary,omitempty"`
-	Unique    *optional.Bool `json:"unique,omitempty"`
-}
-
-// InviteSetting is a function that configures a channel.
-type InviteSetting func(*InviteSettings)
-
-// NewInviteSettings returns new InviteSettings to modify a a channel.
-func NewInviteSettings(opts ...InviteSetting) *InviteSettings {
-	s := &InviteSettings{}
-
-	for _, opt := range opts {
-		opt(s)
-	}
-
-	return s
-}
-
-// WithInviteMaxAge sets the delay before an invitation expires.
-func WithInviteMaxAge(age time.Duration) InviteSetting {
-	return func(s *InviteSettings) {
-		s.MaxAge = optional.NewInt(int(age.Seconds()))
-	}
-}
-
-// WithInviteMaxUses sets the maximum number of uses of an invitation.
-func WithInviteMaxUses(uses int) InviteSetting {
-	return func(s *InviteSettings) {
-		s.MaxUses = optional.NewInt(uses)
-	}
-}
-
-// WithInviteTemporary sets the maximum number of uses of an invitation.
-func WithInviteTemporary(yes bool) InviteSetting {
-	return func(s *InviteSettings) {
-		s.Temporary = optional.NewBool(yes)
-	}
-}
-
-// WithInviteUnique determines if we should try to reuse a similar existing invite or
-// not (useful for creating many unique one time use invites).
-func WithInviteUnique(yes bool) InviteSetting {
-	return func(s *InviteSettings) {
-		s.Unique = optional.NewBool(yes)
-	}
 }
