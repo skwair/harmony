@@ -1,9 +1,5 @@
 package discord
 
-import (
-	"time"
-)
-
 // ChannelType describes the type of a channel. Different fields
 // are set or not depending on the channel's type.
 type ChannelType int
@@ -51,7 +47,7 @@ type Channel struct {
 	NSFW                 bool                  `json:"nsfw"`
 	LastMessageID        string                `json:"last_message_id"`
 	ParentID             string                `json:"parent_id"` // ID of the parent category for a channel (only in guilds).
-	LastPinTimestamp     time.Time             `json:"last_pin_timestamp"`
+	LastPinTimestamp     Time             `json:"last_pin_timestamp"`
 
 	// For voice channels only.
 	Bitrate          int                  `json:"bitrate"`

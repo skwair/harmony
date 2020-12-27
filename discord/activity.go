@@ -1,7 +1,5 @@
 package discord
 
-import "time"
-
 // ActivityType describes what the user is doing.
 type ActivityType int
 
@@ -38,7 +36,7 @@ type Activity struct {
 	// Stream url, is validated when type is Streaming.
 	URL string `json:"url"`
 	// Time at which the activity was added to the user's session.
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt Time `json:"created_at"`
 	// Unix timestamps for start and/or end of the game.
 	Timestamps ActivityTimestamp `json:"timestamps"`
 	// Application id for the game.

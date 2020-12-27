@@ -1,7 +1,5 @@
 package discord
 
-import "time"
-
 // MessageType describes the type of a message. Different fields
 // are set or not depending on the message's type.
 type MessageType int
@@ -56,8 +54,8 @@ type Message struct {
 	// events.
 	Member          GuildMember `json:"member"`
 	Content         string      `json:"content"`
-	Timestamp       time.Time   `json:"timestamp"`
-	EditedTimestamp time.Time   `json:"edited_timestamp"`
+	Timestamp       Time        `json:"timestamp"`
+	EditedTimestamp Time        `json:"edited_timestamp"`
 	TTS             bool        `json:"tts"`
 	// MentionEveryone is set to true if '@everyone' or '@here'
 	// is set in the message's content.

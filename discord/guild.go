@@ -1,8 +1,6 @@
 package discord
 
 import (
-	"time"
-
 	"github.com/skwair/harmony/voice"
 )
 
@@ -95,7 +93,7 @@ type Guild struct {
 	SystemChannelID             string                        `json:"system_channel_id"`
 
 	// Following fields are only sent within the GUILD_CREATE event.
-	JoinedAt    time.Time     `json:"joined_at"`
+	JoinedAt    Time          `json:"joined_at"`
 	Large       bool          `json:"large"`
 	Unavailable bool          `json:"unavailable"`
 	MemberCount int           `json:"member_count"`
@@ -125,13 +123,13 @@ type UnavailableGuild struct {
 // GuildMember represents a User in a Guild.
 // The field User won't be set in objects attached to MESSAGE_CREATE and MESSAGE_UPDATE gateway events.
 type GuildMember struct {
-	User         *User     `json:"user"`
-	Nick         string    `json:"nick"`
-	Roles        []string  `json:"roles"` // Role IDs.
-	JoinedAt     time.Time `json:"joined_at"`
-	PremiumSince time.Time `json:"premium_since"`
-	Deaf         bool      `json:"deaf"`
-	Mute         bool      `json:"mute"`
+	User         *User    `json:"user"`
+	Nick         string   `json:"nick"`
+	Roles        []string `json:"roles"` // Role IDs.
+	JoinedAt     Time     `json:"joined_at"`
+	PremiumSince Time     `json:"premium_since"`
+	Deaf         bool     `json:"deaf"`
+	Mute         bool     `json:"mute"`
 }
 
 // PermissionsIn returns the permissions of the Guild member in the given Guild and channel.
@@ -222,7 +220,7 @@ type GuildIntegration struct {
 	ExpireGracePeriod int                     `json:"expire_grace_period"`
 	User              User                    `json:"user"`
 	Account           GuildIntegrationAccount `json:"account"`
-	SyncedAt          time.Time               `json:"synced_at"`
+	SyncedAt          Time                    `json:"synced_at"`
 }
 
 type GuildIntegrationAccount struct {

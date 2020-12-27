@@ -1,9 +1,5 @@
 package discord
 
-import (
-	"time"
-)
-
 // Invite represents a code that when used, adds a user to a guild or group DM channel.
 type Invite struct {
 	Code                     string  `json:"code"`
@@ -17,11 +13,11 @@ type Invite struct {
 
 // InviteMetadata contains additional information about an Invite.
 type InviteMetadata struct {
-	Inviter   User      `json:"inviter"`
-	Uses      int       `json:"uses"`
-	MaxUses   int       `json:"max_uses"`
-	MaxAge    int       `json:"max_age"`
-	Temporary bool      `json:"temporary"`
-	CreatedAt time.Time `json:"created_at"`
-	Revoked   bool      `json:"revoked"`
+	Inviter   User `json:"inviter"`
+	Uses      int  `json:"uses"`
+	MaxUses   int  `json:"max_uses"`
+	MaxAge    int  `json:"max_age"`
+	Temporary bool `json:"temporary"`
+	CreatedAt Time `json:"created_at"`
+	Revoked   bool `json:"revoked"`
 }

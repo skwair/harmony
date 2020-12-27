@@ -61,7 +61,7 @@ func (b *bot) onNewMessage(m *discord.Message) {
 			Type:        "rich",
 			Description: "this supports [named links](https://discord.com) on top of the previously shown subset of markdown. ```\nyes, even code blocks```",
 			URL:         "https://discord.com",
-			Timestamp:   time.Now(),
+			Timestamp:   discord.TimeFromStd(time.Now()),
 			Color:       0x2491ec,
 			Footer: &discord.MessageEmbedFooter{
 				Text:    "footer text",

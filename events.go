@@ -1,8 +1,6 @@
 package harmony
 
 import (
-	"time"
-
 	"github.com/skwair/harmony/discord"
 	"github.com/skwair/harmony/voice"
 )
@@ -78,8 +76,8 @@ func (c *Client) OnChannelDelete(f func(c *discord.Channel)) {
 
 // ChannelPinsUpdate is Fired when a message is pinned or unpinned in a text channel.
 type ChannelPinsUpdate struct {
-	ChannelID        string    `json:"channel_id"`
-	LastPinTimestamp time.Time `json:"last_pin_timestamp"`
+	ChannelID        string       `json:"channel_id"`
+	LastPinTimestamp discord.Time `json:"last_pin_timestamp"`
 }
 
 type channelPinsUpdateHandler func(*ChannelPinsUpdate)
@@ -330,7 +328,7 @@ func (c *Client) OnGuildRoleDelete(f func(r *GuildRoleDelete)) {
 type GuildInviteCreate struct {
 	ChannelID      string        `json:"channel_id"`
 	Code           string        `json:"code"`
-	CreatedAt      time.Time     `json:"created_at"`
+	CreatedAt      discord.Time  `json:"created_at"`
 	GuildID        string        `json:"guild_id"`
 	Inviter        *discord.User `json:"inviter"`
 	MaxAge         int           `json:"max_age"`

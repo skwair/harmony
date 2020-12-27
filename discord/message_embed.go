@@ -1,14 +1,12 @@
 package discord
 
-import "time"
-
 // MessageEmbed describes some rich content for a Discord message.
 type MessageEmbed struct {
 	Title       string                 `json:"title,omitempty"`
 	Type        string                 `json:"type,omitempty"` // Type of embed (always "rich" for webhook embeds).
 	Description string                 `json:"description,omitempty"`
 	URL         string                 `json:"url,omitempty"`
-	Timestamp   *time.Time              `json:"timestamp,omitempty"`
+	Timestamp   Time                   `json:"timestamp,omitempty"`
 	Color       int                    `json:"color,omitempty"`
 	Footer      *MessageEmbedFooter    `json:"footer,omitempty"`
 	Image       *MessageEmbedImage     `json:"image,omitempty"`

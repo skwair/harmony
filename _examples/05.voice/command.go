@@ -102,7 +102,9 @@ func (b *bot) createNewPlayer(ctx context.Context, guildID, channelID string) (*
 // sendError is a helper function that replies to the user in the given
 // channel with a nicely formatted error.
 func (b *bot) sendError(ctx context.Context, chID string, msg string) {
-	e := &discord.MessageEmbed{Description: ":x: " + msg}
+	e := &discord.MessageEmbed{
+		Description: ":x: " + msg,
+	}
 
 	if _, err := b.client.Channel(chID).Send(ctx, channel.WithMessageEmbed(e)); err != nil {
 		fmt.Println("could not send error:", err)
