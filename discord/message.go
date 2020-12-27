@@ -20,7 +20,7 @@ const (
 	MessageTypeUserPremiumGuildSubscriptionTier3 MessageType = 11
 	MessageTypeChannelFollowAdd                  MessageType = 12
 	MessageTypeGuildDiscoveryDisqualified        MessageType = 14
-	MessageTypeGuildDiscoveryRequaligied         MessageType = 15
+	MessageTypeGuildDiscoveryRequalified         MessageType = 15
 )
 
 // MessageFlag describes extra features a message can have.
