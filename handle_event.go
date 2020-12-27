@@ -14,7 +14,7 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 	case gatewayOpcodeDispatch:
 		c.sequence.Store(p.S)
 
-		// Those two events should be sent through the payloads channel if the
+		// Those two events should be sent through the voice payloads channel if the
 		// client is currently connecting to a voice channel so the JoinVoiceChannel
 		// method can receive them.
 		if (p.T == eventVoiceStateUpdate || p.T == eventVoiceServerUpdate) &&

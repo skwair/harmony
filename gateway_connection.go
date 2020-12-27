@@ -171,7 +171,7 @@ func (c *Client) Disconnect() {
 	// Wait for all voice connections to be closed.
 	wg.Wait()
 
-	// Then, signal the connection manager that we want to disconnect.
+	// Then, signal the connection manager and other goroutines that we want to disconnect.
 	close(c.stop)
 	// Properly wait for all goroutines to exit.
 	c.wg.Wait()
