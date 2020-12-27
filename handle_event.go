@@ -2,6 +2,7 @@ package harmony
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -23,13 +24,13 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 		}
 
 		if err := c.dispatch(p.T, p.D); err != nil {
-			return err
+			return fmt.Errorf("dispatch: %w", err)
 		}
 
 	// Heartbeat requested from the Gateway (used for ping checking).
 	case gatewayOpcodeHeartbeat:
 		if err := c.sendHeartbeatPayload(); err != nil {
-			return err
+			return fmt.Errorf("send heartbeat payload: %w", err)
 		}
 
 	// Gateway is asking us to reconnect.
@@ -40,12 +41,12 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 	case gatewayOpcodeInvalidSession:
 		var resumable bool
 		if err := json.Unmarshal(p.D, &resumable); err != nil {
-			return err
+			return fmt.Errorf("unmarshal resume: %w", err)
 		}
 
 		if resumable {
 			if err := c.resume(c.ctx); err != nil {
-				return err
+				return fmt.Errorf("resume: %w", err)
 			}
 		} else {
 			// If we could not resume a session in time, we will receive an
@@ -56,7 +57,7 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 
 			c.resetGatewaySession()
 			if err := c.identify(c.ctx); err != nil {
-				return err
+				return fmt.Errorf("identify: %w", err)
 			}
 		}
 

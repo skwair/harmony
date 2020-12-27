@@ -2,6 +2,7 @@ package harmony
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/skwair/harmony/discord"
 	"github.com/skwair/harmony/voice"
@@ -61,7 +62,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		c.connected.Store(true)
 		var r Ready
 		if err = json.Unmarshal(data, &r); err != nil {
-			return err
+			return fmt.Errorf("unmarshal ready event: %w", err)
 		}
 		c.handle(eventReady, &r)
 	case eventResumed:
@@ -71,7 +72,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventChannelCreate:
 		var ch discord.Channel
 		if err = json.Unmarshal(data, &ch); err != nil {
-			return err
+			return fmt.Errorf("unmarshal channel create event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.updateChannel(&ch)
@@ -80,7 +81,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventChannelUpdate:
 		var ch discord.Channel
 		if err = json.Unmarshal(data, &ch); err != nil {
-			return err
+			return fmt.Errorf("unmarshal channel update event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.updateChannel(&ch)
@@ -89,7 +90,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventChannelDelete:
 		var ch discord.Channel
 		if err = json.Unmarshal(data, &ch); err != nil {
-			return err
+			return fmt.Errorf("unmarshal channel delete event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.removeChannel(&ch)
@@ -99,7 +100,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventChannelPinsUpdate:
 		var pins ChannelPinsUpdate
 		if err = json.Unmarshal(data, &pins); err != nil {
-			return err
+			return fmt.Errorf("unmarshal channel pins update event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.updatePins(&pins)
@@ -108,8 +109,9 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 
 	case eventGuildCreate:
 		var g discord.Guild
+		fmt.Println(string(data))
 		if err = json.Unmarshal(data, &g); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild create event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.updateGuild(&g)
@@ -118,7 +120,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventGuildUpdate:
 		var g discord.Guild
 		if err = json.Unmarshal(data, &g); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild update event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.updateGuild(&g)
@@ -127,7 +129,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventGuildDelete:
 		var g discord.UnavailableGuild
 		if err = json.Unmarshal(data, &g); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild delete event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.removeGuild(&g)
@@ -137,20 +139,20 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventGuildBanAdd:
 		var ban GuildBan
 		if err = json.Unmarshal(data, &ban); err != nil {
-			return err
+			return fmt.Errorf("unmarshal ban add event: %w", err)
 		}
 		c.handle(eventGuildBanAdd, &ban)
 	case eventGuildBanRemove:
 		var ban GuildBan
 		if err = json.Unmarshal(data, &ban); err != nil {
-			return err
+			return fmt.Errorf("unmarshal ban remove event: %w", err)
 		}
 		c.handle(eventGuildBanRemove, &ban)
 
 	case eventGuildEmojisUpdate:
 		var ge GuildEmojis
 		if err = json.Unmarshal(data, &ge); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild emojis update event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.updateGuildEmojis(ge.GuildID, ge.Emojis)
@@ -160,14 +162,14 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventGuildIntegrationsUpdate:
 		var giu GuildIntegrationUpdate
 		if err = json.Unmarshal(data, &giu); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild integrations update event: %w", err)
 		}
 		c.handle(eventGuildIntegrationsUpdate, &giu)
 
 	case eventGuildMemberAdd:
 		var m GuildMemberAdd
 		if err = json.Unmarshal(data, &m); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild member add event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.guildMemberAdd(&m)
@@ -176,7 +178,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventGuildMemberRemove:
 		var m GuildMemberRemove
 		if err = json.Unmarshal(data, &m); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild member remove event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.guildMemberRemove(&m)
@@ -185,7 +187,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventGuildMemberUpdate:
 		var m GuildMemberUpdate
 		if err = json.Unmarshal(data, &m); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild member update event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.guildMemberUpdate(&m)
@@ -195,7 +197,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventGuildMembersChunk:
 		var chunk GuildMembersChunk
 		if err = json.Unmarshal(data, &chunk); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild members chunk event: %w", err)
 		}
 		if c.withStateTracking {
 			for _, m := range chunk.Members {
@@ -212,7 +214,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventGuildRoleCreate:
 		var gr GuildRole
 		if err = json.Unmarshal(data, &gr); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild role create event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.guildRoleCreate(&gr)
@@ -221,7 +223,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventGuildRoleUpdate:
 		var gr GuildRole
 		if err = json.Unmarshal(data, &gr); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild role update event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.guildRoleUpdate(&gr)
@@ -230,7 +232,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventGuildRoleDelete:
 		var gr GuildRoleDelete
 		if err = json.Unmarshal(data, &gr); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild role delete event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.guildRoleRemove(&gr)
@@ -239,76 +241,76 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventGuildInviteCreate:
 		var gic GuildInviteCreate
 		if err = json.Unmarshal(data, &gic); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild invite create event: %w", err)
 		}
 		c.handle(eventGuildInviteCreate, &gic)
 	case eventGuildInviteDelete:
 		var gid GuildInviteDelete
 		if err = json.Unmarshal(data, &gid); err != nil {
-			return err
+			return fmt.Errorf("unmarshal guild invite delete event: %w", err)
 		}
 		c.handle(eventGuildInviteDelete, &gid)
 
 	case eventMessageCreate:
 		var msg discord.Message
 		if err = json.Unmarshal(data, &msg); err != nil {
-			return err
+			return fmt.Errorf("unmarshal message create event: %w", err)
 		}
 		c.handle(eventMessageCreate, &msg)
 	case eventMessageUpdate:
 		var msg discord.Message
 		if err = json.Unmarshal(data, &msg); err != nil {
-			return err
+			return fmt.Errorf("unmarshal message update event: %w", err)
 		}
 		c.handle(eventMessageUpdate, &msg)
 	case eventMessageDelete:
 		var md MessageDelete
 		if err = json.Unmarshal(data, &md); err != nil {
-			return err
+			return fmt.Errorf("unmarshal message delete event: %w", err)
 		}
 		c.handle(eventMessageDelete, &md)
 	case eventMessageDeleteBulk:
 		var md MessageDeleteBulk
 		if err = json.Unmarshal(data, &md); err != nil {
-			return err
+			return fmt.Errorf("unmarshal message delete bulk event: %w", err)
 		}
 		c.handle(eventMessageDeleteBulk, &md)
 	case eventMessageAck:
 		var ma MessageAck
 		if err = json.Unmarshal(data, &ma); err != nil {
-			return err
+			return fmt.Errorf("unmarshal message ack event: %w", err)
 		}
 		c.handle(eventMessageAck, &ma)
 
 	case eventMessageReactionAdd:
 		var mr MessageReaction
 		if err = json.Unmarshal(data, &mr); err != nil {
-			return err
+			return fmt.Errorf("unmarshal message reaction add event: %w", err)
 		}
 		c.handle(eventMessageReactionAdd, &mr)
 	case eventMessageReactionRemove:
 		var mr MessageReaction
 		if err = json.Unmarshal(data, &mr); err != nil {
-			return err
+			return fmt.Errorf("unmarshal message reaction remove event: %w", err)
 		}
 		c.handle(eventMessageReactionRemove, &mr)
 	case eventMessageReactionRemoveAll:
 		var mr MessageReactionRemoveAll
 		if err = json.Unmarshal(data, &mr); err != nil {
-			return err
+			return fmt.Errorf("unmarshal message reaction remove all event: %w", err)
 		}
 		c.handle(eventMessageReactionRemoveAll, &mr)
 	case eventMessageReactionRemoveEmoji:
 		var m MessageReactionRemoveEmoji
 		if err = json.Unmarshal(data, &m); err != nil {
-			return err
+			return fmt.Errorf("unmarshal message reaction remove emoji event: %w", err)
 		}
 		c.handle(eventMessageReactionRemoveEmoji, &m)
 
 	case eventPresenceUpdate:
 		var p discord.Presence
 		if err = json.Unmarshal(data, &p); err != nil {
-			return err
+			return fmt.Errorf("unmarshal presence update event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.updatePresence(&p)
@@ -318,14 +320,14 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventTypingStart:
 		var ts TypingStart
 		if err = json.Unmarshal(data, &ts); err != nil {
-			return err
+			return fmt.Errorf("unmarshal typing start event: %w", err)
 		}
 		c.handle(eventTypingStart, &ts)
 
 	case eventUserUpdate:
 		var u discord.User
 		if err = json.Unmarshal(data, &u); err != nil {
-			return err
+			return fmt.Errorf("unmarshal user update event: %w", err)
 		}
 		if c.withStateTracking {
 			c.State.updateUser(&u)
@@ -335,7 +337,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventVoiceStateUpdate:
 		var vs voice.StateUpdate
 		if err = json.Unmarshal(data, &vs); err != nil {
-			return err
+			return fmt.Errorf("unmarshal voice state update event: %w", err)
 		}
 
 		// If this update concerns a voice connection managed
@@ -358,7 +360,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventVoiceServerUpdate:
 		var vs voice.ServerUpdate
 		if err = json.Unmarshal(data, &vs); err != nil {
-			return err
+			return fmt.Errorf("unmarshal voice server update event: %w", err)
 		}
 
 		// If this update concerns a voice connection managed
@@ -379,7 +381,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 	case eventWebhooksUpdate:
 		var wu WebhooksUpdate
 		if err = json.Unmarshal(data, &wu); err != nil {
-			return err
+			return fmt.Errorf("unmarshal webhooks update event: %w", err)
 		}
 		c.handle(eventWebhooksUpdate, &wu)
 
@@ -387,7 +389,7 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 		c.logger.Infof("unrecognized event %s: %s", typ, string(data))
 		return nil
 	}
-	return err
+	return nil
 }
 
 // handle calls the registered user event handler for the given event,
