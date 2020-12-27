@@ -182,8 +182,6 @@ func (c *Client) Disconnect() {
 // If an unexpected error happens while connected to the
 // Gateway, this method will automatically try to reconnect.
 func (c *Client) wait() {
-	defer c.wg.Done()
-
 	c.logger.Debug("starting gateway connection manager")
 	defer c.logger.Debug("stopped gateway connection manager")
 
@@ -203,6 +201,9 @@ func (c *Client) wait() {
 
 	c.cancel()
 	c.connected.Store(false)
+
+	c.wg.Done()
+	c.wg.Wait()
 
 	// If there was an error, try to reconnect depending on its code.
 	if shouldReconnect(err) {
