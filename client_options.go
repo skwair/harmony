@@ -22,6 +22,14 @@ func WithName(n string) ClientOption {
 	}
 }
 
+// WithInitialBotStatus sets the initial status of the bot that is sent
+// when identifying to the Gateway. It can be later modified with SetBotStatus.
+func WithInitialBotStatus(s *discord.BotStatus) ClientOption {
+	return func(c *Client) {
+		c.initialBotStatus = s
+	}
+}
+
 // WithHTTPClient can be used to specify the http.Client to use when making
 // HTTP requests to the Discord HTTP API.
 // Defaults to http.DefaultClient.

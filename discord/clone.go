@@ -186,13 +186,13 @@ func (p *Presence) Clone() *Presence {
 	}
 
 	presence := &Presence{
-		User:    p.User,
-		Game:    p.Game,
-		GuildID: p.GuildID,
-		Status:  p.Status,
+		User:         p.User,
+		GuildID:      p.GuildID,
+		Status:       p.Status,
+		ClientStatus: p.ClientStatus,
 	}
 
-	presence.Roles = append(presence.Roles, p.Roles...)
+	presence.Activities = append(presence.Activities, p.Activities...)
 
 	return presence
 }

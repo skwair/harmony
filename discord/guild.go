@@ -76,7 +76,7 @@ type Guild struct {
 	Splash                      string                        `json:"splash"`
 	Owner                       bool                          `json:"owner"`
 	OwnerID                     string                        `json:"owner_id"`
-	Permissions                 int                           `json:"permissions"`
+	Permissions                 int                           `json:"permissions,string"`
 	Region                      string                        `json:"region"`
 	AFKChannelID                string                        `json:"afk_channel_id"`
 	AFKTimeout                  GuildAFKTimeout               `json:"afk_timeout"`
@@ -110,7 +110,7 @@ type PartialGuild struct {
 	Name        string `json:"name"`
 	Icon        string `json:"icon"`
 	Owner       bool   `json:"owner"`
-	Permissions int    `json:"permissions"`
+	Permissions int    `json:"permissions,string"`
 }
 
 // UnavailableGuild is a Guild that is not available, either because there is a
@@ -161,7 +161,7 @@ type Role struct {
 	Color       int    `json:"color"`    // Integer representation of hexadecimal color code.
 	Hoist       bool   `json:"hoist"`    // Whether this role is pinned in the user listing.
 	Position    int    `json:"position"` // Integer	position of this role.
-	Permissions int    `json:"permissions"`
+	Permissions int    `json:"permissions,string"`
 	Managed     bool   `json:"managed"` // Whether this role is managed by an integration.
 	Mentionable bool   `json:"mentionable"`
 }
@@ -177,16 +177,6 @@ type Emoji struct {
 	Animated      bool   `json:"animated"`
 	// Whether this emoji can be used, may be false due to loss of Server Boosts.
 	Available bool `json:"available"`
-}
-
-// Presence is a user's current state on a guild.
-// This event is sent when a user's presence is updated for a guild.
-type Presence struct {
-	User    *User     `json:"user"`
-	Roles   []string  `json:"roles"` // Array of IDs.
-	Game    *Activity `json:"game"`
-	GuildID string    `json:"guild_id"`
-	Status  string    `json:"status"` // Either "idle", "dnd", "online", or "offline".
 }
 
 // VoiceRegion represents a voice region a guild can use or is using for its voice channels.

@@ -37,6 +37,11 @@ type Client struct {
 	// User-Agent when sending HTTP request.
 	// It defaults to "Harmony".
 	name string
+	// This is the initial status of the bot that is sent
+	// when identifying to the Gateway. It can be customized
+	// with WithInitialBotStatus and can be later modified
+	// with SetBotStatus.
+	initialBotStatus *discord.BotStatus
 
 	// Authentication token used to interact with
 	// Discord's API.

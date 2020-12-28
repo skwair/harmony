@@ -15,7 +15,7 @@ type identify struct {
 	Compress           bool                  `json:"compress,omitempty"`
 	LargeThreshold     int                   `json:"large_threshold,omitempty"`
 	Shard              *[2]int               `json:"shard,omitempty"`
-	Presence           *discord.Status       `json:"presence,omitempty"`
+	Presence           *discord.BotStatus    `json:"presence,omitempty"`
 	GuildSubscriptions bool                  `json:"guild_subscriptions"`
 	Intents            discord.GatewayIntent `json:"intents"`
 }
@@ -28,6 +28,7 @@ func (c *Client) identify(ctx context.Context) error {
 			"$os":      strings.Title(runtime.GOOS),
 			"$browser": "github.com/skwair/harmony",
 		},
+		Presence:           c.initialBotStatus,
 		Compress:           true,
 		LargeThreshold:     c.largeThreshold,
 		GuildSubscriptions: c.guildSubscriptions,

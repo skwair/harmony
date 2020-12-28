@@ -168,19 +168,29 @@ func channelOverwriteCreateFromEntry(e *rawEntry) (*ChannelOverwriteCreate, erro
 			}
 
 		case changeKeyType:
-			overwriteCreate.Type, err = stringValue(ch.New)
+			overwriteCreate.Type, err = intValue(ch.New)
 			if err != nil {
 				return nil, fmt.Errorf("change key %q: %w", changeKeyType, err)
 			}
 
 		case changeKeyAllow:
-			overwriteCreate.Allow, err = intValue(ch.New)
+			var allowStr string
+			allowStr, err = stringValue(ch.New)
 			if err != nil {
 				return nil, fmt.Errorf("change key %q (as string): %w", changeKeyAllow, err)
 			}
+			overwriteCreate.Allow, err = strconv.Atoi(allowStr)
+			if err != nil {
+				return nil, fmt.Errorf("change key %q: %w", changeKeyAllow, err)
+			}
 
 		case changeKeyDeny:
-			overwriteCreate.Deny, err = intValue(ch.New)
+			var denyStr string
+			denyStr, err = stringValue(ch.New)
+			if err != nil {
+				return nil, fmt.Errorf("change key %q (as string): %w", changeKeyAllow, err)
+			}
+			overwriteCreate.Deny, err = strconv.Atoi(denyStr)
 			if err != nil {
 				return nil, fmt.Errorf("change key %q: %w", changeKeyDeny, err)
 			}
@@ -193,24 +203,49 @@ func channelOverwriteCreateFromEntry(e *rawEntry) (*ChannelOverwriteCreate, erro
 func channelOverwriteUpdateFromEntry(e *rawEntry) (*ChannelOverwriteUpdate, error) {
 	overwriteUpdate := &ChannelOverwriteUpdate{
 		BaseEntry: baseEntryFromRaw(e),
-		Type:      e.Options.Type,
 		ID:        e.Options.ID,
 		RoleName:  e.Options.RoleName,
+	}
+
+	var err error
+	overwriteUpdate.Type, err = strconv.Atoi(e.Options.Type)
+	if err != nil {
+		return nil, fmt.Errorf("type: %w", err)
 	}
 
 	for _, ch := range e.Changes {
 		switch changeKey(ch.Key) {
 		case changeKeyAllow:
-			oldValue, newValue, err := intValues(ch.Old, ch.New)
+			oldValueStr, newValueStr, err := stringValues(ch.Old, ch.New)
+			if err != nil {
+				return nil, fmt.Errorf("change key %q: %w", changeKeyAllow, err)
+			}
+
+			var oldValue, newValue int
+			oldValue, err = strconv.Atoi(oldValueStr)
 			if err != nil {
 				return nil, fmt.Errorf("change key %q (old value): %w", changeKeyAllow, err)
+			}
+			newValue, err = strconv.Atoi(newValueStr)
+			if err != nil {
+				return nil, fmt.Errorf("change key %q (new value): %w", changeKeyAllow, err)
 			}
 			overwriteUpdate.Allow = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyDeny:
-			oldValue, newValue, err := intValues(ch.Old, ch.New)
+			oldValueStr, newValueStr, err := stringValues(ch.Old, ch.New)
+			if err != nil {
+				return nil, fmt.Errorf("change key %q: %w", changeKeyDeny, err)
+			}
+
+			var oldValue, newValue int
+			oldValue, err = strconv.Atoi(oldValueStr)
 			if err != nil {
 				return nil, fmt.Errorf("change key %q (old value): %w", changeKeyDeny, err)
+			}
+			newValue, err = strconv.Atoi(newValueStr)
+			if err != nil {
+				return nil, fmt.Errorf("change key %q (new value): %w", changeKeyDeny, err)
 			}
 			overwriteUpdate.Deny = &IntValues{Old: oldValue, New: newValue}
 		}
@@ -235,19 +270,29 @@ func channelOverwriteDeleteFromEntry(e *rawEntry) (*ChannelOverwriteDelete, erro
 			}
 
 		case changeKeyType:
-			overwriteDelete.Type, err = stringValue(ch.Old)
+			overwriteDelete.Type, err = intValue(ch.Old)
 			if err != nil {
 				return nil, fmt.Errorf("change key %q: %w", changeKeyType, err)
 			}
 
 		case changeKeyAllow:
-			overwriteDelete.Allow, err = intValue(ch.Old)
+			var allowStr string
+			allowStr, err = stringValue(ch.Old)
+			if err != nil {
+				return nil, fmt.Errorf("change key %q (as string): %w", changeKeyAllow, err)
+			}
+			overwriteDelete.Allow, err = strconv.Atoi(allowStr)
 			if err != nil {
 				return nil, fmt.Errorf("change key %q: %w", changeKeyAllow, err)
 			}
 
 		case changeKeyDeny:
-			overwriteDelete.Deny, err = intValue(ch.Old)
+			var denyStr string
+			denyStr, err = stringValue(ch.Old)
+			if err != nil {
+				return nil, fmt.Errorf("change key %q (as string): %w", changeKeyDeny, err)
+			}
+			overwriteDelete.Deny, err = strconv.Atoi(denyStr)
 			if err != nil {
 				return nil, fmt.Errorf("change key %q: %w", changeKeyDeny, err)
 			}

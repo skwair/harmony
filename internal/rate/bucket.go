@@ -1,6 +1,7 @@
 package rate
 
 import (
+	"math"
 	"net/http"
 	"strconv"
 	"sync"
@@ -22,7 +23,7 @@ type bucket struct {
 	remaining int
 	// Unix timestamp for when this bucket
 	// refills to its maximum capacity.
-	reset int64
+	reset float64
 }
 
 // lockAndWait locks the bucket, returning immediately after if the bucket is disabled.
@@ -36,14 +37,17 @@ func (b *bucket) lockAndWait() {
 		return
 	}
 
+	secs, frac := math.Modf(b.reset)
+	ms := frac * 100
+	resetAt := time.Unix(int64(secs), int64(time.Duration(ms)*time.Millisecond))
 	// Reset time is in the past, refill the bucket to its maximum capacity.
-	if time.Unix(b.reset, 0).Before(time.Now()) {
+	if resetAt.Before(time.Now()) {
 		b.remaining = b.limit
 	}
 
 	if b.remaining == 0 {
 		// We are out of tokens in this bucket, wait until it refills.
-		time.Sleep(time.Until(time.Unix(b.reset, 0)))
+		time.Sleep(time.Until(resetAt))
 		b.remaining = b.limit
 	}
 
@@ -69,7 +73,7 @@ func (b *bucket) update(header http.Header) {
 	}
 
 	if reset := header.Get("X-RateLimit-Reset"); reset != "" {
-		r, _ := strconv.ParseInt(reset, 10, 64)
+		r, _ := strconv.ParseFloat(reset, 10)
 		b.reset = r
 		set = true
 	}

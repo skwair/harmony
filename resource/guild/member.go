@@ -189,7 +189,7 @@ func (r *Resource) BanWithReason(ctx context.Context, userID string, delMsgDays 
 		q.Set("reason", reason)
 	}
 	if delMsgDays > 0 {
-		q.Set("delete-message-days", strconv.Itoa(delMsgDays))
+		q.Set("delete_message_days", strconv.Itoa(delMsgDays))
 	}
 
 	e := endpoint.CreateGuildBan(r.guildID, userID, q.Encode())

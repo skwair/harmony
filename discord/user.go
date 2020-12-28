@@ -32,15 +32,6 @@ func (u *User) AvatarURL() string {
 	return fmt.Sprintf("https://cdn.discordapp.com/avatars/%s/%s.png", u.ID, u.Avatar)
 }
 
-// Status is sent by the client to indicate a presence or status update.
-type Status struct {
-	Since      int        `json:"since"`
-	Game       *Activity  `json:"game"` // Deprecated.
-	Activities []Activity `json:"activities"`
-	Status     string     `json:"status"`
-	AFK        bool       `json:"afk"`
-}
-
 // UserConnection that the user has attached.
 type UserConnection struct {
 	ID           string             `json:"id"`

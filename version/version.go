@@ -7,12 +7,12 @@ func Module() string {
 
 // REST returns the version of the REST API used by Harmony.
 func REST() string {
-	return "6"
+	return "8"
 }
 
 // Gateway returns the version of the Gateway used by Harmony.
 func Gateway() string {
-	return "6"
+	return "8"
 }
 
 // Voice returns the version of the Voice Gateway used by Harmony.
