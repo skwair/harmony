@@ -1,5 +1,9 @@
 package audit
 
+import (
+	"fmt"
+)
+
 func roleCreateFromEntry(e *rawEntry) (*RoleCreate, error) {
 	roleCreate := &RoleCreate{
 		BaseEntry: baseEntryFromRaw(e),
@@ -11,31 +15,31 @@ func roleCreateFromEntry(e *rawEntry) (*RoleCreate, error) {
 		case changeKeyName:
 			roleCreate.Name, err = stringValue(ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyName, err)
 			}
 
 		case changeKeyPermissions:
 			roleCreate.Permissions, err = intValue(ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyPermissions, err)
 			}
 
 		case changeKeyColor:
 			roleCreate.Color, err = intValue(ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyColor, err)
 			}
 
 		case changeKeyHoist:
 			roleCreate.Hoist, err = boolValue(ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyHoist, err)
 			}
 
 		case changeKeyMentionable:
 			roleCreate.Mentionable, err = boolValue(ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyMentionable, err)
 			}
 		}
 	}
@@ -53,35 +57,35 @@ func roleUpdateFromEntry(e *rawEntry) (*RoleUpdate, error) {
 		case changeKeyName:
 			oldValue, newValue, err := stringValues(ch.Old, ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyName, err)
 			}
 			roleUpdate.Name = &StringValues{Old: oldValue, New: newValue}
 
 		case changeKeyPermissions:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyPermissions, err)
 			}
 			roleUpdate.Permissions = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyColor:
 			oldValue, newValue, err := intValues(ch.Old, ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyColor, err)
 			}
 			roleUpdate.Color = &IntValues{Old: oldValue, New: newValue}
 
 		case changeKeyHoist:
 			oldValue, newValue, err := boolValues(ch.Old, ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyHoist, err)
 			}
 			roleUpdate.Hoist = &BoolValues{Old: oldValue, New: newValue}
 
 		case changeKeyMentionable:
 			oldValue, newValue, err := boolValues(ch.Old, ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyMentionable, err)
 			}
 			roleUpdate.Mentionable = &BoolValues{Old: oldValue, New: newValue}
 		}
@@ -101,31 +105,31 @@ func roleDeleteFromEntry(e *rawEntry) (*RoleDelete, error) {
 		case changeKeyName:
 			roleDelete.Name, err = stringValue(ch.Old)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyName, err)
 			}
 
 		case changeKeyPermissions:
 			roleDelete.Permissions, err = intValue(ch.Old)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyPermissions, err)
 			}
 
 		case changeKeyColor:
 			roleDelete.Color, err = intValue(ch.Old)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyColor, err)
 			}
 
 		case changeKeyHoist:
 			roleDelete.Hoist, err = boolValue(ch.Old)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyHoist, err)
 			}
 
 		case changeKeyMentionable:
 			roleDelete.Mentionable, err = boolValue(ch.Old)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyMentionable, err)
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package audit
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 
 	"github.com/skwair/harmony/discord"
 )
@@ -25,13 +26,13 @@ type BoolValues struct {
 func stringValues(oldValue, newValue json.RawMessage) (old string, new string, err error) {
 	if len(oldValue) != 0 {
 		if err = json.Unmarshal(oldValue, &old); err != nil {
-			return "", "", err
+			return "", "", fmt.Errorf("old value: %w", err)
 		}
 	}
 
 	if len(newValue) != 0 {
 		if err = json.Unmarshal(newValue, &new); err != nil {
-			return "", "", err
+			return "", "", fmt.Errorf("new value: %w", err)
 		}
 	}
 
@@ -53,13 +54,13 @@ func stringValue(val json.RawMessage) (string, error) {
 func intValues(oldValue, newValue json.RawMessage) (old int, new int, err error) {
 	if len(oldValue) != 0 {
 		if err = json.Unmarshal(oldValue, &old); err != nil {
-			return 0, 0, err
+			return 0, 0, fmt.Errorf("old value: %w", err)
 		}
 	}
 
 	if len(newValue) != 0 {
 		if err = json.Unmarshal(newValue, &new); err != nil {
-			return 0, 0, err
+			return 0, 0, fmt.Errorf("new value: %w", err)
 		}
 	}
 
@@ -81,13 +82,13 @@ func intValue(val json.RawMessage) (int, error) {
 func boolValues(oldValue, newValue json.RawMessage) (old bool, new bool, err error) {
 	if len(oldValue) != 0 {
 		if err = json.Unmarshal(oldValue, &old); err != nil {
-			return false, false, err
+			return false, false, fmt.Errorf("old value: %w", err)
 		}
 	}
 
 	if len(newValue) != 0 {
 		if err = json.Unmarshal(newValue, &new); err != nil {
-			return false, false, err
+			return false, false, fmt.Errorf("new value: %w", err)
 		}
 	}
 

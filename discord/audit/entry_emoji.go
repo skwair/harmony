@@ -1,5 +1,9 @@
 package audit
 
+import (
+	"fmt"
+)
+
 func emojiCreateFromEntry(e *rawEntry) (*EmojiCreate, error) {
 	emojiCreate := &EmojiCreate{
 		BaseEntry: baseEntryFromRaw(e),
@@ -11,7 +15,7 @@ func emojiCreateFromEntry(e *rawEntry) (*EmojiCreate, error) {
 		case changeKeyName:
 			emojiCreate.Name, err = stringValue(ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyName, err)
 			}
 		}
 	}
@@ -29,7 +33,7 @@ func emojiUpdateFromEntry(e *rawEntry) (*EmojiUpdate, error) {
 		case changeKeyName:
 			oldValue, newValue, err := stringValues(ch.Old, ch.New)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyName, err)
 			}
 			emojiUpdate.Name = &StringValues{Old: oldValue, New: newValue}
 		}
@@ -49,7 +53,7 @@ func emojiDeleteFromEntry(e *rawEntry) (*EmojiDelete, error) {
 		case changeKeyName:
 			emojiDelete.Name, err = stringValue(ch.Old)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("change key %q: %w", changeKeyName, err)
 			}
 		}
 	}
