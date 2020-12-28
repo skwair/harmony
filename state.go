@@ -204,7 +204,7 @@ func (s *State) UnavailableGuilds() map[string]*discord.UnavailableGuild {
 // every minute).
 func (s *State) RTT() time.Duration {
 	s.mu.RLock()
-	defer s.mu.Unlock()
+	defer s.mu.RUnlock()
 
 	return s.rtt
 }
