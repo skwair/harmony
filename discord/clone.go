@@ -11,10 +11,15 @@ func (u *User) Clone() *User {
 		Username:      u.Username,
 		Discriminator: u.Discriminator,
 		Avatar:        u.Avatar,
-		Bot:           u.Bot,
-		MFAEnabled:    u.MFAEnabled,
-		Verified:      u.Verified,
+		Locale:        u.Locale,
 		Email:         u.Email,
+		Verified:      u.Verified,
+		MFAEnabled:    u.MFAEnabled,
+		Bot:           u.Bot,
+		System:        u.System,
+		PremiumType:   u.PremiumType,
+		Flags:         u.Flags,
+		PublicFlags:   u.PublicFlags,
 	}
 }
 

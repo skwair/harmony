@@ -10,12 +10,13 @@ import (
 // Ready is the Event fired by the Gateway after the client sent
 // a valid Identify payload.
 type Ready struct {
-	V               int                    `json:"v"` // Gateway version.
-	User            *discord.User          `json:"user"`
-	PrivateChannels []discord.Channel      `json:"private_channels"`
-	Guilds          []discord.PartialGuild `json:"guilds"`
-	SessionID       string                 `json:"session_id"`
-	Trace           []string               `json:"_trace"`
+	V                    int                        `json:"v"` // Gateway version.
+	User                 *discord.User              `json:"user"`
+	Guilds               []discord.UnavailableGuild `json:"guilds"`
+	SessionID            string                     `json:"session_id"`
+	Application          discord.PartialApplication `json:"application"`
+	GeoOrderedRTCRegions []string                   `json:"geo_ordered_rtc_regions"`
+	Shard                [2]int                     `json:"shard"`
 }
 
 // recvReady expects to receive a Ready payload from the Gateway and will set the
