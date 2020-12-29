@@ -1,8 +1,7 @@
 package harmony
 
 import (
-	"time"
-
+	"github.com/skwair/harmony/discord"
 	"github.com/skwair/harmony/voice"
 )
 
@@ -36,49 +35,49 @@ func (c *Client) OnReady(f func(r *Ready)) {
 	c.registerHandler(eventReady, readyHandler(f))
 }
 
-type channelCreateHandler func(*Channel)
+type channelCreateHandler func(*discord.Channel)
 
 // handle implements the handler interface.
 func (h channelCreateHandler) handle(v interface{}) {
-	h(v.(*Channel))
+	h(v.(*discord.Channel))
 }
 
 // OnChannelCreate registers the handler function for the "CHANNEL_CREATE" event.
 // This event is fired when a new channel is created, relevant to the current user.
-func (c *Client) OnChannelCreate(f func(c *Channel)) {
+func (c *Client) OnChannelCreate(f func(c *discord.Channel)) {
 	c.registerHandler(eventChannelCreate, channelCreateHandler(f))
 }
 
-type channelUpdateHandler func(*Channel)
+type channelUpdateHandler func(*discord.Channel)
 
 // handle implements the handler interface.
 func (h channelUpdateHandler) handle(v interface{}) {
-	h(v.(*Channel))
+	h(v.(*discord.Channel))
 }
 
 // OnChannelUpdate registers the handler function for the "CHANNEL_UPDATE" event.
 // This event is fired when a channel is updated, relevant to the current user.
-func (c *Client) OnChannelUpdate(f func(c *Channel)) {
+func (c *Client) OnChannelUpdate(f func(c *discord.Channel)) {
 	c.registerHandler(eventChannelUpdate, channelUpdateHandler(f))
 }
 
-type channelDeleteHandler func(*Channel)
+type channelDeleteHandler func(*discord.Channel)
 
 // handle implements the handler interface.
 func (h channelDeleteHandler) handle(v interface{}) {
-	h(v.(*Channel))
+	h(v.(*discord.Channel))
 }
 
 // OnChannelDelete registers the handler function for the "CHANNEL_DELETE" event.
 // This event is fired when a channel is deleted, relevant to the current user.
-func (c *Client) OnChannelDelete(f func(c *Channel)) {
+func (c *Client) OnChannelDelete(f func(c *discord.Channel)) {
 	c.registerHandler(eventChannelDelete, channelDeleteHandler(f))
 }
 
 // ChannelPinsUpdate is Fired when a message is pinned or unpinned in a text channel.
 type ChannelPinsUpdate struct {
-	ChannelID        string    `json:"channel_id"`
-	LastPinTimestamp time.Time `json:"last_pin_timestamp"`
+	ChannelID        string       `json:"channel_id"`
+	LastPinTimestamp discord.Time `json:"last_pin_timestamp"`
 }
 
 type channelPinsUpdateHandler func(*ChannelPinsUpdate)
@@ -95,51 +94,51 @@ func (c *Client) OnChannelPinsUpdate(f func(cpu *ChannelPinsUpdate)) {
 	c.registerHandler(eventChannelPinsUpdate, channelPinsUpdateHandler(f))
 }
 
-type guildCreateHandler func(*Guild)
+type guildCreateHandler func(*discord.Guild)
 
 // handle implements the handler interface.
 func (h guildCreateHandler) handle(v interface{}) {
-	h(v.(*Guild))
+	h(v.(*discord.Guild))
 }
 
 // OnGuildCreate registers the handler function for the "GUILD_CREATE" event.
-// This event can be sent in three different scenarios :
+// This event can be sent in three different scenarios:
 // 	1. When a user is initially connecting, to lazily load and backfill information for all unavailable guilds sent in the Ready event.
 // 	2. When a Guild becomes available again to the client.
 // 	3. When the current user joins a new Guild.
-func (c *Client) OnGuildCreate(f func(g *Guild)) {
+func (c *Client) OnGuildCreate(f func(g *discord.Guild)) {
 	c.registerHandler(eventGuildCreate, guildCreateHandler(f))
 }
 
-type guildUpdateHandler func(*Guild)
+type guildUpdateHandler func(*discord.Guild)
 
 // handle implements the handler interface.
 func (h guildUpdateHandler) handle(v interface{}) {
-	h(v.(*Guild))
+	h(v.(*discord.Guild))
 }
 
-// OnGuildUpdate registers the handler function for the "GUILD_UPDATE" event.
-func (c *Client) OnGuildUpdate(f func(g *Guild)) {
+// HandleGuildUpdate registers the handler function for the "GUILD_UPDATE" event.
+func (c *Client) OnGuildUpdate(f func(g *discord.Guild)) {
 	c.registerHandler(eventGuildUpdate, guildUpdateHandler(f))
 }
 
-type guildDeleteHandler func(*UnavailableGuild)
+type guildDeleteHandler func(*discord.UnavailableGuild)
 
 // handle implements the handler interface.
 func (h guildDeleteHandler) handle(v interface{}) {
-	h(v.(*UnavailableGuild))
+	h(v.(*discord.UnavailableGuild))
 }
 
 // OnGuildDelete registers the handler function for the "GUILD_DELETE" event.
 // This event is fired when a guild becomes unavailable during a guild outage,
 // or when the user leaves or is removed from a guild. If the unavailable field
 // is not set, the user was removed from the guild.
-func (c *Client) OnGuildDelete(f func(g *UnavailableGuild)) {
+func (c *Client) OnGuildDelete(f func(g *discord.UnavailableGuild)) {
 	c.registerHandler(eventGuildDelete, guildDeleteHandler(f))
 }
 
 type GuildBan struct {
-	*User
+	*discord.User
 	GuildID string `json:"guild_id"`
 }
 
@@ -169,8 +168,8 @@ func (c *Client) OnGuildBanRemove(f func(ban *GuildBan)) {
 }
 
 type GuildEmojis struct {
-	Emojis  []Emoji `json:"emojis"`
-	GuildID string  `json:"guild_id"`
+	Emojis  []discord.Emoji `json:"emojis"`
+	GuildID string          `json:"guild_id"`
 }
 
 type guildEmojisUpdateHandler func(*GuildEmojis)
@@ -204,7 +203,7 @@ func (c *Client) OnGuildIntegrationsUpdate(f func(u *GuildIntegrationUpdate)) {
 }
 
 type GuildMemberAdd struct {
-	*GuildMember
+	*discord.GuildMember
 	GuildID string `json:"guild_id"`
 }
 
@@ -222,8 +221,8 @@ func (c *Client) OnGuildMemberAdd(f func(m *GuildMemberAdd)) {
 }
 
 type GuildMemberRemove struct {
-	User    *User  `json:"user"`
-	GuildID string `json:"guild_id"`
+	User    *discord.User `json:"user"`
+	GuildID string        `json:"guild_id"`
 }
 
 type guildMemberRemoveHandler func(*GuildMemberRemove)
@@ -240,10 +239,10 @@ func (c *Client) OnGuildMemberRemove(f func(m *GuildMemberRemove)) {
 }
 
 type GuildMemberUpdate struct {
-	GuildID string   `json:"guild_id"`
-	Roles   []string `json:"roles"`
-	User    *User    `json:"user"`
-	Nick    string   `json:"nick"`
+	GuildID string        `json:"guild_id"`
+	Roles   []string      `json:"roles"`
+	User    *discord.User `json:"user"`
+	Nick    string        `json:"nick"`
 }
 
 type guildMemberUpdateHandler func(*GuildMemberUpdate)
@@ -260,8 +259,8 @@ func (c *Client) OnGuildMemberUpdate(f func(m *GuildMemberUpdate)) {
 }
 
 type GuildMembersChunk struct {
-	GuildID string        `json:"guild_id"`
-	Members []GuildMember `json:"members"`
+	GuildID string                `json:"guild_id"`
+	Members []discord.GuildMember `json:"members"`
 }
 
 type guildMembersChunkHandler func(*GuildMembersChunk)
@@ -278,8 +277,8 @@ func (c *Client) OnGuildMembersChunk(f func(m *GuildMembersChunk)) {
 }
 
 type GuildRole struct {
-	GuildID string `json:"guild_id"`
-	Role    *Role  `json:"role"`
+	GuildID string        `json:"guild_id"`
+	Role    *discord.Role `json:"role"`
 }
 
 type guildRoleCreateHandler func(*GuildRole)
@@ -327,17 +326,17 @@ func (c *Client) OnGuildRoleDelete(f func(r *GuildRoleDelete)) {
 }
 
 type GuildInviteCreate struct {
-	ChannelID      string    `json:"channel_id"`
-	Code           string    `json:"code"`
-	CreatedAt      time.Time `json:"created_at"`
-	GuildID        string    `json:"guild_id"`
-	Inviter        *User     `json:"inviter"`
-	MaxAge         int       `json:"max_age"`
-	MaxUses        int       `json:"max_uses"`
-	TargetUser     *User     `json:"target_user"`
-	TargetUserType int       `json:"target_user_type"`
-	Temporary      bool      `json:"temporary"`
-	Uses           int       `json:"uses"`
+	ChannelID      string        `json:"channel_id"`
+	Code           string        `json:"code"`
+	CreatedAt      discord.Time  `json:"created_at"`
+	GuildID        string        `json:"guild_id"`
+	Inviter        *discord.User `json:"inviter"`
+	MaxAge         int           `json:"max_age"`
+	MaxUses        int           `json:"max_uses"`
+	TargetUser     *discord.User `json:"target_user"`
+	TargetUserType int           `json:"target_user_type"`
+	Temporary      bool          `json:"temporary"`
+	Uses           int           `json:"uses"`
 }
 
 type guildInviteCreateHandler func(*GuildInviteCreate)
@@ -372,30 +371,30 @@ func (c *Client) OnGuildInviteDelete(f func(i *GuildInviteDelete)) {
 	c.registerHandler(eventGuildInviteDelete, guildInviteDeleteHandler(f))
 }
 
-type messageCreateHandler func(*Message)
+type messageCreateHandler func(*discord.Message)
 
 // handle implements the handler interface.
 func (h messageCreateHandler) handle(v interface{}) {
-	h(v.(*Message))
+	h(v.(*discord.Message))
 }
 
 // OnMessageCreate registers the handler function for the "MESSAGE_CREATE" event.
 // Fired when a message is created.
-func (c *Client) OnMessageCreate(f func(m *Message)) {
+func (c *Client) OnMessageCreate(f func(m *discord.Message)) {
 	c.registerHandler(eventMessageCreate, messageCreateHandler(f))
 }
 
-type messageUpdateHandler func(*Message)
+type messageUpdateHandler func(*discord.Message)
 
 // handle implements the handler interface.
 func (h messageUpdateHandler) handle(v interface{}) {
-	h(v.(*Message))
+	h(v.(*discord.Message))
 }
 
 // OnMessageUpdate registers the handler function for the "MESSAGE_UPDATE" event.
 // Fired when a message is updated. Unlike creates, message updates may contain only
 // a subset of the full message object payload (but will always contain an id and channel_id).
-func (c *Client) OnMessageUpdate(f func(m *Message)) {
+func (c *Client) OnMessageUpdate(f func(m *discord.Message)) {
 	c.registerHandler(eventMessageUpdate, messageUpdateHandler(f))
 }
 
@@ -454,11 +453,11 @@ func (c *Client) OnMessageAck(f func(ack *MessageAck)) {
 }
 
 type MessageReaction struct {
-	UserID    string `json:"user_id"`
-	GuildID   string `json:"guild_id"`
-	ChannelID string `json:"channel_id"`
-	MessageID string `json:"message_id"`
-	Emoji     *Emoji `json:"emoji"`
+	UserID    string         `json:"user_id"`
+	GuildID   string         `json:"guild_id"`
+	ChannelID string         `json:"channel_id"`
+	MessageID string         `json:"message_id"`
+	Emoji     *discord.Emoji `json:"emoji"`
 }
 
 type messageReactionAddHandler func(*MessageReaction)
@@ -507,10 +506,10 @@ func (c *Client) OnMessageReactionRemoveAll(f func(r *MessageReactionRemoveAll))
 }
 
 type MessageReactionRemoveEmoji struct {
-	GuildID   string `json:"guild_id"`
-	ChannelID string `json:"channel_id"`
-	MessageID string `json:"message_id"`
-	Emoji     *Emoji `json:"emoji"`
+	GuildID   string         `json:"guild_id"`
+	ChannelID string         `json:"channel_id"`
+	MessageID string         `json:"message_id"`
+	Emoji     *discord.Emoji `json:"emoji"`
 }
 
 type messageReactionRemoveEmojiHandler func(*MessageReactionRemoveEmoji)
@@ -526,11 +525,11 @@ func (c *Client) OnMessageReactionRemoveEmoji(f func(r *MessageReactionRemoveEmo
 	c.registerHandler(eventMessageReactionRemoveEmoji, messageReactionRemoveEmojiHandler(f))
 }
 
-type presenceUpdateHandler func(*Presence)
+type presenceUpdateHandler func(*discord.Presence)
 
 // handle implements the handler interface.
 func (h presenceUpdateHandler) handle(v interface{}) {
-	h(v.(*Presence))
+	h(v.(*discord.Presence))
 }
 
 // OnPresenceUpdate registers the handler function for the "PRESENCE_UPDATE" event.
@@ -539,7 +538,7 @@ func (h presenceUpdateHandler) handle(v interface{}) {
 // is the id field, everything else is optional. Along with this limitation, no fields
 // are required, and the types of the fields are not validated. Your client should expect
 // any combination of fields and types within this event.
-func (c *Client) OnPresenceUpdate(f func(p *Presence)) {
+func (c *Client) OnPresenceUpdate(f func(p *discord.Presence)) {
 	c.registerHandler(eventPresenceUpdate, presenceUpdateHandler(f))
 }
 
@@ -563,16 +562,16 @@ func (c *Client) OnTypingStart(f func(ts *TypingStart)) {
 	c.registerHandler(eventTypingStart, typingStartHandler(f))
 }
 
-type userUpdateHandler func(*User)
+type userUpdateHandler func(*discord.User)
 
 // handle implements the handler interface.
 func (h userUpdateHandler) handle(v interface{}) {
-	h(v.(*User))
+	h(v.(*discord.User))
 }
 
 // OnUserUpdate registers the handler function for the "USER_UPDATE" event.
 // Fired when properties about the user change.
-func (c *Client) OnUserUpdate(f func(u *User)) {
+func (c *Client) OnUserUpdate(f func(u *discord.User)) {
 	c.registerHandler(eventUserUpdate, userUpdateHandler(f))
 }
 

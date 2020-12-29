@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/skwair/harmony/channel"
+	"github.com/skwair/harmony/discord"
 	"github.com/skwair/harmony/voice"
 )
 
@@ -16,14 +16,14 @@ import (
 type State struct {
 	mu sync.RWMutex
 
-	currentUser       *User
-	users             map[string]*User
-	guilds            map[string]*Guild
-	presences         map[string]*Presence // Presence by user ID.
-	channels          map[string]*Channel
-	dms               map[string]*Channel
-	groups            map[string]*Channel
-	unavailableGuilds map[string]*UnavailableGuild
+	me                *discord.User
+	users             map[string]*discord.User
+	guilds            map[string]*discord.Guild
+	presences         map[string]*discord.Presence // Presence by user ID.
+	channels          map[string]*discord.Channel
+	dms               map[string]*discord.Channel
+	groups            map[string]*discord.Channel
+	unavailableGuilds map[string]*discord.UnavailableGuild
 
 	rtt time.Duration
 
@@ -34,26 +34,26 @@ type State struct {
 // newState returns a new initialized state, ready to be used.
 func newState() *State {
 	return &State{
-		users:             make(map[string]*User),
-		guilds:            make(map[string]*Guild),
-		presences:         make(map[string]*Presence),
-		channels:          make(map[string]*Channel),
-		dms:               make(map[string]*Channel),
-		groups:            make(map[string]*Channel),
-		unavailableGuilds: make(map[string]*UnavailableGuild),
+		users:             make(map[string]*discord.User),
+		guilds:            make(map[string]*discord.Guild),
+		presences:         make(map[string]*discord.Presence),
+		channels:          make(map[string]*discord.Channel),
+		dms:               make(map[string]*discord.Channel),
+		groups:            make(map[string]*discord.Channel),
+		unavailableGuilds: make(map[string]*discord.UnavailableGuild),
 	}
 }
 
-// CurrentUser returns the current user from the state.
-func (s *State) CurrentUser() *User {
+// Me returns the current user from the state.
+func (s *State) Me() *discord.User {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	return s.currentUser.Clone()
+	return s.me.Clone()
 }
 
 // User returns a user given its ID from the state.
-func (s *State) User(id string) *User {
+func (s *State) User(id string) *discord.User {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -61,7 +61,7 @@ func (s *State) User(id string) *User {
 }
 
 // Guild returns a guild given its ID from the state.
-func (s *State) Guild(id string) *Guild {
+func (s *State) Guild(id string) *discord.Guild {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -69,7 +69,7 @@ func (s *State) Guild(id string) *Guild {
 }
 
 // Channel returns a channel given its ID from the state.
-func (s *State) Channel(id string) *Channel {
+func (s *State) Channel(id string) *discord.Channel {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -77,7 +77,7 @@ func (s *State) Channel(id string) *Channel {
 }
 
 // GroupDM returns a group DM given its ID from the state.
-func (s *State) GroupDM(id string) *Channel {
+func (s *State) GroupDM(id string) *discord.Channel {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -85,7 +85,7 @@ func (s *State) GroupDM(id string) *Channel {
 }
 
 // DM returns a DM given its ID from the state.
-func (s *State) DM(id string) *Channel {
+func (s *State) DM(id string) *discord.Channel {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -93,7 +93,7 @@ func (s *State) DM(id string) *Channel {
 }
 
 // Presence returns a presence given a user ID from the state.
-func (s *State) Presence(userID string) *Presence {
+func (s *State) Presence(userID string) *discord.Presence {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -101,7 +101,7 @@ func (s *State) Presence(userID string) *Presence {
 }
 
 // UnavailableGuild returns an unavailable guild given its ID from the state.
-func (s *State) UnavailableGuild(id string) *UnavailableGuild {
+func (s *State) UnavailableGuild(id string) *discord.UnavailableGuild {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
@@ -109,11 +109,11 @@ func (s *State) UnavailableGuild(id string) *UnavailableGuild {
 }
 
 // Users returns a map of user ID to user from the state.
-func (s *State) Users() map[string]*User {
+func (s *State) Users() map[string]*discord.User {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	newMap := make(map[string]*User)
+	newMap := make(map[string]*discord.User)
 	for k, v := range s.users {
 		newMap[k] = v.Clone()
 	}
@@ -122,11 +122,11 @@ func (s *State) Users() map[string]*User {
 }
 
 // Guilds returns a map of guild ID to guild from the state.
-func (s *State) Guilds() map[string]*Guild {
+func (s *State) Guilds() map[string]*discord.Guild {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	newMap := make(map[string]*Guild)
+	newMap := make(map[string]*discord.Guild)
 	for k, v := range s.guilds {
 		newMap[k] = v.Clone()
 	}
@@ -135,11 +135,11 @@ func (s *State) Guilds() map[string]*Guild {
 }
 
 // Channels returns a map of channels ID to channels from the state.
-func (s *State) Channels() map[string]*Channel {
+func (s *State) Channels() map[string]*discord.Channel {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	newMap := make(map[string]*Channel)
+	newMap := make(map[string]*discord.Channel)
 	for k, v := range s.channels {
 		newMap[k] = v.Clone()
 	}
@@ -148,12 +148,12 @@ func (s *State) Channels() map[string]*Channel {
 }
 
 // GroupDMs returns a map of group DM ID to group DM from the state.
-func (s *State) GroupDMs() map[string]*Channel {
+func (s *State) GroupDMs() map[string]*discord.Channel {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	newMap := make(map[string]*Channel)
-	for k, v := range s.channels {
+	newMap := make(map[string]*discord.Channel)
+	for k, v := range s.groups {
 		newMap[k] = v.Clone()
 	}
 
@@ -161,12 +161,12 @@ func (s *State) GroupDMs() map[string]*Channel {
 }
 
 // DMs returns a map of DM ID to DM from the state.
-func (s *State) DMs() map[string]*Channel {
+func (s *State) DMs() map[string]*discord.Channel {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	newMap := make(map[string]*Channel)
-	for k, v := range s.channels {
+	newMap := make(map[string]*discord.Channel)
+	for k, v := range s.dms {
 		newMap[k] = v.Clone()
 	}
 
@@ -174,11 +174,11 @@ func (s *State) DMs() map[string]*Channel {
 }
 
 // Presences returns a map of user ID to presence from the state.
-func (s *State) Presences() map[string]*Presence {
+func (s *State) Presences() map[string]*discord.Presence {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	newMap := make(map[string]*Presence)
+	newMap := make(map[string]*discord.Presence)
 	for k, v := range s.presences {
 		newMap[k] = v.Clone()
 	}
@@ -187,11 +187,11 @@ func (s *State) Presences() map[string]*Presence {
 }
 
 // UnavailableGuilds returns a map of guild ID to unavailable guild from the state.
-func (s *State) UnavailableGuilds() map[string]*UnavailableGuild {
+func (s *State) UnavailableGuilds() map[string]*discord.UnavailableGuild {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
-	newMap := make(map[string]*UnavailableGuild)
+	newMap := make(map[string]*discord.UnavailableGuild)
 	for k, v := range s.unavailableGuilds {
 		newMap[k] = v.Clone()
 	}
@@ -204,7 +204,7 @@ func (s *State) UnavailableGuilds() map[string]*UnavailableGuild {
 // every minute).
 func (s *State) RTT() time.Duration {
 	s.mu.RLock()
-	defer s.mu.Unlock()
+	defer s.mu.RUnlock()
 
 	return s.rtt
 }
@@ -214,25 +214,25 @@ func (s *State) setInitialState(r *Ready) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.currentUser = r.User
+	s.me = r.User
 	for i := 0; i < len(r.Guilds); i++ {
 		g := &r.Guilds[i]
-		s.guilds[g.ID] = &Guild{
+		s.guilds[g.ID] = &discord.Guild{
 			ID:          g.ID,
 			Name:        g.Name,
 			Owner:       g.Owner,
 			Permissions: g.Permissions,
 		}
 		if g.Icon != "" {
-			s.guilds[g.ID].Icon = &g.Icon
+			s.guilds[g.ID].Icon = g.Icon
 		}
 	}
 	for i := 0; i < len(r.PrivateChannels); i++ {
 		dm := &r.PrivateChannels[i]
-		if dm.Type == channel.TypeDM {
+		if dm.Type == discord.ChannelTypeDM {
 			s.dms[dm.ID] = dm
 		}
-		if dm.Type == channel.TypeGroupDM {
+		if dm.Type == discord.ChannelTypeGroupDM {
 			s.groups[dm.ID] = dm
 		}
 	}
@@ -242,7 +242,7 @@ func (s *State) setInitialState(r *Ready) {
 // exists, it merges its content with the existing guild.
 // It also removes this guild from the UnavailableGuilds map if
 // it was present.
-func (s *State) updateGuild(g *Guild) {
+func (s *State) updateGuild(g *discord.Guild) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -292,7 +292,7 @@ func (s *State) updateGuild(g *Guild) {
 
 // removeGuild removes a guild from the Guilds map, adding it to
 // the UnavailableGuilds map.
-func (s *State) removeGuild(g *UnavailableGuild) {
+func (s *State) removeGuild(g *discord.UnavailableGuild) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -302,7 +302,7 @@ func (s *State) removeGuild(g *UnavailableGuild) {
 
 // updateGuildEmojis updates the emojis available in a guild if it
 // is already tracked by the state, does nothing otherwise.
-func (s *State) updateGuildEmojis(guildID string, emojis []Emoji) {
+func (s *State) updateGuildEmojis(guildID string, emojis []discord.Emoji) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -357,7 +357,7 @@ func (s *State) updateGuildVoiceStates(vsu *voice.StateUpdate) {
 
 // updatePresence updates a presence both in the presences map as
 // well as in the Guilds map.
-func (s *State) updatePresence(p *Presence) {
+func (s *State) updatePresence(p *discord.Presence) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -384,12 +384,12 @@ func (s *State) updatePresence(p *Presence) {
 
 // updateUser updates a user in the Users map (or the User) as well
 // as in all the guilds this user is.
-func (s *State) updateUser(u *User) {
+func (s *State) updateUser(u *discord.User) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if u.ID == s.currentUser.ID {
-		s.currentUser = u
+	if u.ID == s.me.ID {
+		s.me = u
 	} else {
 		s.users[u.ID] = u
 	}
@@ -407,19 +407,19 @@ func (s *State) updateUser(u *User) {
 // updateChannel updates a channel in the channel map as well as in
 // the guild this channel is for guild text, voice and category channels.
 // If the channel does not exist yet, it is added.
-func (s *State) updateChannel(c *Channel) {
+func (s *State) updateChannel(c *discord.Channel) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	switch c.Type {
-	case channel.TypeDM:
+	case discord.ChannelTypeDM:
 		s.dms[c.ID] = c
 
-	case channel.TypeGroupDM:
+	case discord.ChannelTypeGroupDM:
 		s.groups[c.ID] = c
 
-	case channel.TypeGuildText, channel.TypeGuildVoice, channel.TypeGuildCategory,
-		channel.TypeGuildNews, channel.TypeGuildStore:
+	case discord.ChannelTypeGuildText, discord.ChannelTypeGuildVoice, discord.ChannelTypeGuildCategory,
+		discord.ChannelTypeGuildNews, discord.ChannelTypeGuildStore:
 		guild := s.guilds[c.GuildID]
 		var found bool
 		for i := 0; i < len(guild.Channels); i++ {
@@ -439,18 +439,18 @@ func (s *State) updateChannel(c *Channel) {
 
 // removeChannel removes the given channel from the channels map as
 // well as the guild it was in for guild text, voice and category channels.
-func (s *State) removeChannel(c *Channel) {
+func (s *State) removeChannel(c *discord.Channel) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	switch c.Type {
-	case channel.TypeDM:
+	case discord.ChannelTypeDM:
 		delete(s.dms, c.ID)
 
-	case channel.TypeGroupDM:
+	case discord.ChannelTypeGroupDM:
 		delete(s.groups, c.ID)
 
-	case channel.TypeGuildText, channel.TypeGuildVoice, channel.TypeGuildCategory:
+	case discord.ChannelTypeGuildText, discord.ChannelTypeGuildVoice, discord.ChannelTypeGuildCategory:
 		g := s.guilds[c.GuildID]
 		if g == nil {
 			return
@@ -481,13 +481,13 @@ func (s *State) updatePins(p *ChannelPinsUpdate) {
 
 	ch.LastPinTimestamp = p.LastPinTimestamp
 	switch ch.Type {
-	case channel.TypeDM:
+	case discord.ChannelTypeDM:
 		s.dms[p.ChannelID].LastPinTimestamp = p.LastPinTimestamp
 
-	case channel.TypeGroupDM:
+	case discord.ChannelTypeGroupDM:
 		s.groups[p.ChannelID].LastPinTimestamp = p.LastPinTimestamp
 
-	case channel.TypeGuildText:
+	case discord.ChannelTypeGuildText:
 		chs := s.guilds[ch.GuildID].Channels
 		for i := 0; i < len(chs); i++ {
 			if chs[i].ID == p.ChannelID {

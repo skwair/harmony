@@ -4,26 +4,20 @@ import (
 	"context"
 	"runtime"
 	"strings"
+
+	"github.com/skwair/harmony/discord"
 )
 
 // identify is used to trigger the initial handshake with the gateway.
 type identify struct {
-	Token              string            `json:"token"`
-	Properties         map[string]string `json:"properties"`
-	Compress           bool              `json:"compress,omitempty"`
-	LargeThreshold     int               `json:"large_threshold,omitempty"`
-	Shard              *[2]int           `json:"shard,omitempty"`
-	Presence           *Status           `json:"presence,omitempty"`
-	GuildSubscriptions bool              `json:"guild_subscriptions"`
-	Intents            GatewayIntent     `json:"intents"`
-}
-
-// Status is sent by the client to indicate a presence or status update.
-type Status struct {
-	Since  int       `json:"since"`
-	Game   *Activity `json:"game"`
-	Status string    `json:"status"`
-	AFK    bool      `json:"afk"`
+	Token              string                `json:"token"`
+	Properties         map[string]string     `json:"properties"`
+	Compress           bool                  `json:"compress,omitempty"`
+	LargeThreshold     int                   `json:"large_threshold,omitempty"`
+	Shard              *[2]int               `json:"shard,omitempty"`
+	Presence           *discord.Status       `json:"presence,omitempty"`
+	GuildSubscriptions bool                  `json:"guild_subscriptions"`
+	Intents            discord.GatewayIntent `json:"intents"`
 }
 
 // identify sends an Identify payload to the Gateway.

@@ -11,5 +11,5 @@ const (
 	gatewayOpcodeRequestGuildMembers = 8
 	gatewayOpcodeInvalidSession      = 9
 	gatewayOpcodeHello               = 10
-	gatewayOpcodeHeartbeatACK        = 11
+	gatewayOpcodeHeartbeatAck        = 11
 )

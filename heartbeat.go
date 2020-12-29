@@ -16,7 +16,8 @@ func (c *Client) heartbeat(every time.Duration) {
 	heartbeat.Run(
 		every,
 		c.sendHeartbeatPayload,
-		c.lastHeartbeatACK,
+		c.lastHeartbeatAck,
+		c.lastHeartbeatSent,
 		c.stop,
 		c.reportErr,
 	)
@@ -29,6 +30,6 @@ func (c *Client) sendHeartbeatPayload() error {
 	if seq := c.sequence.Load(); seq != 0 {
 		sequence = &seq
 	}
-	c.lastHeartbeatSend.Store(time.Now().UnixNano())
+
 	return c.sendPayload(c.ctx, gatewayOpcodeHeartbeat, sequence)
 }

@@ -110,7 +110,7 @@ const (
 	LevelWarn Level = 1
 	// LevelError is for when something went really wrong, meaning the connection to the
 	// Gateway is probably down and/or failed to reconnect. These are very often network
-	// issues.
+	// issues that can eventually automatically get recovered.
 	LevelError Level = 0
 )
 

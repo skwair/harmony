@@ -2,6 +2,7 @@ package harmony
 
 import (
 	"encoding/json"
+	"fmt"
 	"math/rand"
 	"time"
 
@@ -14,7 +15,7 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 	case gatewayOpcodeDispatch:
 		c.sequence.Store(p.S)
 
-		// Those two events should be sent through the payloads channel if the
+		// Those two events should be sent through the voice payloads channel if the
 		// client is currently connecting to a voice channel so the JoinVoiceChannel
 		// method can receive them.
 		if (p.T == eventVoiceStateUpdate || p.T == eventVoiceServerUpdate) &&
@@ -23,13 +24,13 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 		}
 
 		if err := c.dispatch(p.T, p.D); err != nil {
-			return err
+			return fmt.Errorf("dispatch: %w", err)
 		}
 
 	// Heartbeat requested from the Gateway (used for ping checking).
 	case gatewayOpcodeHeartbeat:
 		if err := c.sendHeartbeatPayload(); err != nil {
-			return err
+			return fmt.Errorf("send heartbeat payload: %w", err)
 		}
 
 	// Gateway is asking us to reconnect.
@@ -40,12 +41,12 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 	case gatewayOpcodeInvalidSession:
 		var resumable bool
 		if err := json.Unmarshal(p.D, &resumable); err != nil {
-			return err
+			return fmt.Errorf("unmarshal resume: %w", err)
 		}
 
 		if resumable {
 			if err := c.resume(c.ctx); err != nil {
-				return err
+				return fmt.Errorf("resume: %w", err)
 			}
 		} else {
 			// If we could not resume a session in time, we will receive an
@@ -56,18 +57,18 @@ func (c *Client) handleEvent(p *payload.Payload) error {
 
 			c.resetGatewaySession()
 			if err := c.identify(c.ctx); err != nil {
-				return err
+				return fmt.Errorf("identify: %w", err)
 			}
 		}
 
 	case gatewayOpcodeHello:
 		// Handled by Connect()
 
-	case gatewayOpcodeHeartbeatACK:
+	case gatewayOpcodeHeartbeatAck:
 		if c.withStateTracking {
-			c.State.setRTT(time.Since(time.Unix(0, c.lastHeartbeatSend.Load())))
+			c.State.setRTT(time.Since(time.Unix(0, c.lastHeartbeatSent.Load())))
 		}
-		c.lastHeartbeatACK.Store(time.Now().UnixNano())
+		c.lastHeartbeatAck.Store(time.Now().UnixNano())
 	}
 	return nil
 }

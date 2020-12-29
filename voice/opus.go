@@ -96,7 +96,7 @@ func (vc *Connection) readUDP(ch chan<- *rtpFrame) {
 
 		// Handle UDP heartbeat ACK.
 		if l == 8 {
-			vc.lastUDPHeartbeatACK.Store(time.Now().UnixNano())
+			vc.lastUDPHeartbeatAck.Store(time.Now().UnixNano())
 
 			// TODO: check the sequence number in the UDP heartbeat ?
 			// udpSeq := binary.LittleEndian.Uint64(buf[:l])

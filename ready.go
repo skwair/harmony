@@ -3,32 +3,34 @@ package harmony
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/skwair/harmony/discord"
 )
 
 // Ready is the Event fired by the Gateway after the client sent
 // a valid Identify payload.
 type Ready struct {
-	V               int            `json:"v"` // Gateway version.
-	User            *User          `json:"user"`
-	PrivateChannels []Channel      `json:"private_channels"`
-	Guilds          []PartialGuild `json:"guilds"`
-	SessionID       string         `json:"session_id"`
-	Trace           []string       `json:"_trace"`
+	V               int                    `json:"v"` // Gateway version.
+	User            *discord.User          `json:"user"`
+	PrivateChannels []discord.Channel      `json:"private_channels"`
+	Guilds          []discord.PartialGuild `json:"guilds"`
+	SessionID       string                 `json:"session_id"`
+	Trace           []string               `json:"_trace"`
 }
 
-// ready expects to receive a Ready payload from the Gateway and will set the
+// recvReady expects to receive a Ready payload from the Gateway and will set the
 // session ID of the client if it receive it, else an error is returned.
-func (c *Client) ready() error {
+func (c *Client) recvReady() error {
 	p, err := c.recvPayload()
 	if err != nil {
 		return fmt.Errorf("could not receive ready payload from gateway: %w", err)
 	}
-	if p.Op != 0 || p.T != eventReady {
+	if p.Op != gatewayOpcodeDispatch || p.T != eventReady {
 		return fmt.Errorf("expected Opcode 0 Ready; got Opcode %d %s", p.Op, p.T)
 	}
 
 	var rdy Ready
-	if err := json.Unmarshal(p.D, &rdy); err != nil {
+	if err = json.Unmarshal(p.D, &rdy); err != nil {
 		return err
 	}
 	c.sessionID = rdy.SessionID

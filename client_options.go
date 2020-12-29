@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/skwair/harmony/discord"
+	"github.com/skwair/harmony/internal/backoff"
 	"github.com/skwair/harmony/log"
 )
 
@@ -25,16 +27,7 @@ func WithName(n string) ClientOption {
 // Defaults to http.DefaultClient.
 func WithHTTPClient(client *http.Client) ClientOption {
 	return func(c *Client) {
-		c.client = client
-	}
-}
-
-// WithBaseURL can be used to change de base URL of the API.
-// This is used for testing.
-// Deprecated.
-func WithBaseURL(url string) ClientOption {
-	return func(c *Client) {
-		c.baseURL = url
+		c.httpClient = client
 	}
 }
 
@@ -63,7 +56,7 @@ func WithGuildSubscriptions(y bool) ClientOption {
 // WithGatewayIntents allows to customize which Gateway Intents the client should subscribe to.
 // See https://discord.com/developers/docs/topics/gateway#gateway-intents for more information.
 // By default, the client subscribes to all unprivileged events.
-func WithGatewayIntents(i GatewayIntent) ClientOption {
+func WithGatewayIntents(i discord.GatewayIntent) ClientOption {
 	return func(c *Client) {
 		c.intents = i
 	}
@@ -100,10 +93,7 @@ func WithLargeThreshold(t int) ClientOption {
 // Defaults to 1s (baseDelay), 120s (maxDelay), 1.6 (factor), 0.2 (jitter).
 func WithBackoffStrategy(baseDelay, maxDelay time.Duration, factor, jitter float64) ClientOption {
 	return func(c *Client) {
-		c.backoff.baseDelay = baseDelay
-		c.backoff.maxDelay = maxDelay
-		c.backoff.factor = factor
-		c.backoff.jitter = jitter
+		c.backoff = backoff.NewExponential(baseDelay, maxDelay, factor, jitter)
 	}
 }
 

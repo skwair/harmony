@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"go.uber.org/atomic"
-	"nhooyr.io/websocket"
-
 	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/log"
+	"github.com/skwair/harmony/version"
+	"go.uber.org/atomic"
+	"nhooyr.io/websocket"
 )
 
 // Connect establishes a new voice connection with the provided information. It will automatically try to
@@ -36,9 +36,11 @@ func Connect(ctx context.Context, state *StateUpdate, server *ServerUpdate, opts
 		stop:                 make(chan struct{}),
 		state:                &state.State,
 		logger:               log.NewStd(os.Stderr, log.LevelError),
-		lastHeartbeatACK:     atomic.NewInt64(0),
+		lastHeartbeatSent:    atomic.NewInt64(0),
+		lastHeartbeatAck:     atomic.NewInt64(0),
 		udpHeartbeatSequence: atomic.NewUint64(0),
-		lastUDPHeartbeatACK:  atomic.NewInt64(0),
+		lastUDPHeartbeatSent: atomic.NewInt64(0),
+		lastUDPHeartbeatAck:  atomic.NewInt64(0),
 		connected:            atomic.NewBool(false),
 		connecting:           atomic.NewBool(false),
 		reconnecting:         atomic.NewBool(false),
@@ -69,7 +71,7 @@ func (vc *Connection) connect(ctx context.Context, server *ServerUpdate) error {
 
 	// Start by opening the voice websocket connection.
 	var err error
-	vc.endpoint = fmt.Sprintf("wss://%s?v=%d", strings.TrimSuffix(server.Endpoint, ":80"), gatewayVersion)
+	vc.endpoint = fmt.Sprintf("wss://%s?v=%s", strings.TrimSuffix(server.Endpoint, ":80"), version.Voice())
 	vc.logger.Debugf("connecting to voice server: %s", vc.endpoint)
 	vc.conn, _, err = websocket.Dial(ctx, vc.endpoint, nil)
 	if err != nil {

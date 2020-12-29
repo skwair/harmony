@@ -9,15 +9,16 @@ import (
 	"sync"
 	"time"
 
-	"nhooyr.io/websocket"
-
+	"github.com/skwair/harmony/discord"
 	"github.com/skwair/harmony/internal/payload"
+	"github.com/skwair/harmony/version"
+	"nhooyr.io/websocket"
 )
 
-const (
-	gatewayVersion  = 6
-	gatewayEncoding = "json"
-)
+const gatewayEncoding = "json"
+
+// errMustReconnect is an internal error used to signal that we need to reconnect to the Gateway.
+var errMustReconnect = errors.New("must reconnect to the Gateway")
 
 // Connect connects and identifies the client to the Discord Gateway.
 func (c *Client) Connect(ctx context.Context) error {
@@ -25,7 +26,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	defer c.mu.Unlock()
 
 	if c.isConnected() {
-		return ErrAlreadyConnected
+		return discord.ErrGatewayAlreadyConnected
 	}
 
 	c.connecting.Store(true)
@@ -57,7 +58,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	// Open the Gateway websocket connection.
 	header := make(http.Header)
 	header.Add("Accept-Encoding", "zlib")
-	gwURL := fmt.Sprintf("%s?v=%d&encoding=%s", c.gatewayURL, gatewayVersion, gatewayEncoding)
+	gwURL := fmt.Sprintf("%s?v=%s&encoding=%s", c.gatewayURL, version.Gateway(), gatewayEncoding)
 	c.logger.Debugf("connecting to the gateway: %s", gwURL)
 	c.conn, _, err = websocket.Dial(ctx, gwURL, &websocket.DialOptions{HTTPHeader: header})
 	if err != nil {
@@ -86,7 +87,7 @@ func (c *Client) Connect(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("could not receive payload from gateway: %w", err)
 	}
-	if p.Op != 10 {
+	if p.Op != gatewayOpcodeHello {
 		return fmt.Errorf("expected Opcode 10 Hello; got Opcode %d", p.Op)
 	}
 
@@ -110,7 +111,7 @@ func (c *Client) Connect(ctx context.Context) error {
 		}
 
 		// The Gateway should send us a Ready event if we successfully authenticated.
-		if err = c.ready(); err != nil {
+		if err = c.recvReady(); err != nil {
 			return err
 		}
 	} else {
@@ -123,9 +124,8 @@ func (c *Client) Connect(ctx context.Context) error {
 		// listenAndHandlePayloads goroutine.
 	}
 
-	// From now, we are connected to the Gateway.
-	// Start the connection manager, heartbeating
-	// and listening for Gateway events.
+	// From now, we are connected to the Gateway, or resuming a session.
+	// Start the connection manager, heartbeating and listening for Gateway events.
 	c.wg.Add(1)
 	go c.wait()
 
@@ -171,7 +171,7 @@ func (c *Client) Disconnect() {
 	// Wait for all voice connections to be closed.
 	wg.Wait()
 
-	// Then, signal the connection manager that we want to disconnect.
+	// Then, signal the connection manager and other goroutines that we want to disconnect.
 	close(c.stop)
 	// Properly wait for all goroutines to exit.
 	c.wg.Wait()
@@ -182,8 +182,6 @@ func (c *Client) Disconnect() {
 // If an unexpected error happens while connected to the
 // Gateway, this method will automatically try to reconnect.
 func (c *Client) wait() {
-	defer c.wg.Done()
-
 	c.logger.Debug("starting gateway connection manager")
 	defer c.logger.Debug("stopped gateway connection manager")
 
@@ -204,6 +202,9 @@ func (c *Client) wait() {
 	c.cancel()
 	c.connected.Store(false)
 
+	c.wg.Done()
+	c.wg.Wait()
+
 	// If there was an error, try to reconnect depending on its code.
 	if shouldReconnect(err) {
 		c.reconnectWithBackoff()
@@ -222,7 +223,7 @@ func shouldReconnect(err error) bool {
 	}
 
 	switch websocket.CloseStatus(err) {
-	case 4001, 4002, 4003, 4004, 4005, 4010, 4011:
+	case 4001, 4002, 4003, 4004, 4005, 4010, 4011, 4012, 4013, 4014:
 		return false
 	case 4000, 4007, 4008, 4009:
 		return true
@@ -253,7 +254,7 @@ func (c *Client) reconnectWithBackoff() {
 				return
 			}
 
-			duration := c.backoff.forAttempt(i)
+			duration := c.backoff.ForAttempt(i)
 			c.logger.Errorf("failed to reconnect: %v, retrying in %s", err, duration)
 
 			select {

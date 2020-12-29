@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
+	"github.com/skwair/harmony/discord"
 	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/voice"
 )
@@ -21,12 +23,12 @@ func (c *Client) JoinVoiceChannel(ctx context.Context, guildID, channelID string
 	defer c.mu.Unlock()
 
 	if !c.isConnected() {
-		return nil, ErrGatewayNotConnected
+		return nil, discord.ErrGatewayNotConnected
 	}
 
 	// Check if we already have a voice connection in this guild.
 	if _, ok := c.voiceConnections[guildID]; ok {
-		return nil, ErrAlreadyConnectedToVoice
+		return nil, discord.ErrAlreadyConnectedToVoice
 	}
 
 	// This is used to notify the already started event handler that
@@ -74,7 +76,7 @@ func (c *Client) SwitchVoiceChannel(ctx context.Context, guildID string, channel
 
 	conn, ok := c.voiceConnections[guildID]
 	if !ok {
-		return ErrNotConnectedToVoice
+		return discord.ErrNotConnectedToVoice
 	}
 
 	vsu := &voice.StateUpdate{
@@ -120,33 +122,39 @@ func getStateAndServer(ch chan *payload.Payload) (*voice.StateUpdate, *voice.Ser
 	var (
 		server        voice.ServerUpdate
 		state         voice.StateUpdate
+		pld           *payload.Payload
 		first, second bool
 	)
 
 	for i := 0; i < 2; i++ {
-		p := <-ch
-		if p.T == eventVoiceStateUpdate {
+		select {
+		case pld = <-ch:
+		case <-time.After(15 * time.Second):
+			return nil, nil, errors.New("timed out waiting for voice payloads")
+		}
+
+		if pld.T == eventVoiceStateUpdate {
 			if first {
 				return nil, nil, errors.New("already received voice state update payload")
 			}
 			first = true
 
-			if err := json.Unmarshal(p.D, &state); err != nil {
+			if err := json.Unmarshal(pld.D, &state); err != nil {
 				return nil, nil, err
 			}
-		} else if p.T == eventVoiceServerUpdate {
+		} else if pld.T == eventVoiceServerUpdate {
 			if second {
 				return nil, nil, errors.New("already received voice server update payload")
 			}
 			second = true
 
-			if err := json.Unmarshal(p.D, &server); err != nil {
+			if err := json.Unmarshal(pld.D, &server); err != nil {
 				return nil, nil, err
 			}
 		} else {
 			return nil, nil, fmt.Errorf(
 				"expected Opcode 0 VOICE_STATE_UPDATE or VOICE_SERVER_UPDATE; got Opcode %d %s",
-				p.Op, p.T)
+				pld.Op, pld.T)
 		}
 	}
 	return &state, &server, nil

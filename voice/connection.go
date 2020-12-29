@@ -6,15 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"go.uber.org/atomic"
-	"nhooyr.io/websocket"
-
 	"github.com/skwair/harmony/internal/payload"
 	"github.com/skwair/harmony/log"
-)
-
-const (
-	gatewayVersion = 4
+	"go.uber.org/atomic"
+	"nhooyr.io/websocket"
 )
 
 // Five silence frames should be sent when there is a break in the sent data.
@@ -99,7 +94,8 @@ type Connection struct {
 	cancel context.CancelFunc
 
 	// Accessed atomically, UNIX timestamps in nanoseconds.
-	lastHeartbeatACK, lastUDPHeartbeatACK *atomic.Int64
+	lastHeartbeatAck, lastUDPHeartbeatAck   *atomic.Int64
+	lastHeartbeatSent, lastUDPHeartbeatSent *atomic.Int64
 	// Accessed atomically, sequence number of the last
 	// UDP heartbeat we sent.
 	udpHeartbeatSequence *atomic.Uint64
@@ -166,9 +162,11 @@ func (vc *Connection) reset() {
 	vc.error = make(chan error)
 	vc.reportErrorOnce = sync.Once{}
 	vc.stop = make(chan struct{})
-	vc.lastHeartbeatACK = atomic.NewInt64(0)
+	vc.lastHeartbeatAck = atomic.NewInt64(0)
+	vc.lastHeartbeatSent = atomic.NewInt64(0)
 	vc.udpHeartbeatSequence = atomic.NewUint64(0)
-	vc.lastUDPHeartbeatACK = atomic.NewInt64(0)
+	vc.lastUDPHeartbeatAck = atomic.NewInt64(0)
+	vc.lastUDPHeartbeatSent = atomic.NewInt64(0)
 
 	vc.ctx, vc.cancel = context.WithCancel(context.Background())
 }
