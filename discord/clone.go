@@ -181,15 +181,15 @@ func (c *Channel) Clone() *Channel {
 		Name:             c.Name,
 		Topic:            c.Topic,
 		NSFW:             c.NSFW,
+		ParentID:         c.ParentID,
 		LastMessageID:    c.LastMessageID,
+		LastPinTimestamp: c.LastPinTimestamp,
+		RateLimitPerUser: c.RateLimitPerUser,
 		Bitrate:          c.Bitrate,
 		UserLimit:        c.UserLimit,
-		RateLimitPerUser: c.RateLimitPerUser,
 		Icon:             c.Icon,
 		OwnerID:          c.OwnerID,
 		ApplicationID:    c.ApplicationID,
-		ParentID:         c.ParentID,
-		LastPinTimestamp: c.LastPinTimestamp,
 	}
 
 	for i := 0; i < len(c.PermissionOverwrites); i++ {
@@ -212,7 +212,7 @@ func (p *Presence) Clone() *Presence {
 	}
 
 	presence := &Presence{
-		User:         p.User,
+		User:         p.User.Clone(),
 		GuildID:      p.GuildID,
 		Status:       p.Status,
 		ClientStatus: p.ClientStatus,

@@ -45,14 +45,16 @@ type Channel struct {
 	Name                 string                `json:"name"`
 	Topic                string                `json:"topic"`
 	NSFW                 bool                  `json:"nsfw"`
-	LastMessageID        string                `json:"last_message_id"`
-	ParentID             string                `json:"parent_id"` // ID of the parent category for a channel (only in guilds).
-	LastPinTimestamp     Time                  `json:"last_pin_timestamp"`
+	ParentID             string                `json:"parent_id"` // ID of the parent category for a channel.
+
+	// For text channels only.
+	LastMessageID    string               `json:"last_message_id"`
+	LastPinTimestamp Time                 `json:"last_pin_timestamp"`
+	RateLimitPerUser ChannelUserRateLimit `json:"rate_limit_per_user"`
 
 	// For voice channels only.
-	Bitrate          int                  `json:"bitrate"`
-	UserLimit        int                  `json:"user_limit"`
-	RateLimitPerUser ChannelUserRateLimit `json:"rate_limit_per_user"`
+	Bitrate   int `json:"bitrate"`
+	UserLimit int `json:"user_limit"`
 
 	// For DMs only.
 	Recipients    []User `json:"recipients"`
