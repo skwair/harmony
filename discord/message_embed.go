@@ -1,9 +1,21 @@
 package discord
 
+// MessageEmbedType defines the type of an embed message.
+type MessageEmbedType string
+
+const (
+	MessageEmbedTypeRich    MessageEmbedType = "rich"
+	MessageEmbedTypeImage   MessageEmbedType = "image"
+	MessageEmbedTypeVideo   MessageEmbedType = "video"
+	MessageEmbedTypeGIFV    MessageEmbedType = "gifv"
+	MessageEmbedTypeArticle MessageEmbedType = "article"
+	MessageEmbedTypeLink    MessageEmbedType = "link"
+)
+
 // MessageEmbed describes some rich content for a Discord message.
 type MessageEmbed struct {
 	Title       string                 `json:"title,omitempty"`
-	Type        string                 `json:"type,omitempty"` // Type of embed (always "rich" for webhook embeds).
+	Type        MessageEmbedType       `json:"type,omitempty"` // Type of embed (always MessageEmbedTypeRich for webhook embeds).
 	Description string                 `json:"description,omitempty"`
 	URL         string                 `json:"url,omitempty"`
 	Timestamp   Time                   `json:"timestamp,omitempty"`
