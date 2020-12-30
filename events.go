@@ -9,9 +9,57 @@ type handler interface {
 	handle(interface{})
 }
 
+var intents = map[string]discord.GatewayIntent{
+	eventGuildCreate:       discord.GatewayIntentGuild,
+	eventGuildUpdate:       discord.GatewayIntentGuild,
+	eventGuildRoleCreate:   discord.GatewayIntentGuild,
+	eventGuildRoleUpdate:   discord.GatewayIntentGuild,
+	eventGuildRoleDelete:   discord.GatewayIntentGuild,
+	eventChannelCreate:     discord.GatewayIntentGuild,
+	eventChannelUpdate:     discord.GatewayIntentGuild,
+	eventChannelDelete:     discord.GatewayIntentGuild,
+	eventChannelPinsUpdate: discord.GatewayIntentGuild,
+
+	eventGuildMemberAdd:    discord.GatewayIntentGuildMembers,
+	eventGuildMemberUpdate: discord.GatewayIntentGuildMembers,
+	eventGuildMemberRemove: discord.GatewayIntentGuildMembers,
+
+	eventGuildBanAdd:    discord.GatewayIntentGuildBans,
+	eventGuildBanRemove: discord.GatewayIntentGuildBans,
+
+	eventGuildEmojisUpdate: discord.GatewayIntentGuildEmojis,
+
+	eventGuildIntegrationsUpdate: discord.GatewayIntentGuildIntegrations,
+
+	eventWebhooksUpdate: discord.GatewayIntentGuildWebhooks,
+
+	eventGuildInviteCreate: discord.GatewayIntentGuildInvites,
+	eventGuildInviteDelete: discord.GatewayIntentGuildInvites,
+
+	eventVoiceStateUpdate: discord.GatewayIntentGuildVoiceStates,
+
+	eventPresenceUpdate: discord.GatewayIntentGuildPresences,
+
+	eventMessageCreate:     discord.GatewayIntentGuildMessages | discord.GatewayIntentDirectMessages,
+	eventMessageUpdate:     discord.GatewayIntentGuildMessages | discord.GatewayIntentDirectMessages,
+	eventMessageDelete:     discord.GatewayIntentGuildMessages | discord.GatewayIntentDirectMessages,
+	eventMessageDeleteBulk: discord.GatewayIntentGuildMessages | discord.GatewayIntentDirectMessages,
+
+	eventMessageReactionAdd:         discord.GatewayIntentGuildMessageReactions | discord.GatewayIntentDirectMessageReactions,
+	eventMessageReactionRemove:      discord.GatewayIntentGuildMessageReactions | discord.GatewayIntentDirectMessageReactions,
+	eventMessageReactionRemoveAll:   discord.GatewayIntentGuildMessageReactions | discord.GatewayIntentDirectMessageReactions,
+	eventMessageReactionRemoveEmoji: discord.GatewayIntentGuildMessageReactions | discord.GatewayIntentDirectMessageReactions,
+
+	eventTypingStart: discord.GatewayIntentGuildMessageTyping | discord.GatewayIntentDirectMessageTyping,
+}
+
 func (c *Client) registerHandler(event string, h handler) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
+	if missing := intents[event]; missing&c.intents == 0 {
+		c.logger.Warnf("registering handler for event %q without required intent %q", event, missing)
+	}
 
 	if h == nil {
 		panic("harmony: trying to register a nil event handler")

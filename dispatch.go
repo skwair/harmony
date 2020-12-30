@@ -109,7 +109,6 @@ func (c *Client) dispatch(typ string, data json.RawMessage) error {
 
 	case eventGuildCreate:
 		var g discord.Guild
-		fmt.Println(string(data))
 		if err = json.Unmarshal(data, &g); err != nil {
 			return fmt.Errorf("unmarshal guild create event: %w", err)
 		}
