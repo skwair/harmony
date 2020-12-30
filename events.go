@@ -38,7 +38,6 @@ var intents = map[string]discord.GatewayIntent{
 
 	eventVoiceStateUpdate: discord.GatewayIntentGuildVoiceStates,
 
-
 	eventPresenceUpdate: discord.GatewayIntentGuildPresences,
 
 	eventMessageCreate:     discord.GatewayIntentGuildMessages | discord.GatewayIntentDirectMessages,
