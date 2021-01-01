@@ -198,38 +198,6 @@ func (r *Resource) NewInviteWithReason(ctx context.Context, settings *discord.In
 	return &i, nil
 }
 
-// AddRecipient adds a recipient to the existing Group DM or to a
-// DM channel, creating a new Group DM channel.
-// Groups have a limit of 10 recipients, including the current user.
-func (r *Resource) AddRecipient(ctx context.Context, channelID, recipientID string) error {
-	e := endpoint.GroupDMAddRecipient(channelID, recipientID)
-	resp, err := r.client.Do(ctx, e, nil)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	//
-	if resp.StatusCode != http.StatusNoContent {
-		return discord.NewAPIError(resp)
-	}
-	return nil
-}
-
-// RemoveRecipient removes a recipient from the Group DM.
-func (r *Resource) RemoveRecipient(ctx context.Context, recipientID string) error {
-	e := endpoint.GroupDMRemoveRecipient(r.channelID, recipientID)
-	resp, err := r.client.Do(ctx, e, nil)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusNoContent {
-		return discord.NewAPIError(resp)
-	}
-	return nil
-}
-
 // TriggerTyping triggers a typing indicator for the channel.
 // Generally bots should not implement this route. However, if a bot is
 // responding to a command and expects the computation to take a few
