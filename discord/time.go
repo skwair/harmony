@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"strings"
 	"time"
 )
 
@@ -21,12 +22,15 @@ func (t Time) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
 func (t *Time) UnmarshalJSON(data []byte) error {
-	var ts time.Time
-	if err := ts.UnmarshalJSON(data); err != nil {
+	str := string(data)
+	str = strings.ReplaceAll(str, `"`, "")
+
+	tt, err := time.Parse(time.RFC3339, str)
+	if err != nil {
 		return err
 	}
 
-	t.Time = ts
+	t.Time = tt
 	return nil
 }
 
