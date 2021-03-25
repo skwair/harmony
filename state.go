@@ -217,23 +217,15 @@ func (s *State) setInitialState(r *Ready) {
 	s.me = r.User
 	for i := 0; i < len(r.Guilds); i++ {
 		g := &r.Guilds[i]
+
+		if g.Unavailable == nil {
+			// We were removed from this guild.
+			continue
+		}
+
 		s.guilds[g.ID] = &discord.Guild{
 			ID:          g.ID,
-			Name:        g.Name,
-			Owner:       g.Owner,
-			Permissions: g.Permissions,
-		}
-		if g.Icon != "" {
-			s.guilds[g.ID].Icon = g.Icon
-		}
-	}
-	for i := 0; i < len(r.PrivateChannels); i++ {
-		dm := &r.PrivateChannels[i]
-		if dm.Type == discord.ChannelTypeDM {
-			s.dms[dm.ID] = dm
-		}
-		if dm.Type == discord.ChannelTypeGroupDM {
-			s.groups[dm.ID] = dm
+			Unavailable: *g.Unavailable,
 		}
 	}
 }

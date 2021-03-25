@@ -19,9 +19,9 @@ var baseURL = "https://discord.com/api/v" + version.REST()
 
 // rateLimitResp is the JSON body Discord sends when we are rate limited.
 type rateLimitResp struct {
-	Message    string `json:"message"`
-	RetryAfter int    `json:"retry_after"`
-	Global     bool   `json:"global"`
+	Message    string  `json:"message"`
+	RetryAfter float64 `json:"retry_after"`
+	Global     bool    `json:"global"`
 }
 
 // Client is a client that can make HTTP requests to Discord's REST API.
@@ -137,7 +137,7 @@ func (c *Client) DoWithHeader(ctx context.Context, e *endpoint.Endpoint, p *Payl
 			return nil, err
 		}
 
-		time.Sleep(time.Millisecond * time.Duration(r.RetryAfter))
+		time.Sleep(time.Millisecond * time.Duration(r.RetryAfter*100))
 
 		return c.DoWithHeader(ctx, e, p, h)
 	}
@@ -195,7 +195,7 @@ func DoWithHeader(ctx context.Context, e *endpoint.Endpoint, p *Payload, h http.
 			return nil, err
 		}
 
-		time.Sleep(time.Millisecond * time.Duration(r.RetryAfter))
+		time.Sleep(time.Millisecond * time.Duration(r.RetryAfter*100))
 
 		return DoWithHeader(ctx, e, p, h)
 	}

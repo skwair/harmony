@@ -64,7 +64,7 @@ func (e APIError) Error() string {
 // when it receives invalid parameters.
 type ValidationError struct {
 	HTTPCode int
-	Errors   map[string][]string
+	Errors   map[string]json.RawMessage `json:"errors"`
 }
 
 // Error implements the error interface.
@@ -79,18 +79,26 @@ func (e ValidationError) Error() string {
 			s.WriteRune(',')
 		}
 
-		s.WriteString(fmt.Sprintf(" field %q: %v", key, errs))
+		s.WriteString(fmt.Sprintf(" field %q: %v", key, string(errs)))
 		i++
 	}
 	return s.String()
 }
 
 // NewAPIError is a helper function that extracts an API error from
-// an HTTP response and returns it as an APIError or a ValidationError.
+// an HTTP response and returns it as a generic APIError or a ValidationError.
 func NewAPIError(resp *http.Response) error {
 	b, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return err
+	}
+
+	if resp.StatusCode == http.StatusBadRequest {
+		validationErr := &ValidationError{HTTPCode: resp.StatusCode}
+		if err = json.Unmarshal(b, &validationErr); err != nil {
+			return err
+		}
+		return validationErr
 	}
 
 	apiErr := &APIError{HTTPCode: resp.StatusCode}
@@ -98,16 +106,5 @@ func NewAPIError(resp *http.Response) error {
 		return err
 	}
 
-	// If one of those is set then treat this error as a generic one.
-	if apiErr.Code != 0 || apiErr.Message != "" || apiErr.Misc != nil {
-		return apiErr
-	}
-
-	// If this API error has no code, no message, an no misc info
-	// then this probably is a validation error.
-	validationErr := &ValidationError{HTTPCode: resp.StatusCode}
-	if err = json.Unmarshal(b, &validationErr.Errors); err != nil {
-		return err
-	}
-	return validationErr
+	return apiErr
 }

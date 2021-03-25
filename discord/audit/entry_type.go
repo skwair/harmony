@@ -119,7 +119,7 @@ func (ChannelDelete) EntryType() EntryType { return EntryTypeChannelDelete }
 type ChannelOverwriteCreate struct {
 	BaseEntry
 
-	Type  string
+	Type  int
 	ID    string
 	Allow int
 	Deny  int
@@ -140,7 +140,7 @@ type ChannelOverwriteUpdate struct {
 	Allow *IntValues
 	Deny  *IntValues
 
-	Type     string
+	Type     int
 	ID       string
 	RoleName string // Name of the role if Type is "role".
 }
@@ -153,7 +153,7 @@ func (ChannelOverwriteUpdate) EntryType() EntryType { return EntryTypeChannelOve
 type ChannelOverwriteDelete struct {
 	BaseEntry
 
-	Type  string
+	Type  int
 	ID    string
 	Allow int
 	Deny  int

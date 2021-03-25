@@ -1,6 +1,10 @@
 package discord
 
-import "github.com/skwair/harmony/optional"
+import (
+	"strconv"
+
+	"github.com/skwair/harmony/optional"
+)
 
 // GuildSettings are the settings of a guild, all fields are optional and only those
 // explicitly set will be modified.
@@ -178,7 +182,7 @@ func WithGuildMemberChannelID(id string) GuildMemberSetting {
 // and only those explicitly set will be modified.
 type RoleSettings struct {
 	Name        *optional.String `json:"name,omitempty"`
-	Permissions *optional.Int    `json:"permissions,omitempty"`
+	Permissions *optional.String `json:"permissions,omitempty"`
 	Color       *optional.Int    `json:"color,omitempty"`
 	Hoist       *optional.Bool   `json:"hoist,omitempty"`
 	Mentionable *optional.Bool   `json:"mentionable,omitempty"`
@@ -208,7 +212,7 @@ func WithRoleName(name string) RoleSetting {
 // WithRolePermissions sets the permissions of guild a role.
 func WithRolePermissions(perm int) RoleSetting {
 	return func(s *RoleSettings) {
-		s.Permissions = optional.NewInt(perm)
+		s.Permissions = optional.NewString(strconv.Itoa(perm))
 	}
 }
 

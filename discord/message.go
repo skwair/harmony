@@ -21,6 +21,8 @@ const (
 	MessageTypeChannelFollowAdd                  MessageType = 12
 	MessageTypeGuildDiscoveryDisqualified        MessageType = 14
 	MessageTypeGuildDiscoveryRequalified         MessageType = 15
+	MessageTypeReply                             MessageType = 19
+	MessageTypeCommand                           MessageType = 20
 )
 
 // MessageFlag describes extra features a message can have.
@@ -68,7 +70,7 @@ type Message struct {
 	MentionRoles []string `json:"mention_roles"`
 	// Not all channel mentions in a message will appear in mention_channels.
 	// Only textual channels that are visible to everyone in a public guild
-	// will ever be included. Only crossposted messages (via Channel Following)
+	// will ever be included. Only cross-posted messages (via Channel Following)
 	// currently include mention_channels at all. If no mentions in the message
 	// meet these requirements, this field will not be sent.
 	MentionChannels []ChannelMention    `json:"mention_channels"`
@@ -81,10 +83,12 @@ type Message struct {
 	Type            MessageType         `json:"type"`
 
 	// Sent with Rich Presence-related chat embeds.
-	Activity         MessageActivity    `json:"activity"`
-	Application      MessageApplication `json:"application"`
-	MessageReference MessageReference   `json:"message_reference"`
-	Flags            MessageFlag        `json:"flags"`
+	Activity          MessageActivity    `json:"activity"`
+	Application       MessageApplication `json:"application"`
+	MessageReference  MessageReference   `json:"message_reference"`
+	Flags             MessageFlag        `json:"flags"`
+	Stickers          []MessageSticker   `json:"stickers"`
+	ReferencedMessage *Message           `json:"referenced_message"`
 }
 
 // MessageAttachment is a file attached to a message.
@@ -110,6 +114,26 @@ type MessageReaction struct {
 	Count int   `json:"count"`
 	Me    bool  `json:"me"`
 	Emoji Emoji `json:"emoji"`
+}
+
+// StickerFormat is the format of a MessageSticker.
+type StickerFormat int
+
+const (
+	StickerFormatPNG    StickerFormat = 1
+	StickerFormatAPNG   StickerFormat = 2
+	StickerFormatLOTTIE StickerFormat = 3
+)
+
+type MessageSticker struct {
+	ID           string        `json:"id"`
+	PackID       string        `json:"pack_id"`
+	Name         string        `json:"name"`
+	Description  string        `json:"description"`
+	Tags         string        `json:"tags"`
+	Asset        string        `json:"asset"`
+	PreviewAsset string        `json:"preview_asset"`
+	FormatType   StickerFormat `json:"format_type"`
 }
 
 type MessageActivityType int

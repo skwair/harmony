@@ -67,6 +67,51 @@ const (
 	GuildDefaultNotificationLevelMentionOnly
 )
 
+// MFALevel is the Multi Factor Authentication level of a guild.
+type MFALevel int
+
+const (
+	MFALevelNone     MFALevel = 0
+	MFALevelElevated MFALevel = 1
+)
+
+// PremiumTier is the tier of a boosted server.
+type PremiumTier int
+
+const (
+	PremiumTierNone PremiumTier = 0
+	PremiumTier1    PremiumTier = 1
+	PremiumTier2    PremiumTier = 2
+	PremiumTier3    PremiumTier = 3
+)
+
+// SystemChannelFlag are flags that customize the behavior of the system channel.
+type SystemChannelFlag int
+
+const (
+	SystemChannelFlagSupressJoinNotifications    SystemChannelFlag = 1 << 0
+	SystemChannelFlagSupressPremiumSubscriptions SystemChannelFlag = 1 << 1
+)
+
+// GuildFeature is a feature that enhances a guild.
+type GuildFeature string
+
+const (
+	GuildFeatureInviteSplash         = "INVITE_SPLASH"
+	GuildFeatureVIPRegions           = "VIP_REGIONS"
+	GuildFeatureVanityURL            = "VANITY_URL"
+	GuildFeatureVerified             = "VERIFIED"
+	GuildFeaturePartenered           = "PARTNERED"
+	GuildFeatureCommunity            = "COMMUNITY"
+	GuildFeatureCommerce             = "COMMERCE"
+	GuildFeatureNews                 = "NEWS"
+	GuildFeatureDiscoverable         = "DISCOVERABLE"
+	GuildFeatureFeaturable           = "FEATURABLE"
+	GuildFeatureAnimatedIcon         = "ANIMATED_ICON"
+	GuildFeatureBanner               = "BANNER"
+	GuildFeatureWelcomeScreenEnabled = "WELCOME_SCREEN_ENABLED"
+)
+
 // Guild in Discord represents an isolated collection of users and channels,
 // and are often referred to as "servers" in the UI.
 type Guild struct {
@@ -74,9 +119,10 @@ type Guild struct {
 	Name                        string                        `json:"name"`
 	Icon                        string                        `json:"icon"`
 	Splash                      string                        `json:"splash"`
-	Owner                       bool                          `json:"owner"`
+	DiscoverySplash             string                        `json:"discovery_splash"`
+	Description                 string                        `json:"description"`
+	Banner                      string                        `json:"banner"`
 	OwnerID                     string                        `json:"owner_id"`
-	Permissions                 int                           `json:"permissions"`
 	Region                      string                        `json:"region"`
 	AFKChannelID                string                        `json:"afk_channel_id"`
 	AFKTimeout                  GuildAFKTimeout               `json:"afk_timeout"`
@@ -86,11 +132,24 @@ type Guild struct {
 	Roles                       []Role                        `json:"roles"`
 	Emojis                      []Emoji                       `json:"emojis"`
 	Features                    []string                      `json:"features"`
-	MFALevel                    int                           `json:"mfa_level"`
+	MFALevel                    MFALevel                      `json:"mfa_level"`
 	ApplicationID               string                        `json:"application_id"`
+	PreferredLocale             string                        `json:"preferred_locale"`
 	WidgetEnabled               bool                          `json:"widget_enabled"`
 	WidgetChannelID             string                        `json:"widget_channel_id"`
 	SystemChannelID             string                        `json:"system_channel_id"`
+	SystemChannelFlags          SystemChannelFlag             `json:"system_channel_flags"`
+	RulesChannelID              string                        `json:"rules_channel_id"`
+	PublicUpdatesChannelID      string                        `json:"public_updates_channel_id"`
+	VanityURLCode               string                        `json:"vanity_url_code"`
+	PremiumTier                 PremiumTier                   `json:"premium_tier"`
+	PremiumSubscriptionCount    int                           `json:"premium_subscription_count"`
+	MaxMembers                  int                           `json:"max_members"`
+	MaxVideoChannelUsers        int                           `json:"max_video_channel_users"`
+
+	// Following fields are only sent using the Get Guild method and are relative to the current user.
+	Owner       bool `json:"owner"`
+	Permissions int  `json:"permissions,string"`
 
 	// Following fields are only sent within the GUILD_CREATE event.
 	JoinedAt    Time          `json:"joined_at"`
@@ -110,7 +169,7 @@ type PartialGuild struct {
 	Name        string `json:"name"`
 	Icon        string `json:"icon"`
 	Owner       bool   `json:"owner"`
-	Permissions int    `json:"permissions"`
+	Permissions int    `json:"permissions,string"`
 }
 
 // UnavailableGuild is a Guild that is not available, either because there is a
@@ -161,7 +220,7 @@ type Role struct {
 	Color       int    `json:"color"`    // Integer representation of hexadecimal color code.
 	Hoist       bool   `json:"hoist"`    // Whether this role is pinned in the user listing.
 	Position    int    `json:"position"` // Integer	position of this role.
-	Permissions int    `json:"permissions"`
+	Permissions int    `json:"permissions,string"`
 	Managed     bool   `json:"managed"` // Whether this role is managed by an integration.
 	Mentionable bool   `json:"mentionable"`
 }
@@ -177,16 +236,6 @@ type Emoji struct {
 	Animated      bool   `json:"animated"`
 	// Whether this emoji can be used, may be false due to loss of Server Boosts.
 	Available bool `json:"available"`
-}
-
-// Presence is a user's current state on a guild.
-// This event is sent when a user's presence is updated for a guild.
-type Presence struct {
-	User    *User     `json:"user"`
-	Roles   []string  `json:"roles"` // Array of IDs.
-	Game    *Activity `json:"game"`
-	GuildID string    `json:"guild_id"`
-	Status  string    `json:"status"` // Either "idle", "dnd", "online", or "offline".
 }
 
 // VoiceRegion represents a voice region a guild can use or is using for its voice channels.
@@ -210,22 +259,35 @@ type Ban struct {
 }
 
 type GuildIntegration struct {
-	ID                string                  `json:"id"`
-	Name              string                  `json:"name"`
-	Type              string                  `json:"type"`
-	Enabled           bool                    `json:"enabled"`
-	Syncing           bool                    `json:"syncing"`
-	RoleID            string                  `json:"role_id"`
-	ExpireBehavior    int                     `json:"expire_behavior"`
-	ExpireGracePeriod int                     `json:"expire_grace_period"`
-	User              User                    `json:"user"`
-	Account           GuildIntegrationAccount `json:"account"`
-	SyncedAt          Time                    `json:"synced_at"`
+	ID                string                      `json:"id"`
+	Name              string                      `json:"name"`
+	Type              string                      `json:"type"`
+	Enabled           bool                        `json:"enabled"`
+	Syncing           bool                        `json:"syncing"`
+	RoleID            string                      `json:"role_id"`
+	EnableEmoticons   bool                        `json:"enable_emoticons"`
+	ExpireBehavior    int                         `json:"expire_behavior"`
+	ExpireGracePeriod int                         `json:"expire_grace_period"`
+	User              User                        `json:"user"`
+	Account           GuildIntegrationAccount     `json:"account"`
+	SyncedAt          Time                        `json:"synced_at"`
+	SubscriberCount   int                         `json:"subscriber_count"`
+	Revoked           bool                        `json:"revoked"`
+	Application       GuildIntegrationApplication `json:"application"`
 }
 
 type GuildIntegrationAccount struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
+}
+
+type GuildIntegrationApplication struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Icon        string `json:"icon"`
+	Description string `json:"description"`
+	Summary     string `json:"summary"`
+	Bot         User   `json:"bot"`
 }
 
 type GuildWidget struct {

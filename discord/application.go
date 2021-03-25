@@ -17,6 +17,13 @@ type Application struct {
 	PrimarySKUID        string   `json:"primary_sku_id"`
 	Slug                string   `json:"slug"`
 	CoverImage          string   `json:"cover_image"`
+	Flag                int      `json:"flag"`
+}
+
+// PartialApplication is a partial application that is part of a Ready event.
+type PartialApplication struct {
+	ID    string `json:"id"`
+	Flags int    `json:"flags"`
 }
 
 // Team represents a Discord developer team.

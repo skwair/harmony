@@ -11,10 +11,15 @@ func (u *User) Clone() *User {
 		Username:      u.Username,
 		Discriminator: u.Discriminator,
 		Avatar:        u.Avatar,
-		Bot:           u.Bot,
-		MFAEnabled:    u.MFAEnabled,
-		Verified:      u.Verified,
+		Locale:        u.Locale,
 		Email:         u.Email,
+		Verified:      u.Verified,
+		MFAEnabled:    u.MFAEnabled,
+		Bot:           u.Bot,
+		System:        u.System,
+		PremiumType:   u.PremiumType,
+		Flags:         u.Flags,
+		PublicFlags:   u.PublicFlags,
 	}
 }
 
@@ -28,9 +33,8 @@ func (g *Guild) Clone() *Guild {
 		ID:                          g.ID,
 		Name:                        g.Name,
 		Splash:                      g.Icon,
-		Owner:                       g.Owner,
+		DiscoverySplash:             g.DiscoverySplash,
 		OwnerID:                     g.OwnerID,
-		Permissions:                 g.Permissions,
 		Region:                      g.Region,
 		AFKChannelID:                g.AFKChannelID,
 		AFKTimeout:                  g.AFKTimeout,
@@ -39,9 +43,20 @@ func (g *Guild) Clone() *Guild {
 		ExplicitContentFilter:       g.ExplicitContentFilter,
 		MFALevel:                    g.MFALevel,
 		ApplicationID:               g.ApplicationID,
+		PreferredLocale:             g.PreferredLocale,
 		WidgetEnabled:               g.WidgetEnabled,
 		WidgetChannelID:             g.WidgetChannelID,
 		SystemChannelID:             g.SystemChannelID,
+		SystemChannelFlags:          g.SystemChannelFlags,
+		RulesChannelID:              g.RulesChannelID,
+		PublicUpdatesChannelID:      g.PublicUpdatesChannelID,
+		VanityURLCode:               g.VanityURLCode,
+		PremiumTier:                 g.PremiumTier,
+		PremiumSubscriptionCount:    g.PremiumSubscriptionCount,
+		MaxMembers:                  g.MaxMembers,
+		MaxVideoChannelUsers:        g.MaxVideoChannelUsers,
+		Owner:                       g.Owner,
+		Permissions:                 g.Permissions,
 		JoinedAt:                    g.JoinedAt,
 		Large:                       g.Large,
 		Unavailable:                 g.Unavailable,
@@ -56,6 +71,10 @@ func (g *Guild) Clone() *Guild {
 	for i := 0; i < len(g.Emojis); i++ {
 		emoji := g.Emojis[i].Clone()
 		guild.Emojis = append(guild.Emojis, *emoji)
+	}
+
+	for i := 0; i < len(g.Features); i++ {
+		guild.Features = append(guild.Features, g.Features[i])
 	}
 
 	for i := 0; i < len(g.VoiceStates); i++ {
@@ -110,17 +129,17 @@ func (e *Emoji) Clone() *Emoji {
 	emoji := &Emoji{
 		ID:            e.ID,
 		Name:          e.Name,
+		User:          e.User.Clone(),
 		RequireColons: e.RequireColons,
 		Managed:       e.Managed,
 		Animated:      e.Animated,
+		Available:     e.Available,
 	}
 
 	for i := 0; i < len(e.Roles); i++ {
 		role := e.Roles[i].Clone()
 		emoji.Roles = append(emoji.Roles, *role)
 	}
-
-	emoji.User = e.User.Clone()
 
 	return emoji
 }
@@ -131,14 +150,21 @@ func (m *GuildMember) Clone() *GuildMember {
 		return nil
 	}
 
-	return &GuildMember{
-		User:     m.User,
-		Nick:     m.Nick,
-		Roles:    m.Roles,
-		JoinedAt: m.JoinedAt,
-		Deaf:     m.Deaf,
-		Mute:     m.Mute,
+	gm := &GuildMember{
+		User:         m.User.Clone(),
+		Nick:         m.Nick,
+		Roles:        m.Roles,
+		JoinedAt:     m.JoinedAt,
+		PremiumSince: m.PremiumSince,
+		Deaf:         m.Deaf,
+		Mute:         m.Mute,
 	}
+
+	for i := 0; i < len(m.Roles); i++ {
+		gm.Roles = append(gm.Roles, m.Roles[i])
+	}
+
+	return gm
 }
 
 // Clone returns a clone of this Channel.
@@ -155,15 +181,15 @@ func (c *Channel) Clone() *Channel {
 		Name:             c.Name,
 		Topic:            c.Topic,
 		NSFW:             c.NSFW,
+		ParentID:         c.ParentID,
 		LastMessageID:    c.LastMessageID,
+		LastPinTimestamp: c.LastPinTimestamp,
+		RateLimitPerUser: c.RateLimitPerUser,
 		Bitrate:          c.Bitrate,
 		UserLimit:        c.UserLimit,
-		RateLimitPerUser: c.RateLimitPerUser,
 		Icon:             c.Icon,
 		OwnerID:          c.OwnerID,
 		ApplicationID:    c.ApplicationID,
-		ParentID:         c.ParentID,
-		LastPinTimestamp: c.LastPinTimestamp,
 	}
 
 	for i := 0; i < len(c.PermissionOverwrites); i++ {
@@ -186,13 +212,13 @@ func (p *Presence) Clone() *Presence {
 	}
 
 	presence := &Presence{
-		User:    p.User,
-		Game:    p.Game,
-		GuildID: p.GuildID,
-		Status:  p.Status,
+		User:         p.User.Clone(),
+		GuildID:      p.GuildID,
+		Status:       p.Status,
+		ClientStatus: p.ClientStatus,
 	}
 
-	presence.Roles = append(presence.Roles, p.Roles...)
+	presence.Activities = append(presence.Activities, p.Activities...)
 
 	return presence
 }
