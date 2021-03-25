@@ -50,18 +50,18 @@ func printRoleEntries(log *audit.Log) {
 			fmt.Printf("role %q was created", e.Name)
 
 		case *audit.RoleUpdate:
-			fmt.Printf("role with ID %q was updated", e.ID)
+			fmt.Printf("role with ID %q was updated\n", e.ID)
 
 			// Fields that are of type *StringValues, *IntValues, *BoolValues
 			// are settings that have potentially been modified. If they are non-nil,
 			// it means they were and they will hold the old as well as the new value.
 			if e.Name != nil {
-				fmt.Printf("name changed from %q to %q", e.Name.Old, e.Name.New)
+				fmt.Printf("name changed from %q to %q\n", e.Name.Old, e.Name.New)
 			}
 
 		case *audit.RoleDelete:
 			// Here, the entry will contain all the settings this role had before being deleted.
-			fmt.Printf("role %q was deleted", e.Name)
+			fmt.Printf("role %q was deleted\n", e.Name)
 		}
 	}
 }
