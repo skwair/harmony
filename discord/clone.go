@@ -137,8 +137,7 @@ func (e *Emoji) Clone() *Emoji {
 	}
 
 	for i := 0; i < len(e.Roles); i++ {
-		role := e.Roles[i].Clone()
-		emoji.Roles = append(emoji.Roles, *role)
+		emoji.Roles = append(emoji.Roles, e.Roles[i])
 	}
 
 	return emoji
