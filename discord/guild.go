@@ -227,13 +227,13 @@ type Role struct {
 
 // Emoji represents a Discord emoji (both standard and custom).
 type Emoji struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	Roles         []Role `json:"roles"`
-	User          *User  `json:"user"` // The user that created this emoji.
-	RequireColons bool   `json:"require_colons"`
-	Managed       bool   `json:"managed"`
-	Animated      bool   `json:"animated"`
+	ID            string   `json:"id"`
+	Name          string   `json:"name"`
+	Roles         []string `json:"roles"`
+	User          *User    `json:"user"` // The user that created this emoji.
+	RequireColons bool     `json:"require_colons"`
+	Managed       bool     `json:"managed"`
+	Animated      bool     `json:"animated"`
 	// Whether this emoji can be used, may be false due to loss of Server Boosts.
 	Available bool `json:"available"`
 }
