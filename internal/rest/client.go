@@ -148,11 +148,11 @@ func (c *Client) DoWithHeader(ctx context.Context, e *endpoint.Endpoint, p *Payl
 // Do is used to request endpoints that do not need authentication.
 // If you need more control over headers you send, use DoWithHeader directly.
 func Do(ctx context.Context, e *endpoint.Endpoint, p *Payload) (*http.Response, error) {
-	return DoWithHeader(ctx, e, p, nil)
+	return DoWithHeader(ctx, e, p, http.Header{})
 }
 
-// Do is used to request endpoints that do not need authentication. It is
-// like DoWithHeader otherwise, except for rate limiting where it is more likely
+// DoWithHeader is used to request endpoints that do not need authentication. It is
+// like Client.DoWithHeader otherwise, except for rate limiting where it is more likely
 // to result in 429's if abused.
 func DoWithHeader(ctx context.Context, e *endpoint.Endpoint, p *Payload, h http.Header) (*http.Response, error) {
 	var (
@@ -176,7 +176,7 @@ func DoWithHeader(ctx context.Context, e *endpoint.Endpoint, p *Payload, h http.
 		}
 	}
 	if p.hasBody() {
-		h.Set("Content-Type", p.contentType)
+		req.Header.Set("Content-Type", p.contentType)
 	}
 	ua := fmt.Sprintf("%s (github.com/skwair/harmony, %s)", "Harmony", version.Module())
 	req.Header.Set("User-Agent", ua)
