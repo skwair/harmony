@@ -175,8 +175,9 @@ func DoWithHeader(ctx context.Context, e *endpoint.Endpoint, p *Payload, h http.
 			req.Header.Add(k, v)
 		}
 	}
+	// Add the Content-Type header accordingly to the payload's body, if any.
 	if p.hasBody() {
-		h.Set("Content-Type", p.contentType)
+		req.Header.Set("Content-Type", p.contentType)
 	}
 	ua := fmt.Sprintf("%s (github.com/skwair/harmony, %s)", "Harmony", version.Module())
 	req.Header.Set("User-Agent", ua)
