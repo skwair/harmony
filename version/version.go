@@ -2,7 +2,7 @@ package version
 
 // Module returns the version of the Harmony module.
 func Module() string {
-	return "0.18.0"
+	return "0.19.0"
 }
 
 // REST returns the version of the REST API used by Harmony.
